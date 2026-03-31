@@ -92,6 +92,7 @@ const EstimatedFareDisplay = ({ fareRangeLow, fareRangeHigh, isSurgeActive }) =>
 
 const CabProviderCard = ({ provider, availability, dropZoneLat, dropZoneLng, dropZoneName }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [showWebFallback, setShowWebFallback] = useState(false);
 
   const getProviderBrandInfo = () => {
     switch(provider) {
@@ -132,26 +133,62 @@ const CabProviderCard = ({ provider, availability, dropZoneLat, dropZoneLng, dro
     }
   };
 
+  const getWebFallbackUrl = () => {
+    switch (provider) {
+      case 'ola':
+        return 'https://book.olacabs.com';
+      case 'uber':
+        return 'https://m.uber.com/ul/';
+      case 'rapido':
+        return 'https://rapido.bike';
+      default:
+        return null;
+    }
+  };
+
+  const tryDeepLink = (uri, webFallbackUrl, onNotInstalled) => {
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+    iframe.src = uri;
+
+    const timer = setTimeout(() => {
+      document.body.removeChild(iframe);
+      onNotInstalled(webFallbackUrl);
+    }, 300);
+
+    window.addEventListener('blur', () => {
+      clearTimeout(timer);
+      document.body.removeChild(iframe);
+    }, { once: true });
+  };
+
   const handleBooking = () => {
     if (isUnavailable) return;
     setIsLoading(true);
     const deepLink = buildDeepLink();
+    const webFallbackUrl = getWebFallbackUrl();
+    
     if (deepLink) {
-      // On mobile: fires native app deep-link
-      // On desktop (demo): logs the constructed URI so it's visible and verifiable
-      const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-      if (isMobile) {
-        window.location.href = deepLink;
-      } else {
-        console.info(`[Demo] Deep-link constructed: ${deepLink}`);
-        alert(`Demo mode — deep-link ready:\n\n${deepLink}\n\nOn mobile this opens ${provider.charAt(0).toUpperCase() + provider.slice(1)} directly.`);
-      }
+      tryDeepLink(deepLink, webFallbackUrl, (fallbackUrl) => {
+        // App not detected, show web fallback
+        setShowWebFallback(true);
+        setIsLoading(false);
+      });
     }
+    
     setTimeout(() => setIsLoading(false), 1500);
   };
 
+  const handleWebFallback = () => {
+    const webFallbackUrl = getWebFallbackUrl();
+    if (webFallbackUrl) {
+      window.open(webFallbackUrl, '_blank');
+    }
+  };
+
   return (
-    <div className={`flex flex-col items-center justify-between bg-white hover:bg-gray-50 active:scale-95 rounded-2xl p-4 gap-4 transition-all border border-gray-200 shadow-sm ${isUnavailable ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}`} onClick={handleBooking}>
+    <div className={`flex flex-col items-center justify-between bg-white hover:bg-gray-50 active:scale-95 rounded-2xl p-4 gap-4 transition-all border border-gray-200 shadow-sm ${isUnavailable ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}`} onClick={!showWebFallback ? handleBooking : undefined}>
       <div className="flex flex-col items-center gap-2">
         <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shadow-sm border ${brandInfo.color}`}>
           {brandInfo.name.charAt(0)}
@@ -161,12 +198,21 @@ const CabProviderCard = ({ provider, availability, dropZoneLat, dropZoneLng, dro
         </div>
       </div>
 
-      <button
-        disabled={isUnavailable || isLoading}
-        className="w-full bg-[#1C1D2B] text-white text-sm font-bold rounded-xl py-2.5 transition-opacity disabled:opacity-50"
-      >
-        {isLoading ? '...' : `Book ${brandInfo.name}`}
-      </button>
+      {showWebFallback ? (
+        <button
+          onClick={handleWebFallback}
+          className="w-full bg-blue-600 text-white text-xs font-semibold rounded-xl py-2.5 transition-colors hover:bg-blue-700"
+        >
+          Open Web
+        </button>
+      ) : (
+        <button
+          disabled={isUnavailable || isLoading}
+          className="w-full bg-[#1C1D2B] text-white text-sm font-bold rounded-xl py-2.5 transition-opacity disabled:opacity-50"
+        >
+          {isLoading ? '...' : `Book ${brandInfo.name}`}
+        </button>
+      )}
     </div>
   );
 };
@@ -215,49 +261,98 @@ const AvailabilityFallbackNotice = () => (
   </div>
 );
 
-const RedirectFooter = () => (
-  <div className="w-full flex flex-col items-center gap-4 py-4 pb-8">
-    <div className="text-xs text-gray-400 bg-white border border-gray-200 px-3 py-1.5 rounded-full">
-      156 people redirected to cabs tonight
-    </div>
+const RedirectFooter = () => {
+  const [redirectCount, setRedirectCount] = useState(156);
 
-    <details className="group [&_summary::-webkit-details-marker]:hidden w-full max-w-sm">
-      <summary className="flex items-center justify-center cursor-pointer text-xs text-gray-500 hover:text-gray-700 transition-colors">
-        How is this faster?
-      </summary>
-      <div className="mt-3 text-xs text-gray-400 text-center bg-gray-50 p-3 rounded-lg border border-gray-200">
-        Street parking near the venue is completely full. Factoring in gridlock and walking time, a cab drop-off right at the gate saves you roughly 25-40 minutes based on real-time data.
+  useEffect(() => {
+    const tick = () => {
+      setRedirectCount(prev => prev + Math.floor(Math.random() * 3) + 1);
+      const next = 8000 + Math.random() * 7000;
+      timer = setTimeout(tick, next);
+    };
+    let timer = setTimeout(tick, 8000 + Math.random() * 7000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="w-full flex flex-col items-center gap-4 py-4 pb-8">
+      <div className="text-xs text-gray-400 bg-white border border-gray-200 px-3 py-1.5 rounded-full">
+        {redirectCount} people redirected to cabs tonight
       </div>
-    </details>
 
-    <button className="text-sm text-gray-400 hover:text-gray-900 transition-colors flex items-center mt-2 group">
-      <ArrowLeftIcon />
-      <span className="underline underline-offset-4 decoration-gray-300 group-hover:decoration-gray-500 transition-colors">Back to event page</span>
-    </button>
-  </div>
-);
+      <details className="group [&_summary::-webkit-details-marker]:hidden w-full max-w-sm">
+        <summary className="flex items-center justify-center cursor-pointer text-xs text-gray-500 hover:text-gray-700 transition-colors">
+          How is this faster?
+        </summary>
+        <div className="mt-3 text-xs text-gray-400 text-center bg-gray-50 p-3 rounded-lg border border-gray-200">
+          Street parking near the venue is completely full. Factoring in gridlock and walking time, a cab drop-off right at the gate saves you roughly 25-40 minutes based on real-time data.
+        </div>
+      </details>
+
+      <button className="text-sm text-gray-400 hover:text-gray-900 transition-colors flex items-center mt-2 group">
+        <ArrowLeftIcon />
+        <span className="underline underline-offset-4 decoration-gray-300 group-hover:decoration-gray-500 transition-colors">Back to event page</span>
+      </button>
+    </div>
+  );
+};
 
 
 // ----------------------------------------------------------------------------
 // MAIN SCREEN COMPONENT
 // ----------------------------------------------------------------------------
 
+// Helper function for distance-based fare calculation
+const getFareRange = (lat, lng, surgeMultiplier = 1) => {
+  const venueLat = 28.6139;
+  const venueLng = 77.2090;
+  const R = 6371;
+  const dLat = (lat - venueLat) * Math.PI / 180;
+  const dLng = (lng - venueLng) * Math.PI / 180;
+  const a = Math.sin(dLat/2) ** 2 +
+    Math.cos(venueLat * Math.PI / 180) *
+    Math.cos(lat * Math.PI / 180) *
+    Math.sin(dLng/2) ** 2;
+  const km = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  let low, high;
+  if (km <= 5)       { low = 80;  high = 140; }
+  else if (km <= 15) { low = 150; high = 280; }
+  else               { low = 290; high = 450; }
+
+  return {
+    low:  Math.round(low  * surgeMultiplier),
+    high: Math.round(high * surgeMultiplier),
+  };
+};
+
 export default function RedirectScreen() {
   // Simulated initial state fetching
-  const [data, setData] = useState({
+  const MOCK_REDIRECT_DATA = {
     venueDisplayName: "Chinnaswamy Stadium, Bangalore",
     dropZoneName: "Drop Zone A, near Gate 4",
     dropZoneLat: 12.9793,
     dropZoneLng: 77.5996,
     isSurgeActive: true,
     surgeMultiplier: 1.8,
-    fareRangeLow: 180,
-    fareRangeHigh: 260,
     cabAvailability: {
       ola: 'available',
       uber: 'low',
       rapido: 'available'
-    },
+    }
+  };
+
+  // Calculate fare based on distance
+  const fareRange = getFareRange(
+    MOCK_REDIRECT_DATA.dropZoneLat,
+    MOCK_REDIRECT_DATA.dropZoneLng,
+    MOCK_REDIRECT_DATA.surgeMultiplier
+  );
+
+  const [data, setData] = useState({
+    ...MOCK_REDIRECT_DATA,
+    fareRangeLow: fareRange.low,
+    fareRangeHigh: fareRange.high,
     loading: true
   });
 
