@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/91982/.gemini/antigravity//**)",
+      "Read(//c/Users/91982/.gemini/antigravity/**)",
+      "WebSearch",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(./node_modules/.bin/tailwindcss init:*)",
+      "Bash(find /mnt/c/Users/91982/OneDrive/Desktop/parksease/Parksease -path */node_modules -prune -o -type f \\\\\\(-name *.md -o -name *.json -o -name *.jsx -o -name *.js -o -name *.yaml -o -name *.yml \\\\\\) -print)",
+      "Bash(find /mnt/c/Users/91982/OneDrive/Desktop/parksease/Parksease/app -maxdepth 3 -type f \\\\\\(-name *.jsx -o -name *.js -o -name *.json \\\\\\) ! -path */node_modules/*)",
+      "Bash(find /mnt/c/Users/91982/OneDrive/Desktop/parksease/Parksease -maxdepth 2 -type f ! -path */node_modules/* ! -path */.git/* ! -path */.obsidian/*)",
+      "Bash(gemini --version)",
+      "Bash(npx @google/gemini-cli --version)",
+      "Bash(ls /c/Users/91982/AppData/Roaming/npm/gemini*)",
+      "Bash(ls /c/Users/91982/AppData/Local/Programs/*/gemini*)",
+      "Bash(cmd.exe /c \"npx --yes @google/gemini-cli --version\" 2>&1)",
+      "Bash(npx @google/gemini-cli --help)",
+      "Bash(npx @google/gemini-cli -p \"You are refining a React + Tailwind dark-theme UI for ParkEase, an event parking booking app. The file is src/S1_VenueLanding.jsx. Read the file, then apply the following visual polish improvements — keep the dark theme, all existing logic, and all mock data exactly as-is::*)",
+      "Bash(find /c/Users/91982 -name *.json -path *gemini*)",
+      "Bash(find /c/Users/91982 -name oauth2* -o -name credentials* -o -name gcloud*)",
+      "Bash(curl -s http://localhost:8080/metrics)",
+      "Bash(jobs -l)",
+      "Bash(pkill -f \"vite\")"
+    ]
+  }
+}

@@ -7,6 +7,7 @@ import BookingFlowScreen from './screens/S2_BookingFlow';
 import BookingConfirmationScreen from './screens/S3_BookingConfirmation';
 import RedirectScreen from './screens/S4_RedirectScreen';
 import OperatorDashboardScreen from './screens/S5_OperatorDashboard';
+import RetentionScreen from './screens/S6_RetentionScreen';
 
 const SCREENS = {
   VENUE:        'venue',
@@ -14,6 +15,7 @@ const SCREENS = {
   CONFIRMATION: 'confirmation',
   REDIRECT:     'redirect',
   DASHBOARD:    'dashboard',
+  RETENTION:    'retention',
 };
 
 // ---------------------------------------------------------------------------
@@ -28,6 +30,7 @@ const DemoNav = ({ current, onNavigate, parkingFull, onToggleParkingFull }) => (
         { id: SCREENS.CONFIRMATION, label: 'S3 Confirm' },
         { id: SCREENS.REDIRECT,     label: 'S4 Redirect' },
         { id: SCREENS.DASHBOARD,    label: 'S5 Ops' },
+        { id: SCREENS.RETENTION,    label: 'S6 Retain' },
       ].map(({ id, label }) => (
         <button
           key={id}
@@ -97,7 +100,7 @@ export default function App() {
   };
 
   // Screens that show the Navbar
-  const showNavbar = [SCREENS.VENUE, SCREENS.BOOKING, SCREENS.CONFIRMATION, SCREENS.REDIRECT].includes(currentScreen);
+  const showNavbar = [SCREENS.VENUE, SCREENS.BOOKING, SCREENS.CONFIRMATION, SCREENS.REDIRECT, SCREENS.RETENTION].includes(currentScreen);
   // Dashboard has its own header
   const navbarOffset = showNavbar ? 'pt-16' : '';
 
@@ -125,6 +128,8 @@ export default function App() {
         return <RedirectScreen />;
       case SCREENS.DASHBOARD:
         return <OperatorDashboardScreen />;
+      case SCREENS.RETENTION:
+        return <RetentionScreen />;
       default:
         return <VenueLandingScreen onNavigateToBooking={() => navigate(SCREENS.BOOKING)} />;
     }

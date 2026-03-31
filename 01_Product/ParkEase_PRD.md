@@ -71,7 +71,7 @@ These are the floors we must never breach. Crossing these breaks operator trust 
 |---|---|---|---|---|
 |Metric|Definition|MVP Floor|Year 1 Target|India Adjustment|
 |Pre-booked spot utilisation rate|% of bookings where the user actually arrives and uses the spot|>70%|>80%|Indians honour paid bookings at high rates — UPI upfront collection naturally suppresses no-shows. A non-refundable or partial-refund cancellation policy pushes this toward 80%+|
-|Checkout drop-off rate|% of users who initiate the parking booking flow but abandon before payment completion|<45%|<28%|India's UPI first-authorization abandon rate on new apps runs 35–50%. 45% is the honest MVP reality. Drops sharply after the first successful transaction and once BookMyShow brand association is established|
+|Checkout drop-off rate|% of users who initiate the parking booking flow but abandon before payment completion|<45%|<28%|India's UPI first-authorization abandon rate on new apps runs 35–50%. 45% is the honest MVP reality. Drops sharply after the first successful transaction and once BookMyShow brand association is established. Note: MVP checkout is UPI-only by design — a single payment method reduces decision paralysis for a ₹169 transaction. Wallets, cards, and Pay Later are V2 additions if drop-off data indicates payment method is the barrier.|
 
 ---
 
@@ -138,6 +138,8 @@ Stage 1 — Trigger | BookMyShow checkout | Excited, cautiously anxious
 Arjun books 2 IPL tickets. At checkout, just above the payment button: "Guaranteed parking near Chinnaswamy — only 34 spots left. ₹199. Add to order?" Two signals hit simultaneously — scarcity (34 spots) and trivial price relative to ticket cost. Past trauma activates. He taps "Add."
 
 Product decision: Parking must appear as a bundled checkout add-on, not a separate app flow. Real-time scarcity counter pulled from ParkEase inventory API — a static counter destroys credibility the moment a user notices it hasn't changed.
+
+⚠️ MVP Entry Point Update: The BookMyShow checkout embed is a V2/partnership-phase feature requiring a formal BookMyShow integration agreement. For MVP, Arjun's entry point is the standalone ParkEase venue landing page (S1) — accessible via direct URL, QR code printed on event confirmation emails, or a link embedded in the event organiser's own communications. The scarcity counter and checkout experience are identical; only the discovery surface changes. The S1 venue page is the canonical MVP consumer entry point for all three personas.
 
 ---
 
@@ -411,7 +413,7 @@ Rahul goes to book. ₹299 for one spot. He pauses — not because ₹299 is exp
 
 Product decision — post-booking UPI split request (MVP): Rahul pays the full ₹299 upfront. Immediately after booking confirmation the app shows: "Split this with your group — ₹60 per person for 5 people." One tap generates individual UPI collect requests to contacts he selects from his phonebook. Each person receives a GPay or PhonePe request for ₹60. For Gen Z in India, UPI is the default — a 20-year-old college student described carrying cash as archaic, using UPI for everything from splitting bills to daily purchases. The collect request is a familiar action in an unfamiliar context. No new behaviour required.
 
-MVP vs V2: MVP = single payer with post-booking UPI split request. V2 = true group booking where each person pays their share before confirmation is issued.
+MVP implementation status: Group split is fully built at MVP. S2 (booking flow) includes a GroupSplitCalculator — single payer selects group size (1–6), per-person amount shown instantly (e.g. ₹42/person for 4 people). S3 (confirmation) includes a UPISplitBlock — one tap sends individual UPI collect requests to contacts after confirmation. WhatsApp forward with pre-formatted bullet summary including split amount is also live at S3. V2 = true escrow group booking where each person individually authorises their share before the spot is confirmed and assigned.
 
 ---
 
@@ -445,7 +447,9 @@ Book your spot: [ParkEase link]
 
 Three people pay within 10 minutes. One ghosts for two hours then pays. The group is locked in. Rahul is now the person who made the plan happen — that social standing is the actual emotional reward of the product for this persona.
 
-Product decision — WhatsApp forward CTA: The pre-event notification includes a one-tap WhatsApp forward button — a deep-link using WhatsApp's public URL format (wa.me/?text=...) with booking details pre-formatted as bullet points. No WhatsApp Business API required, no Meta partnership, no review process. Implementation time: under one hour. Works on every Indian smartphone with WhatsApp installed. The message is professional, accurate, and structured for easy reading in a group chat.
+Product decision — WhatsApp forward CTA: The booking confirmation (S3) includes a one-tap WhatsApp forward button — a deep-link using WhatsApp's public URL format (wa.me/?text=...) with booking details pre-formatted as bullet points. No WhatsApp Business API required, no Meta partnership, no review process. Works on every Indian smartphone with WhatsApp installed. The message is professional, accurate, and structured for easy reading in a group chat.
+
+✅ Implementation status: Built and shipped in S3_BookingConfirmation.jsx. Pre-formatted message includes: event name, date, bay number, lot name, departure time, per-person split amount (if group > 1), and a direct booking link. One tap opens WhatsApp with the message pre-typed.
 
 Product decision — confirmation design for shareability: The booking confirmation must be clean enough to serve as social proof in the group chat. Bay number, event name, date, and split amount all visible in one screen. A cluttered confirmation weakens Rahul's standing as the organiser. A clean, branded one reinforces it.
 
@@ -862,6 +866,31 @@ Siddharth is the distribution channel for the entire consumer product. His contr
 ---
 
 Section 3 — User Journeys: Complete
+
+---
+
+### 3.5 — Booking Flow Architecture (Canonical UI Spec)
+
+The S2 booking flow implements a 5-step progressive disclosure model. Each step unlocks the next only when the prior step is completed. Completed steps collapse to summary chips that can be tapped to re-open.
+
+**Step 1 — Inventory Signal (always visible)**
+Real-time scarcity banner showing spots remaining, fill progress bar, and urgency copy. Decays as bookings arrive. Never hidden — maintains FOMO signal throughout the booking session.
+
+**Step 2 — Bay Selection**
+Lot tabs (North / South) + bay grid showing available/taken status per pillar code. User taps a bay to select. Selection advances to Step 3 automatically.
+
+**Step 3 — Arrival Time Window**
+Entry window picker (e.g. 5:30–7:00 PM or 7:00–8:30 PM). Informs the ops team of expected arrival distribution. Selection advances to Step 4 automatically.
+
+**Step 4 — Pricing Breakdown**
+Transparent fee split: venue base rate + ParkEase service fee = total. Group split calculator (1–6 people) with per-person amount shown in real time. Cancellation policy displayed.
+
+**Step 5 — UPI Payment (sticky CTA)**
+Single "Pay ₹X via UPI" button. Disabled until bay and window selected. Loading state on tap. 1.5s mock payment timeout navigates to S3 confirmation.
+
+**Progressive disclosure rationale:** Showing all five steps simultaneously increases cognitive load and drop-off. The collapsed chip pattern (from the reference District by Zomato template) keeps users oriented without overwhelming them — at any point in the flow, the user can see what they've completed and what's next with one glance.
+
+**Guardrail metric dependency:** The <45% checkout drop-off guardrail (§2.4) depends directly on this flow being frictionless. Any regression to a flat all-at-once form should be evaluated against this guardrail before shipping.
 
 ---
 
