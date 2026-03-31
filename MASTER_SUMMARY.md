@@ -7,8 +7,9 @@
 
 **ParkEase** (working name also seen as ParkSmart in early PRD drafts) is a two-sided event parking platform for India. It pre-sells named parking bays to event attendees and provides operators a live dashboard + compliance report. When parking sells out, it redirects users to Ola/Uber/Rapido via deep-link.
 
-**Stage:** Phase 4 — Prototype Validation (per PRD §7.2)
-**Goal of Phase 4:** Build 5 prototype screens → demo to 3–5 event organiser contacts → exit criteria: at least one expresses genuine intent to pilot.
+**Stage:** Phase 0 COMPLETE → Phase 1 (MVP Backend) is next
+**Prototype status:** All 6 sessions done. Pitch-ready. Live on Vercel (`github.com/Purab2207/ParkEase`, `app/` root).
+**Next milestone:** Demo to 3–5 event organiser contacts → exit criteria: at least one expresses genuine intent to pilot → start Phase 1 backend.
 
 **Team size:** 2 founders, full-stack ownership.
 
@@ -16,17 +17,68 @@
 
 ## Session Log
 
-### Session 3 — PDF Download + Master Summary update (31 March 2026 — evening)
+### Phase 0 COMPLETE — All 6 Prototype Sessions Done (31 March 2026)
 
-**Status:** Prompt C complete. S5 PDF now downloads a real file.
+**Status:** ✅ Prototype is pitch-ready. All 6 sessions verified and live on Vercel.
+
+---
+
+### Session 6 — Demo mode & final polish (31 March 2026 — night)
 
 **Changes:**
-- `S5_OperatorDashboard.jsx` — `PDFReportButton` now generates a real Blob and triggers browser download. File name: `ParkEase_Compliance_Karan_Aujla_Sat_12_Apr_2026.pdf`. Contains full PRD-specified compliance report: parking performance, demand shifting, exit clearance vs industry baseline, compliance notes.
-- `MASTER_SUMMARY.md` — this file updated to reflect all sessions
+- `App.jsx` — DemoNav label renamed to "Demo mode · ParkEase v0.5"
+- `App.jsx` — ▶ Start Demo button added: auto-navigates S1→S2→S3→S4→S5→S6 on 4s timer with "Demo running…" disabled state
+- `S1_VenueLanding.jsx` — All `console.log` statements removed
+- `S2_BookingFlow.jsx` — `pb-20` added to scroll container (fixes DemoNav overlap on iPhone 14)
+- `S3_BookingConfirmation.jsx` — `pb-20` added to scroll container (same fix)
 
-**Still pending (Sessions A + B):**
-- Prompt A: SearchOverlay venue state → S1 (App.jsx + S1_VenueLanding.jsx)
-- Prompt B: Auth phone pre-fill → S2 contact field (App.jsx + S2_BookingFlow.jsx)
+---
+
+### Session 5 — S5 B2B completeness (31 March 2026 — night)
+
+**Changes:**
+- `S5_OperatorDashboard.jsx` — Pre/Live/Post event mode toggle added (`MOCK_PRE_EVENT` 62% fill, `MOCK_POST_EVENT` 98% fill)
+- `S5_OperatorDashboard.jsx` — `ExitClearanceComparison` component: ParkEase 20 min vs industry 60–90 min side-by-side bars (Business Standard / Free Press Journal sources)
+- `S5_OperatorDashboard.jsx` — `ManualFallbackNotice` blue info card: "App downtime does not cascade to physical failure"
+
+---
+
+### Session 4 — S6 + S3 story completion (31 March 2026 — night)
+
+**Changes:**
+- `S6_RetentionScreen.jsx` — Health check passed, no errors
+- `S3_BookingConfirmation.jsx` — Disabled "Add to Apple Wallet" button added below QR (opacity-50, "Coming soon" tooltip)
+- `S3_BookingConfirmation.jsx` — "See you at the next event →" link at bottom navigates to S6
+- `App.jsx` — `onNavigateToRetention` prop wired into CONFIRMATION case
+
+**Full Arjun trust arc now demoable: S1 → S2 → S3 → S6 ✅**
+
+---
+
+### Session 3 — S1 visual polish (31 March 2026 — night)
+
+**Changes:**
+- `S1_VenueLanding.jsx` — Real Unsplash concert hero image replacing dark gradient placeholder
+- `S1_VenueLanding.jsx` — Pulsing red dot (`animate-pulse`) on scarcity counter when `isCritical` + "3 booked in the last 2 mins" micro-copy
+- `S1_VenueLanding.jsx` — Share button added next to Book CTA (`navigator.share` + clipboard fallback)
+
+---
+
+### Session 2 — S4 Redirect hardening (31 March 2026 — evening)
+
+**Changes:**
+- `S4_RedirectScreen.jsx` — Live redirect counter: starts at 156, increments 1–3 every 8–15s
+- `S4_RedirectScreen.jsx` — Distance-based fare calculation: `getFareRange()` (≤5km: ₹80–140, 5–15km: ₹150–280, 15km+: ₹290–450) × surgeMultiplier
+- `S4_RedirectScreen.jsx` — Deep-link app detection: 300ms iframe probe before firing URI, web fallbacks (Ola/Uber/Rapido) if app not installed
+
+---
+
+### Session 1 — Core wiring: Prompts A, B, C (31 March 2026 — evening)
+
+**Changes:**
+- `App.jsx` + `S1_VenueLanding.jsx` — SearchOverlay venue selection flows through to S1 (Prompt A)
+- `App.jsx` + `S2_BookingFlow.jsx` — Auth phone pre-fills S2 contact field with "✓ Verified" badge (Prompt B)
+- `S5_OperatorDashboard.jsx` — PDF Blob download: real compliance report generated client-side (Prompt C)
 
 ---
 
@@ -252,27 +304,31 @@ Mock QR code (pixel grid seeded from bookingId). WhatsApp forward via `wa.me/?te
 Three provider cards: Ola / Uber / Rapido. Deep-links constructed with Chinnaswamy coords + Drop Zone A. On desktop: shows constructed URI in alert (demo mode). On mobile: fires `window.location.href`. Surge warning shown when `isSurgeActive`. Fare range ₹180–260. `AvailabilityFallbackNotice` shown when all platforms low. **Light theme** (white cards, red alert for parking full, navy CTA buttons).
 
 ### S5 — Operator Dashboard (`S5_OperatorDashboard.jsx`)
-Fill rate 87%, 65 spots remaining, 118 redirect taps, ~65 diverted. Per-lot capacity bars (North 88%, South 85%). Colour-coded alert feed (red/amber/green/blue). Demand shifting performance panel. PDF compliance report button (stub). Refresh button. `LIVE` status pill with pulse animation. **Light theme** (white cards, red/amber/green alerts, navy PDF button).
+Fill rate 87%, 65 spots remaining, 118 redirect taps, ~65 diverted. Per-lot capacity bars (North 88%, South 85%). Colour-coded alert feed. Demand shifting panel. **Pre/Live/Post event mode toggle** (62% / 87% / 98% fill). **Exit clearance comparison** (ParkEase 20 min vs industry 60–90 min). **Manual fallback notice** card. Real PDF Blob download. **Light theme.**
+
+### S6 — Retention Screen (`S6_RetentionScreen.jsx`)
+Arjun's re-engagement arc — RCB Playoffs. Components: NotificationBanner, EventCard, FillRateUrgencyBar, LastTimeMemoryChip, TrustSignalRow, RepeatBookerBadge, OneClickRebookCTA. Accessible from S3 via "See you at the next event →" link.
 
 ### App.jsx — Demo Router + Global State
 No React Router — plain `useState` for current screen routing. Global state:
-- `currentScreen`: VENUE | BOOKING | CONFIRMATION | REDIRECT | DASHBOARD
+- `currentScreen`: VENUE | BOOKING | CONFIRMATION | REDIRECT | DASHBOARD | RETENTION
 - `isLoggedIn`, `userPhone`: auth state (set by AuthModal)
-- `showAuth`, `showSearch`: overlay visibility (toggled by Navbar + internal CTAs)
-- `activeNav`, `selectedCity`: navbar state
+- `selectedVenue`: venue from SearchOverlay, passed to S1
+- `showAuth`, `showSearch`: overlay visibility
 - `parkingFull`: demo toggle that auto-navigates to S4/S1
+- `demoRunning`: guided demo mode state
 
 **Component tree:**
 ```
 <App>
-  ├─ <Navbar> (fixed, z-50, showing on S1/S2/S3/S4)
-  ├─ <div> (current screen — S1 to S5, with pt-16 offset)
+  ├─ <Navbar> (fixed, z-50, showing on S1/S2/S3/S4/S6)
+  ├─ <div> (current screen — S1 to S6, with pt-16 offset)
   ├─ <AuthModal> (global overlay, z-50)
   ├─ <SearchOverlay> (global overlay, z-50)
-  └─ <DemoNav> (bottom bar — prototype only, z-[100] to stay above others)
+  └─ <DemoNav> (bottom bar — "Demo mode · ParkEase v0.5" + ▶ Start Demo button)
 ```
 
-Demo nav bar at bottom (`S1`–`S5` + `🔴 Full` toggle) is prototype-only, not part of real product.
+**▶ Start Demo** auto-navigates S1→S2→S3→S4→S5→S6 on 4-second timer. Hand phone to investor and say "just watch".
 
 ---
 
@@ -305,13 +361,15 @@ Demo nav bar at bottom (`S1`–`S5` + `🔴 Full` toggle) is prototype-only, not
 | UPI payment | S2 | Razorpay / PayU UPI intent API |
 | Cab availability + surge | S4 | Ola/Uber/Rapido availability signal API |
 | QR code | S3 | `qrcode` npm library, server-generated |
-| Deep-link app detection | S4 | `navigator.getInstalledRelatedApps()` |
+| Deep-link app detection | S4 | ✅ Iframe probe built — `navigator.getInstalledRelatedApps()` for V2 |
 | UPI collect request | S3 | PhonePe / Razorpay collect API |
-| PDF report | S5 | Server-side Puppeteer / pdfkit |
-| Live inventory counter | S1, S2 | WebSocket from ParkEase inventory API |
+| PDF report | S5 | ✅ Blob download built — server-side Puppeteer/pdfkit for V2 |
+| Live inventory counter | S1, S2 | Supabase Realtime subscription |
 | Bay grid data | S2 | ParkEase operator config API post bay-mapping |
 | City selector | Navbar | Cities API, user geolocation fallback |
 | Venue selection | SearchOverlay | Real venue database + search API |
+| Apple/Google Wallet | S3 | Passkit API (V2) |
+| Push notification deep-link | S6 | OneSignal + Supabase Edge Function (Phase 1) |
 
 ---
 
