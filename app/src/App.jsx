@@ -22,8 +22,8 @@ const SCREENS = {
 // Demo switcher bar (visible at bottom, not part of final product)
 // ---------------------------------------------------------------------------
 const DemoNav = ({ current, onNavigate, parkingFull, onToggleParkingFull, onStartDemo, demoRunning }) => (
-  <div className="fixed bottom-0 left-0 right-0 z-[100] flex flex-col items-center pb-2 pointer-events-none">
-    <div className="bg-gray-950/95 border border-gray-700 rounded-2xl px-3 py-2 flex items-center gap-1 shadow-2xl pointer-events-auto mx-4 overflow-x-auto">
+  <div className="fixed bottom-0 left-0 right-0 z-[100] flex flex-col items-center pb-2 px-4 pointer-events-none">
+    <div className="bg-gray-950/95 border border-gray-700 rounded-2xl px-2 py-2 flex items-center gap-0.5 shadow-2xl pointer-events-auto w-full overflow-x-auto max-w-md">
       {[
         { id: SCREENS.VENUE,        label: 'S1 Landing' },
         { id: SCREENS.BOOKING,      label: 'S2 Booking' },
@@ -57,7 +57,7 @@ const DemoNav = ({ current, onNavigate, parkingFull, onToggleParkingFull, onStar
     <button
       onClick={onStartDemo}
       disabled={demoRunning}
-      className={`w-full py-1.5 rounded-lg text-[11px] font-bold tracking-wide transition-all ${
+      className={`w-full max-w-md py-1.5 rounded-lg text-[11px] font-bold tracking-wide transition-all pointer-events-auto ${
         demoRunning
           ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
           : 'bg-[#1C1D2B] text-white active:scale-95'

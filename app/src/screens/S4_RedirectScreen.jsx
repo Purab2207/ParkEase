@@ -146,21 +146,16 @@ const CabProviderCard = ({ provider, availability, dropZoneLat, dropZoneLng, dro
     }
   };
 
-  const tryDeepLink = (uri, webFallbackUrl, onNotInstalled) => {
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-    iframe.src = uri;
+  const tryDeepLink = (uri, webFallbackUrl) => {
+    // Fire deep link directly — mobile OS intercepts and opens the app
+    // If app not installed, browser stays on current page (no redirect)
+    window.location.href = uri;
 
-    const timer = setTimeout(() => {
-      document.body.removeChild(iframe);
-      onNotInstalled(webFallbackUrl);
-    }, 300);
-
-    window.addEventListener('blur', () => {
-      clearTimeout(timer);
-      document.body.removeChild(iframe);
-    }, { once: true });
+    // After 1500ms, if we are still here, app likely not installed — show web fallback
+    setTimeout(() => {
+      setShowWebFallback(true);
+      setIsLoading(false);
+    }, 1500);
   };
 
   const handleBooking = () => {
@@ -168,16 +163,13 @@ const CabProviderCard = ({ provider, availability, dropZoneLat, dropZoneLng, dro
     setIsLoading(true);
     const deepLink = buildDeepLink();
     const webFallbackUrl = getWebFallbackUrl();
-    
+
     if (deepLink) {
-      tryDeepLink(deepLink, webFallbackUrl, (fallbackUrl) => {
-        // App not detected, show web fallback
-        setShowWebFallback(true);
-        setIsLoading(false);
-      });
+      tryDeepLink(deepLink, webFallbackUrl);
+    } else {
+      setShowWebFallback(true);
+      setIsLoading(false);
     }
-    
-    setTimeout(() => setIsLoading(false), 1500);
   };
 
   const handleWebFallback = () => {
