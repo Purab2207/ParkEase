@@ -14,9 +14,38 @@
 
 ---
 
-## Latest Update — UI Design Refresh (31 March 2026)
+## Session Log
 
-**Status:** All 5 screens converted to **light theme** + **new shared components** added.
+### Session 3 — PDF Download + Master Summary update (31 March 2026 — evening)
+
+**Status:** Prompt C complete. S5 PDF now downloads a real file.
+
+**Changes:**
+- `S5_OperatorDashboard.jsx` — `PDFReportButton` now generates a real Blob and triggers browser download. File name: `ParkEase_Compliance_Karan_Aujla_Sat_12_Apr_2026.pdf`. Contains full PRD-specified compliance report: parking performance, demand shifting, exit clearance vs industry baseline, compliance notes.
+- `MASTER_SUMMARY.md` — this file updated to reflect all sessions
+
+**Still pending (Sessions A + B):**
+- Prompt A: SearchOverlay venue state → S1 (App.jsx + S1_VenueLanding.jsx)
+- Prompt B: Auth phone pre-fill → S2 contact field (App.jsx + S2_BookingFlow.jsx)
+
+---
+
+### Session 2 — PRD update + S6 retention screen (31 March 2026 — afternoon)
+
+**Status:** Complete and pushed.
+
+**Changes:**
+- `01_Product/ParkEase_PRD.md` — 5 surgical edits: BMS checkout embed moved to V2; group split promoted to MVP; WhatsApp forward marked shipped; new §3.5 canonical booking flow spec added; UPI-only MVP rationale added to guardrails
+- `app/src/screens/S6_RetentionScreen.jsx` — NEW 316-line screen: Arjun's retention arc (RCB Playoffs re-engagement). Components: NotificationBanner, EventCard, FillRateUrgencyBar, LastTimeMemoryChip, TrustSignalRow, RepeatBookerBadge, OneClickRebookCTA
+- `app/src/App.jsx` — S6 wired into SCREENS enum, DemoNav ("S6 Retain"), showNavbar array, renderScreen switch
+- `04_Handover/ParkEase_Handover_2026-03-31.md` — NEW: full handover doc with 6-session ordered roadmap, 4-phase product roadmap (prototype → MVP backend → operator backend → B2B integrations), 3 copy-paste Emergent/manual build prompts
+- `0_5 subagents/` — 6 agent definition files now tracked in git
+
+---
+
+### Session 1 — UI Design Refresh (31 March 2026 — morning)
+
+**Status:** Complete and pushed.
 
 **Changes:**
 - **Dark theme → Light theme** (`bg-gray-950` → `bg-gray-50`, cards now white with subtle borders)
