@@ -127,7 +127,12 @@ export default function App() {
           />
         );
       case SCREENS.CONFIRMATION:
-        return <BookingConfirmationScreen bookingId="PE-2026-12A9KD" />;
+        return (
+          <BookingConfirmationScreen
+            bookingId="PE-2026-12A9KD"
+            onNavigateToRetention={() => navigate(SCREENS.RETENTION)}
+          />
+        );
       case SCREENS.REDIRECT:
         return <RedirectScreen />;
       case SCREENS.DASHBOARD:
