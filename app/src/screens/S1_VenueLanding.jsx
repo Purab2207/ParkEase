@@ -363,11 +363,9 @@ export default function VenueLandingScreen({ onNavigateToBooking, onNavigateToRe
     if (spotsRemaining === 0) {
       // Navigate to S4 — redirect screen
       onNavigateToRedirect?.();
-      console.log('navigate → S4 (parking full)');
     } else {
       // Navigate to S2 — booking flow
       onNavigateToBooking?.();
-      console.log('navigate → S2 (booking flow)');
     }
   };
 

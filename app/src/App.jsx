@@ -21,7 +21,7 @@ const SCREENS = {
 // ---------------------------------------------------------------------------
 // Demo switcher bar (visible at bottom, not part of final product)
 // ---------------------------------------------------------------------------
-const DemoNav = ({ current, onNavigate, parkingFull, onToggleParkingFull }) => (
+const DemoNav = ({ current, onNavigate, parkingFull, onToggleParkingFull, onStartDemo, demoRunning }) => (
   <div className="fixed bottom-0 left-0 right-0 z-[100] flex flex-col items-center pb-2 pointer-events-none">
     <div className="bg-gray-950/95 border border-gray-700 rounded-2xl px-3 py-2 flex items-center gap-1 shadow-2xl pointer-events-auto mx-4 overflow-x-auto">
       {[
@@ -54,7 +54,18 @@ const DemoNav = ({ current, onNavigate, parkingFull, onToggleParkingFull }) => (
         {parkingFull ? '🔴 Full' : 'Avail'}
       </button>
     </div>
-    <span className="text-[10px] text-gray-600 mt-1 pointer-events-none">Demo nav — remove before ship</span>
+    <button
+      onClick={onStartDemo}
+      disabled={demoRunning}
+      className={`w-full py-1.5 rounded-lg text-[11px] font-bold tracking-wide transition-all ${
+        demoRunning
+          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+          : 'bg-[#1C1D2B] text-white active:scale-95'
+      }`}
+    >
+      {demoRunning ? 'Demo running…' : '▶ Start Demo'}
+    </button>
+    <span className="text-[10px] text-gray-600 mt-1 pointer-events-none">Demo mode · ParkEase v0.5</span>
   </div>
 );
 
@@ -66,6 +77,7 @@ export default function App() {
   const [currentScreen, setCurrentScreen] = useState(SCREENS.VENUE);
   const [parkingFull, setParkingFull]     = useState(false);
   const [selectedVenue, setSelectedVenue] = useState(null);
+  const [demoRunning, setDemoRunning] = useState(false);
 
   // Auth state
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -98,6 +110,29 @@ export default function App() {
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUserPhone('');
+  };
+
+  const startDemo = () => {
+    const flow = [
+      SCREENS.VENUE,
+      SCREENS.BOOKING,
+      SCREENS.CONFIRMATION,
+      SCREENS.REDIRECT,
+      SCREENS.DASHBOARD,
+      SCREENS.RETENTION,
+    ];
+    setDemoRunning(true);
+    let i = 0;
+    navigate(flow[i]);
+    const interval = setInterval(() => {
+      i++;
+      if (i >= flow.length) {
+        clearInterval(interval);
+        setDemoRunning(false);
+        return;
+      }
+      navigate(flow[i]);
+    }, 4000);
   };
 
   // Screens that show the Navbar
@@ -171,6 +206,8 @@ export default function App() {
         onNavigate={navigate}
         parkingFull={parkingFull}
         onToggleParkingFull={handleToggleParkingFull}
+        onStartDemo={startDemo}
+        demoRunning={demoRunning}
       />
 
       {/* Auth Modal */}

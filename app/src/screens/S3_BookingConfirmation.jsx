@@ -360,7 +360,7 @@ export default function BookingConfirmationScreen({ bookingId = 'pe-2026-karan-a
 
   return (
     <div className="min-h-[100dvh] bg-gray-50 font-sans sm:bg-gray-50">
-      <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-50 flex flex-col px-4 py-6 gap-5 sm:shadow-2xl">
+      <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-50 flex flex-col px-4 py-6 gap-5 pb-20 sm:shadow-2xl">
 
         {/* Confirmation header */}
         <ConfirmationHeader bookingId={booking.bookingId} />

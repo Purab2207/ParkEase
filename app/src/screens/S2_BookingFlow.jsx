@@ -592,7 +592,7 @@ export default function BookingFlowScreen({ onPaymentSuccess, onNavigateBack, on
 
   return (
     <div className="min-h-[100dvh] bg-gray-50 font-sans sm:bg-gray-50">
-      <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-50 flex flex-col px-4 py-5 gap-4 sm:shadow-2xl">
+      <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-50 flex flex-col px-4 py-5 gap-4 pb-20 sm:shadow-2xl">
 
         {/* Header */}
         <BookingHeader currentStep={currentStep} onBack={() => onNavigateBack?.()} />
