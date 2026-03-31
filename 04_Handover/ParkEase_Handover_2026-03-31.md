@@ -1,28 +1,86 @@
 # ParkEase — Dev Handover & Roadmap
-**Paused:** 2026-03-31  
-**Repo:** `github.com/Purab2207/ParkEase` · branch `main`  
-**Stack:** React + Vite + Tailwind CSS · `app/src/`  
+**Last updated:** 2026-03-31 — Phase 0 COMPLETE
+**Repo:** `github.com/Purab2207/ParkEase` · branch `main`
+**Stack:** React + Vite + Tailwind CSS · `app/src/`
 **Primary colour:** `bg-[#1C1D2B]` · Background: `bg-gray-50` · Cards: `bg-white border border-gray-200 shadow-sm rounded-2xl`
+**Vercel:** Auto-deploys on every push to `main` (root directory: `app/`)
 
 ---
 
-## Ordered Work Plan — Pick Up From Here
+## ✅ Phase 0 — Prototype COMPLETE
 
-Work through these sessions in order. Each session is scoped to fit within one usage limit window. Do not skip ahead — later sessions assume earlier ones are complete.
+All 6 sessions are done. The prototype is pitch-ready.
+
+| Session | What was built | Status |
+|---------|---------------|--------|
+| 1 | SearchOverlay→S1 wiring, auth phone→S2, S5 PDF Blob | ✅ Done |
+| 2 | S4 deep-link probe, live redirect counter, distance fare calc | ✅ Done |
+| 3 | S1 hero image, scarcity pulse, share CTA | ✅ Done |
+| 4 | S3 Apple Wallet placeholder, S3→S6 nav, S6 health check | ✅ Done |
+| 5 | S5 pre/live/post toggle, exit clearance comparison, manual fallback | ✅ Done |
+| 6 | DemoNav rename, ▶ Start Demo button, console.log cleanup, pb-20 fix | ✅ Done |
+
+**Phase 0 exit criteria:**
+- [x] All 6 screens functionally complete
+- [x] Full Arjun trust arc demoable: S1 → S2 → S3 → S6
+- [x] B2B story told end-to-end on S5
+- [x] ▶ Start Demo hands prototype to anyone in 60 seconds
 
 ---
 
-### Session 1 — Complete the 3 remaining core tasks ✅ Ready to build
+## 👉 Next: Demo to operators → then Phase 1 Backend
 
-These three prompts are fully specified below in Section 3. Copy-paste each into Emergent in order.
+**Immediate action (non-technical):**
+Contact venue operations managers at JLN Stadium (Delhi) and Chinnaswamy Stadium (Bangalore). Show the Vercel prototype. Exit criteria: one genuine pilot intent.
 
-| Order | Task | File(s) touched | Est. complexity |
-|-------|------|-----------------|-----------------|
-| 1 | **Prompt A** — SearchOverlay venue state flows to S1 | `App.jsx`, `S1_VenueLanding.jsx` | Low |
-| 2 | **Prompt B** — Auth phone pre-fills S2 contact field | `App.jsx`, `S2_BookingFlow.jsx` | Low–Medium |
-| 3 | **Prompt C** — S5 PDF Blob download | `S5_OperatorDashboard.jsx` | Low |
+**When pilot intent received → start Phase 1 Backend (see below).**
 
-After Session 1: all 5 core screens are functionally complete. The demo flow works end-to-end.
+---
+
+## Phase 1 — MVP Backend · ~4–6 weeks
+
+*Goal: A working product that can run at one real event.*
+
+| # | Component | Tech decision | Notes |
+|---|-----------|---------------|-------|
+| 1 | **Inventory database** | Supabase (PostgreSQL) | One table: `bookings(id, event_id, bay_id, phone, status, created_at)`. |
+| 2 | **Real-time scarcity counter** | Supabase Realtime subscription | Replaces `setInterval` decay in S1/S2. |
+| 3 | **UPI payment** | Razorpay Payment Links | Payment link per booking → webhook → confirm in Supabase. |
+| 4 | **QR code generation** | `qrcode` npm package | Replace `MockQRCode` in S3. |
+| 5 | **Push notifications** | OneSignal free tier | Departure nudge 90 mins before event. Triggered by Supabase Edge Function. |
+| 6 | **OTP verification** | MSG91 | Replace mock OTP in `AuthModal.jsx`. ~₹0.15/OTP for Indian numbers. |
+| 7 | **URL routing** | React Router v6 | Replace manual `currentScreen` state for WhatsApp/BMS deep-link support. |
+
+**Exit criteria:**
+- [ ] One venue, one event, real UPI bookings accepted
+- [ ] QR code scanned at gate by real attendant
+- [ ] Departure push notification delivered to real phone
+
+---
+
+## Phase 2 — Operator Dashboard Backend · ~2–3 weeks after Phase 1
+
+| # | Component | Tech decision |
+|---|-----------|---------------|
+| 1 | **Operator auth** | Email + password, Supabase RLS by `operator_id` |
+| 2 | **Live dashboard data** | Supabase Realtime on `bookings` table |
+| 3 | **PDF report** | Supabase Edge Function + `pdf-lib`. Replaces current Blob/text hack. |
+| 4 | **Event config UI** | Form to create events — replaces `MOCK_DASHBOARD` hardcoded values |
+
+---
+
+## Phase 3 — B2B Integrations · ~4–8 weeks, partner-dependent
+
+| # | Integration | Risk |
+|---|-------------|------|
+| 1 | BookMyShow checkout embed | High — formal API agreement needed (4–12 weeks) |
+| 2 | Ola/Uber API callback | Medium — semi-open APIs |
+| 3 | WhatsApp Business API | Low-Medium — only needed for two-way messaging |
+| 4 | Google Maps routing | Low — ~₹7/1,000 directions requests |
+
+---
+
+## Ordered Work Plan — Sessions 1–6 (ARCHIVED — all complete)
 
 ---
 
