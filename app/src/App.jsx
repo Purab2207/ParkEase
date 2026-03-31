@@ -122,6 +122,8 @@ export default function App() {
             onPaymentSuccess={() => navigate(SCREENS.CONFIRMATION)}
             onNavigateBack={() => navigate(SCREENS.VENUE)}
             onParkingFull={() => navigate(SCREENS.REDIRECT)}
+            userPhone={userPhone}
+            isLoggedIn={isLoggedIn}
           />
         );
       case SCREENS.CONFIRMATION:

@@ -444,15 +444,16 @@ const PricingBreakdown = ({ event, groupSize, onGroupSizeChange }) => (
 );
 
 // Step 5 — UPI Payment
-const UPIPaymentButton = ({ consumerPrice, selectedBay, selectedWindow, isLoading, onPay }) => {
+const UPIPaymentButton = ({ consumerPrice, selectedBay, selectedWindow, contactPhoneValid, isLoading, onPay }) => {
   const isDisabledBay = !selectedBay;
   const isDisabledWindow = selectedBay && !selectedWindow;
-  const isDisabled = isDisabledBay || isDisabledWindow || isLoading;
+  const isDisabled = isDisabledBay || isDisabledWindow || !contactPhoneValid || isLoading;
 
   const getLabel = () => {
     if (isLoading) return 'Processing...';
     if (isDisabledBay) return 'Select a bay to continue';
     if (isDisabledWindow) return 'Select arrival time to continue';
+    if (!contactPhoneValid) return 'Enter contact number to continue';
     return `Pay ₹${consumerPrice} via UPI`;
   };
 
@@ -508,7 +509,7 @@ const StepCompletedChip = ({ label, value, onClick }) => (
 // MAIN SCREEN COMPONENT
 // ----------------------------------------------------------------------------
 
-export default function BookingFlowScreen({ onPaymentSuccess, onNavigateBack, onNavigateToRedirect }) {
+export default function BookingFlowScreen({ onPaymentSuccess, onNavigateBack, onNavigateToRedirect, userPhone, isLoggedIn }) {
   const [currentStep, setCurrentStep] = useState(1);
 
   // Event + inventory
@@ -524,6 +525,7 @@ export default function BookingFlowScreen({ onPaymentSuccess, onNavigateBack, on
 
   // Group split
   const [groupSize, setGroupSize] = useState(1);
+  const [contactPhone, setContactPhone] = useState(userPhone || '');
 
   // Payment
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -676,11 +678,44 @@ export default function BookingFlowScreen({ onPaymentSuccess, onNavigateBack, on
           </div>
         )}
 
+        {/* Step 4b — Contact number for QR delivery */}
+        {selectedWindow && (
+          <div className="w-full flex flex-col gap-2">
+            <span className="text-xs text-gray-500 uppercase tracking-widest font-semibold">
+              4b · Contact number for QR delivery
+            </span>
+            <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-4 py-3 flex flex-col gap-2">
+              <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-gray-400">
+                <div className="px-3 py-3 bg-gray-50 border-r border-gray-200 text-sm text-gray-500 shrink-0">
+                  🇮🇳 +91
+                </div>
+                <input
+                  type="tel"
+                  maxLength={10}
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value.replace(/\D/g, ''))}
+                  placeholder="10-digit mobile number"
+                  className="flex-1 px-3 py-3 outline-none text-sm text-gray-900 bg-white"
+                />
+                {isLoggedIn && userPhone && contactPhone === userPhone && (
+                  <div className="px-3 py-1 text-xs text-green-600 font-medium shrink-0">
+                    ✓ Verified
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-400">
+                Booking QR and departure reminder sent here
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Step 5 — UPI Payment (sticky) */}
         <UPIPaymentButton
           consumerPrice={event.consumerPrice}
           selectedBay={selectedBay}
           selectedWindow={selectedWindow}
+          contactPhoneValid={contactPhone.length === 10}
           isLoading={paymentLoading}
           onPay={handlePay}
         />
