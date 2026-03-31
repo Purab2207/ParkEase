@@ -87,6 +87,70 @@ const MOCK_DASHBOARD = {
   ],
 };
 
+const MOCK_PRE_EVENT = {
+  ...MOCK_DASHBOARD,
+  eventStatus: 'upcoming',
+  lastUpdated: '10:30',
+  bookedSpots: 312,
+  spotsRemaining: 188,
+  fillPercent: 62,
+  redirectCTATaps: 0,
+  redirectActive: false,
+  lots: [
+    { name: 'North Lot', total: 300, booked: 195, percent: 65 },
+    { name: 'South Lot', total: 200, booked: 117, percent: 59 },
+  ],
+  alerts: [
+    { time: '10:30', type: 'info',    message: 'Pre-event mode — gates open at 17:00' },
+    { time: '09:15', type: 'success', message: '312 bookings confirmed — 62% fill rate' },
+    { time: '08:00', type: 'info',    message: 'Attendant briefing scheduled for 16:00' },
+  ],
+};
+
+const MOCK_POST_EVENT = {
+  ...MOCK_DASHBOARD,
+  eventStatus: 'ended',
+  lastUpdated: '23:45',
+  bookedSpots: 492,
+  spotsRemaining: 8,
+  fillPercent: 98,
+  redirectCTATaps: 156,
+  redirectActive: false,
+  lots: [
+    { name: 'North Lot', total: 300, booked: 296, percent: 99 },
+    { name: 'South Lot', total: 200, booked: 196, percent: 98 },
+  ],
+  alerts: [
+    { time: '23:45', type: 'success', message: 'Event ended — all lots cleared' },
+    { time: '23:10', type: 'success', message: 'Exit clearance complete — avg 20 mins' },
+    { time: '22:30', type: 'info',    message: 'Post-event PDF report ready for download' },
+  ],
+};
+
+const MODE_OPTIONS = [
+  { id: 'pre',  label: 'Pre-event', data: MOCK_PRE_EVENT },
+  { id: 'live', label: 'Live',      data: MOCK_DASHBOARD  },
+  { id: 'post', label: 'Post-event', data: MOCK_POST_EVENT },
+];
+
+const ModeToggle = ({ activeMode, onModeChange }) => (
+  <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl p-1.5 flex gap-1">
+    {MODE_OPTIONS.map(({ id, label }) => (
+      <button
+        key={id}
+        onClick={() => onModeChange(id)}
+        className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${
+          activeMode === id
+            ? 'bg-[#1C1D2B] text-white shadow'
+            : 'text-gray-500 hover:text-gray-800'
+        }`}
+      >
+        {label}
+      </button>
+    ))}
+  </div>
+);
+
 // ----------------------------------------------------------------------------
 // SUB-COMPONENTS
 // ----------------------------------------------------------------------------
@@ -451,11 +515,65 @@ const EventConfigSummary = ({ data }) => (
   </div>
 );
 
+const ExitClearanceComparison = () => (
+  <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-5 py-4 flex flex-col gap-3">
+    <div className="flex items-center justify-between">
+      <span className="text-sm font-bold text-gray-900">Exit Clearance vs Industry</span>
+      <span className="text-xs text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full">
+        65–77% faster
+      </span>
+    </div>
+
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-gray-500">ParkEase lots</span>
+          <span className="text-xs font-bold text-green-600">avg 20 mins</span>
+        </div>
+        <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-full bg-green-500 rounded-full" style={{ width: '22%' }} />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-gray-500">Industry baseline</span>
+          <span className="text-xs font-bold text-red-500">60–90 mins</span>
+        </div>
+        <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-full bg-red-400 rounded-full" style={{ width: '85%' }} />
+        </div>
+      </div>
+    </div>
+
+    <p className="text-xs text-gray-400">
+      Sources: Business Standard & Free Press Journal — Diljit / Coldplay concerts, Jan 2025
+    </p>
+  </div>
+);
+
+const ManualFallbackNotice = () => (
+  <div className="w-full bg-blue-50 border border-blue-200 rounded-2xl px-5 py-4 flex items-start gap-3">
+    <div className="shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mt-0.5">
+      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    </div>
+    <div className="flex flex-col gap-0.5">
+      <span className="text-sm font-bold text-blue-900">Manual fallback active</span>
+      <span className="text-xs text-blue-700">
+        Printed booking list at each gate entry. App downtime does not cascade to physical failure.
+      </span>
+    </div>
+  </div>
+);
+
 // ----------------------------------------------------------------------------
 // MAIN SCREEN
 // ----------------------------------------------------------------------------
 export default function OperatorDashboardScreen() {
-  const [data] = useState(MOCK_DASHBOARD);
+  const [mode, setMode] = useState('live');
+  const data = MODE_OPTIONS.find(m => m.id === mode)?.data ?? MOCK_DASHBOARD;
   const [lastRefreshed, setLastRefreshed] = useState(MOCK_DASHBOARD.lastUpdated);
 
   const vehiclesDiverted = Math.round(data.redirectCTATaps * data.complianceRate);
@@ -469,6 +587,9 @@ export default function OperatorDashboardScreen() {
   return (
     <div className="min-h-[100dvh] bg-gray-50 font-sans sm:bg-gray-50">
       <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-50 flex flex-col px-4 py-5 gap-5 sm:shadow-2xl">
+
+        {/* Mode toggle */}
+        <ModeToggle activeMode={mode} onModeChange={setMode} />
 
         {/* Header */}
         <DashboardHeader
@@ -498,6 +619,12 @@ export default function OperatorDashboardScreen() {
           compliance={data.complianceRate}
           totalSpots={data.totalSpots}
         />
+
+        {/* Exit clearance comparison */}
+        <ExitClearanceComparison />
+
+        {/* Manual fallback notice */}
+        <ManualFallbackNotice />
 
         {/* Alert feed */}
         <AlertFeed alerts={data.alerts} />
