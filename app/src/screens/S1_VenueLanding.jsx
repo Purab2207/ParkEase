@@ -98,21 +98,19 @@ const MOCK_VENUE = {
 const VenueHero = ({ eventName, subTitle, venueName, city }) => (
   <div className="w-full relative">
     {/* Image placeholder */}
-    <div className="w-full h-52 bg-gradient-to-br from-gray-800 via-gray-900 to-gray-950 rounded-2xl flex flex-col items-center justify-center border border-gray-800 overflow-hidden relative">
-      {/* Background pattern */}
-      <div className="absolute inset-0 opacity-10"
-        style={{
-          backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
-          backgroundSize: '32px 32px'
-        }}
+    <div className="w-full h-52 rounded-2xl overflow-hidden relative">
+      <img
+        src="https://images.unsplash.com/photo-1540039155733-5bb30b4fa3e2?w=800&auto=format&fit=crop"
+        alt={eventName}
+        className="w-full h-full object-cover"
       />
-      {/* ParkEase brand mark */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-2xl" />
       <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10">
         <span className="text-xs font-bold text-white tracking-wide">ParkEase</span>
       </div>
-      <div className="flex flex-col items-center gap-1 z-10 px-4 text-center">
-        <span className="text-3xl font-black text-white tracking-tight">{eventName}</span>
-        <span className="text-sm text-gray-400">{subTitle}</span>
+      <div className="absolute bottom-4 left-4 right-4 z-10">
+        <span className="text-2xl font-black text-white tracking-tight">{eventName}</span>
+        <p className="text-sm text-gray-300 mt-0.5">{subTitle}</p>
       </div>
     </div>
     {/* Venue badge — overlaps hero bottom */}
@@ -159,6 +157,9 @@ const ScarcityCounter = ({ spotsRemaining, totalSpots, bookingCount }) => {
     }`}>
       <div className="flex items-center justify-between">
         <div className="flex items-baseline gap-1.5">
+          {isCritical && (
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shrink-0" />
+          )}
           <span className={`text-3xl font-black ${
             isCritical ? 'text-red-600' : isAlmostFull ? 'text-amber-600' : 'text-gray-900'
           }`}>{spotsRemaining}</span>
@@ -177,6 +178,11 @@ const ScarcityCounter = ({ spotsRemaining, totalSpots, bookingCount }) => {
           {isCritical
             ? 'Almost sold out — book now or take a cab'
             : 'Filling fast — only a few spots left for this event'}
+        </p>
+      )}
+      {isCritical && (
+        <p className="text-xs text-red-400 font-medium">
+          3 booked in the last 2 mins
         </p>
       )}
     </div>
@@ -273,22 +279,54 @@ const TrustFooter = () => (
 // Primary CTA — sticky at bottom
 const BookCTA = ({ spotsRemaining, consumerPrice, onBook }) => {
   const isFull = spotsRemaining === 0;
+  
+  const handleShare = async () => {
+    const shareData = {
+      title: 'ParkEase',
+      text: '180m from Gate 2 · ₹169 · Pre-booked parking for the event',
+      url: 'https://parksease.in',
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+        alert('Link copied to clipboard!');
+      }
+    } catch (err) {
+      console.error('Share failed:', err);
+    }
+  };
+  
   return (
     <div className="w-full sticky bottom-4">
-      <button
-        onClick={onBook}
-        disabled={isFull}
-        className={`w-full font-bold text-base rounded-2xl py-4 transition-all shadow-lg shadow-black/50 active:scale-95
-          ${isFull
-            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            : 'bg-[#1C1D2B] text-white hover:bg-gray-800 tracking-wide uppercase'
-          }`}
-      >
-        {isFull
-          ? 'Parking Full — Book a Cab Instead'
-          : `Book Parking · ₹${consumerPrice}`
-        }
-      </button>
+      <div className="w-full flex items-center gap-3">
+        <button
+          onClick={onBook}
+          disabled={isFull}
+          className={`flex-1 font-bold text-base rounded-2xl py-4 transition-all shadow-lg shadow-black/50 active:scale-95
+            ${isFull
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              : 'bg-[#1C1D2B] text-white hover:bg-gray-800 tracking-wide uppercase'
+            }`}
+        >
+          {isFull
+            ? 'Parking Full — Book a Cab Instead'
+            : `Book Parking · ₹${consumerPrice}`
+          }
+        </button>
+        {!isFull && (
+          <button
+            onClick={handleShare}
+            className="shrink-0 w-14 h-14 rounded-2xl bg-white border border-gray-200 shadow-lg flex items-center justify-center active:scale-95 transition-all"
+            aria-label="Share"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+          </button>
+        )}
+      </div>
       {!isFull && (
         <p className="text-center text-xs text-gray-400 mt-2">
           Secured instantly · No queue at the gate
