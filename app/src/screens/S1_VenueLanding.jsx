@@ -301,8 +301,16 @@ const BookCTA = ({ spotsRemaining, consumerPrice, onBook }) => {
 // ----------------------------------------------------------------------------
 // MAIN SCREEN
 // ----------------------------------------------------------------------------
-export default function VenueLandingScreen({ onNavigateToBooking, onNavigateToRedirect }) {
-  const [venue] = useState(MOCK_VENUE);
+export default function VenueLandingScreen({ onNavigateToBooking, onNavigateToRedirect, selectedVenue }) {
+  const [venue] = useState(() => {
+    if (!selectedVenue) return MOCK_VENUE;
+    return {
+      ...MOCK_VENUE,
+      eventName: selectedVenue.name,
+      venue: selectedVenue.location,
+      consumerPrice: selectedVenue.price,
+    };
+  });
   const [spotsRemaining, setSpotsRemaining] = useState(MOCK_VENUE.spotsRemaining);
 
   // Simulate live counter decay for demo realism

@@ -65,6 +65,7 @@ export default function App() {
   // Screen routing
   const [currentScreen, setCurrentScreen] = useState(SCREENS.VENUE);
   const [parkingFull, setParkingFull]     = useState(false);
+  const [selectedVenue, setSelectedVenue] = useState(null);
 
   // Auth state
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -110,6 +111,7 @@ export default function App() {
         return (
           <VenueLandingScreen
             parkingFull={parkingFull}
+            selectedVenue={selectedVenue}
             onNavigateToBooking={() => navigate(SCREENS.BOOKING)}
             onNavigateToRedirect={() => navigate(SCREENS.REDIRECT)}
           />
@@ -176,6 +178,7 @@ export default function App() {
         isOpen={showSearch}
         onClose={() => setShowSearch(false)}
         onVenueSelect={(venue) => {
+          setSelectedVenue(venue);
           setShowSearch(false);
           navigate(SCREENS.VENUE);
         }}
