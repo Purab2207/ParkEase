@@ -1,0 +1,180 @@
+import React, { useState } from 'react';
+import Navbar from './components/Navbar';
+import AuthModal from './components/AuthModal';
+import SearchOverlay from './components/SearchOverlay';
+import VenueLandingScreen from './screens/S1_VenueLanding';
+import BookingFlowScreen from './screens/S2_BookingFlow';
+import BookingConfirmationScreen from './screens/S3_BookingConfirmation';
+import RedirectScreen from './screens/S4_RedirectScreen';
+import OperatorDashboardScreen from './screens/S5_OperatorDashboard';
+
+const SCREENS = {
+  VENUE:        'venue',
+  BOOKING:      'booking',
+  CONFIRMATION: 'confirmation',
+  REDIRECT:     'redirect',
+  DASHBOARD:    'dashboard',
+};
+
+// ---------------------------------------------------------------------------
+// Demo switcher bar (visible at bottom, not part of final product)
+// ---------------------------------------------------------------------------
+const DemoNav = ({ current, onNavigate, parkingFull, onToggleParkingFull }) => (
+  <div className="fixed bottom-0 left-0 right-0 z-[100] flex flex-col items-center pb-2 pointer-events-none">
+    <div className="bg-gray-950/95 border border-gray-700 rounded-2xl px-3 py-2 flex items-center gap-1 shadow-2xl pointer-events-auto mx-4 overflow-x-auto">
+      {[
+        { id: SCREENS.VENUE,        label: 'S1 Landing' },
+        { id: SCREENS.BOOKING,      label: 'S2 Booking' },
+        { id: SCREENS.CONFIRMATION, label: 'S3 Confirm' },
+        { id: SCREENS.REDIRECT,     label: 'S4 Redirect' },
+        { id: SCREENS.DASHBOARD,    label: 'S5 Ops' },
+      ].map(({ id, label }) => (
+        <button
+          key={id}
+          onClick={() => onNavigate(id)}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+            current === id
+              ? 'bg-white text-gray-900'
+              : 'text-gray-400 hover:text-white hover:bg-gray-800'
+          }`}
+        >
+          {label}
+        </button>
+      ))}
+      <div className="w-px h-5 bg-gray-700 mx-1 shrink-0" />
+      <button
+        onClick={onToggleParkingFull}
+        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+          parkingFull ? 'bg-red-600 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800'
+        }`}
+      >
+        {parkingFull ? '🔴 Full' : 'Avail'}
+      </button>
+    </div>
+    <span className="text-[10px] text-gray-600 mt-1 pointer-events-none">Demo nav — remove before ship</span>
+  </div>
+);
+
+// ---------------------------------------------------------------------------
+// App
+// ---------------------------------------------------------------------------
+export default function App() {
+  // Screen routing
+  const [currentScreen, setCurrentScreen] = useState(SCREENS.VENUE);
+  const [parkingFull, setParkingFull]     = useState(false);
+
+  // Auth state
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userPhone, setUserPhone]   = useState('');
+  const [showAuth, setShowAuth]     = useState(false);
+
+  // Search
+  const [showSearch, setShowSearch] = useState(false);
+
+  // Navbar
+  const [activeNav, setActiveNav]       = useState('For You');
+  const [selectedCity, setSelectedCity] = useState('Delhi');
+
+  const navigate = (screen) => setCurrentScreen(screen);
+
+  const handleToggleParkingFull = () => {
+    setParkingFull(prev => {
+      const next = !prev;
+      setCurrentScreen(next ? SCREENS.REDIRECT : SCREENS.VENUE);
+      return next;
+    });
+  };
+
+  const handleLoginSuccess = (phone) => {
+    setIsLoggedIn(true);
+    setUserPhone(phone);
+    setShowAuth(false);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUserPhone('');
+  };
+
+  // Screens that show the Navbar
+  const showNavbar = [SCREENS.VENUE, SCREENS.BOOKING, SCREENS.CONFIRMATION, SCREENS.REDIRECT].includes(currentScreen);
+  // Dashboard has its own header
+  const navbarOffset = showNavbar ? 'pt-16' : '';
+
+  const renderScreen = () => {
+    switch (currentScreen) {
+      case SCREENS.VENUE:
+        return (
+          <VenueLandingScreen
+            parkingFull={parkingFull}
+            onNavigateToBooking={() => navigate(SCREENS.BOOKING)}
+            onNavigateToRedirect={() => navigate(SCREENS.REDIRECT)}
+          />
+        );
+      case SCREENS.BOOKING:
+        return (
+          <BookingFlowScreen
+            onPaymentSuccess={() => navigate(SCREENS.CONFIRMATION)}
+            onNavigateBack={() => navigate(SCREENS.VENUE)}
+            onParkingFull={() => navigate(SCREENS.REDIRECT)}
+          />
+        );
+      case SCREENS.CONFIRMATION:
+        return <BookingConfirmationScreen bookingId="PE-2026-12A9KD" />;
+      case SCREENS.REDIRECT:
+        return <RedirectScreen />;
+      case SCREENS.DASHBOARD:
+        return <OperatorDashboardScreen />;
+      default:
+        return <VenueLandingScreen onNavigateToBooking={() => navigate(SCREENS.BOOKING)} />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Global Navbar */}
+      {showNavbar && (
+        <Navbar
+          activeNav={activeNav}
+          onNavChange={setActiveNav}
+          onSearchOpen={() => setShowSearch(true)}
+          onAuthOpen={() => (isLoggedIn ? handleLogout() : setShowAuth(true))}
+          isLoggedIn={isLoggedIn}
+          userPhone={userPhone}
+          selectedCity={selectedCity}
+          onCityChange={() => {}}
+        />
+      )}
+
+      {/* Page content — offset below fixed navbar */}
+      <div className={navbarOffset}>
+        {renderScreen()}
+      </div>
+
+      {/* Demo switcher */}
+      <DemoNav
+        current={currentScreen}
+        onNavigate={navigate}
+        parkingFull={parkingFull}
+        onToggleParkingFull={handleToggleParkingFull}
+      />
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuth}
+        onClose={() => setShowAuth(false)}
+        onLoginSuccess={handleLoginSuccess}
+      />
+
+      {/* Search Overlay */}
+      <SearchOverlay
+        isOpen={showSearch}
+        onClose={() => setShowSearch(false)}
+        onVenueSelect={(venue) => {
+          setShowSearch(false);
+          navigate(SCREENS.VENUE);
+        }}
+      />
+    </div>
+  );
+}
