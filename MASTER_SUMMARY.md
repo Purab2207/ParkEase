@@ -7,9 +7,10 @@
 
 **ParkEase** (working name also seen as ParkSmart in early PRD drafts) is a two-sided event parking platform for India. It pre-sells named parking bays to event attendees and provides operators a live dashboard + compliance report. When parking sells out, it redirects users to Ola/Uber/Rapido via deep-link.
 
-**Stage:** Phase 0 COMPLETE → Phase 1 (MVP Backend) is next
-**Prototype status:** All 6 sessions done. Pitch-ready. Live on Vercel (`github.com/Purab2207/ParkEase`, `app/` root).
-**Next milestone:** Demo to 3–5 event organiser contacts → exit criteria: at least one expresses genuine intent to pilot → start Phase 1 backend.
+**Stage:** Phase 0 COMPLETE. Phase 1 (MVP Backend) IN PROGRESS — Tasks 1-3 done.
+**Prototype status:** All 6 sessions done. Now ported to Emergent platform (React CRA + FastAPI + MongoDB).
+**Stack:** React (CRA) + Tailwind CSS v3 (frontend, port 3000) | FastAPI + MongoDB (backend, port 8001)
+**Next milestone:** Complete remaining Phase 1 tasks (4-7), then demo to event organisers.
 
 **Team size:** 2 founders, full-stack ownership.
 
@@ -17,9 +18,58 @@
 
 ## Session Log
 
+### Phase 1 — MVP Backend IN PROGRESS (1 April 2026)
+
+**Status:** 3 of 7 tasks complete. All demo/mock — zero third-party charges.
+
+---
+
+### Phase 1, Task 3 — Mock UPI Payment Flow (1 April 2026)
+
+**Changes:**
+- `frontend/src/components/UPIPaymentModal.js` — NEW: 3-stage UPI payment modal
+  - Stage 1 (Select): GPay / PhonePe / Paytm app cards + UPI ID input
+  - Stage 2 (Processing): Animated pulse ring, countdown timer, "Waiting for payment..." 
+  - Stage 3 (Success): Animated green checkmark, "Payment Successful", auto-redirect to S3
+- `frontend/src/screens/S2_BookingFlow.js` — Pay button now opens UPI modal instead of instant confirm
+- `frontend/src/App.css` — Added CSS keyframe animations for success checkmark (scale-in, draw-circle, draw-check)
+- Booking creation happens during processing stage via `POST /api/bookings` (auto-confirm)
+
+**Testing:** 100% pass (backend 14/14, all frontend + integration)
+
+---
+
+### Phase 1, Task 2 — Real-time Scarcity Counter (1 April 2026)
+
+**Changes:**
+- `backend/server.py` — WebSocket endpoint `/api/ws/events/{event_id}/live` for live spot count push
+- `backend/server.py` — `LiveCounterManager` class: tracks connections, broadcasts on booking
+- `backend/server.py` — `POST /api/events/{event_id}/simulate-booking` for demo presentations
+- `frontend/src/hooks/useLiveSpots.js` — NEW: WebSocket hook with auto-reconnect + polling fallback
+- `frontend/src/screens/S1_VenueLanding.js` — Green pulsing "LIVE" indicator, real-time spot count
+- `frontend/src/screens/S2_BookingFlow.js` — "Live" badge in header, real-time scarcity banner
+
+**Testing:** 100% pass (14/14 backend incl. WebSocket, all frontend + integration)
+
+---
+
+### Phase 1, Task 1 — Inventory Database + APIs (1 April 2026)
+
+**Changes:**
+- `backend/server.py` — FastAPI server with MongoDB collections (events, bays, bookings)
+- `backend/.env` — MONGO_URL + DB_NAME configuration
+- Seed data: Karan Aujla event, 35 bays (20 North B-series + 15 South C-series), 435 mock bookings (87% fill)
+- API endpoints: `GET /api/events`, `GET /api/events/{id}`, `GET /api/events/{id}/bays`, `GET /api/events/{id}/stats`, `POST /api/bookings`, `GET /api/bookings/{id}`
+- Frontend: All 6 screens + 3 components ported from Vite prototype to CRA + Tailwind v3
+- S1, S2, S3, S5 now fetch live data from backend APIs instead of hardcoded mock data
+
+**Testing:** 100% pass (11/11 backend, all frontend + integration)
+
+---
+
 ### Phase 0 COMPLETE — All 6 Prototype Sessions Done (31 March 2026)
 
-**Status:** ✅ Prototype is pitch-ready. All 6 sessions verified and live on Vercel.
+**Status:** Prototype is pitch-ready. All 6 sessions verified and live on Vercel.
 
 ---
 
@@ -113,68 +163,69 @@
 ## Folder structure
 
 ```
-C:/Users/91982/OneDrive/Desktop/parksease/
+/app/                                    ← Emergent platform root
 
-├── Parksease/                          ← Obsidian vault / main project folder
-│   ├── MASTER_SUMMARY.md               ← THIS FILE — read first
-│   ├── 01_Product/
-│   │   └── ParkEase_PRD.md             ← Full PRD (large file, use offset/limit)
-│   ├── 02_Financials/
-│   │   └── Business Valuation.md       ← Corrected revenue model (v2)
-│   ├── 03_Code_Blueprints/             ← Original dark theme blueprints (archived)
-│   │   ├── S1_VenueLanding.jsx
-│   │   ├── S2_BookingFlow.jsx
-│   │   ├── S3_BookingConfirmation.jsx
-│   │   ├── S4_RedirectScreen.jsx
-│   │   ├── S5_OperatorDashboard.jsx
-│   │   └── SETUP.md
-│   └── 0_4_reference_phtots/           ← District by Zomato UI reference images
+├── MASTER_SUMMARY.md                    ← THIS FILE — read first
+├── 01_Product/
+│   └── ParkEase_PRD.md                  ← Full PRD
+├── 02_Financials/
+│   └── Business Valuation.md            ← Revenue model (v2)
+├── 03_Code_Blueprints/                  ← Original dark theme blueprints (archived)
+├── 04_Handover/
+│   └── ParkEase_Handover_2026-03-31.md  ← Handover doc with roadmap
+├── 0_4_reference_phtots/                ← District by Zomato UI reference images
+├── memory/
+│   └── PRD.md                           ← Progress tracker
 
-└── app/                                ← **LIVE Vite + React app** (light theme)
-    ├── package.json                    ← React 19, Tailwind v4, react-router-dom
-    ├── vite.config.js
-    ├── index.html                      ← "ParkEase — Smart Parking, Simplified"
-    ├── src/
-    │   ├── main.jsx
-    │   ├── App.jsx                     ← Demo router + Navbar/AuthModal/SearchOverlay wired
-    │   ├── index.css                   ← Tailwind v4 import
-    │   ├── screens/
-    │   │   ├── S1_VenueLanding.jsx     ← Light theme, live scarcity counter
-    │   │   ├── S2_BookingFlow.jsx      ← Light theme, 5-step flow
-    │   │   ├── S3_BookingConfirmation.jsx ← Light theme, QR + WhatsApp
-    │   │   ├── S4_RedirectScreen.jsx   ← Light theme, cab redirect
-    │   │   └── S5_OperatorDashboard.jsx ← Light theme, B2B dashboard
-    │   └── components/
-    │       ├── Navbar.jsx              ← ✨ NEW: fixed top nav
-    │       ├── AuthModal.jsx           ← ✨ NEW: phone → OTP overlay
-    │       └── SearchOverlay.jsx       ← ✨ NEW: category filters + trending
-    └── dist/                           ← Built output (run `npm run build`)
+├── backend/                             ← **FastAPI + MongoDB backend**
+│   ├── server.py                        ← Main server: APIs, WebSocket, seed data
+│   ├── .env                             ← MONGO_URL, DB_NAME
+│   └── requirements.txt                 ← Python deps
+
+├── frontend/                            ← **React CRA + Tailwind v3 frontend**
+│   ├── package.json                     ← React 18, Tailwind v3, axios, qrcode
+│   ├── tailwind.config.js
+│   ├── public/index.html
+│   └── src/
+│       ├── index.js                     ← Entry point
+│       ├── App.js                       ← Demo router + global state
+│       ├── App.css                      ← Global styles + UPI animations
+│       ├── index.css                    ← Tailwind imports
+│       ├── api.js                       ← Backend API client (axios)
+│       ├── hooks/
+│       │   └── useLiveSpots.js          ← WebSocket + polling live counter hook
+│       ├── screens/
+│       │   ├── S1_VenueLanding.js       ← Live scarcity (WebSocket), hero, CTA
+│       │   ├── S2_BookingFlow.js        ← Bay grid (API), live badge, UPI modal
+│       │   ├── S3_BookingConfirmation.js ← Booking details (API), QR, WhatsApp
+│       │   ├── S4_RedirectScreen.js     ← Cab redirect, fare calc, deep-links
+│       │   ├── S5_OperatorDashboard.js  ← Stats (API), PDF report, mode toggle
+│       │   └── S6_RetentionScreen.js    ← Re-engagement, repeat booking
+│       └── components/
+│           ├── Navbar.js                ← Fixed top nav
+│           ├── AuthModal.js             ← Phone + OTP overlay
+│           ├── SearchOverlay.js         ← Search + trending grid
+│           └── UPIPaymentModal.js       ← 3-stage UPI payment (select/process/success)
+
+└── app/                                 ← Original Vite prototype (archived)
+    └── src/                             ← Phase 0 code, kept for reference
 ```
 
 ---
 
-## How to run the prototype
+## How to run
 
-**Local (desktop):**
-```bash
-cd C:/Users/91982/OneDrive/Desktop/parksease/Parksease/app
-npm run dev
-```
-
-Opens at **http://localhost:5174** (or 5173, depending on port availability).
-
-**Mobile (same Wi-Fi):**
-```
-http://172.20.10.2:5174
-```
-(Make sure phone is on the same network as your computer.)
+**Emergent platform (current):**
+Both backend and frontend are managed by supervisor. Hot-reload enabled.
+- Backend: `sudo supervisorctl restart backend` (FastAPI on port 8001)
+- Frontend: `sudo supervisorctl restart frontend` (React on port 3000)
+- Preview URL: check `frontend/.env` for `REACT_APP_BACKEND_URL`
 
 **Demo features:**
-- Demo nav bar at bottom: switch between S1–S5 screens instantly
-- `🔴 Full` toggle: flips parking state (available ↔ full) and auto-navigates to S4 (redirect)
-- **Navbar** (top): search icon 🔍 opens SearchOverlay, profile icon opens AuthModal
-- **SearchOverlay**: category pills (All/Parking/Monthly/Events/EV) + trending grid + live search
-- **AuthModal**: +91 phone input → 6-digit OTP → auto-login
+- Demo nav bar at bottom: switch between S1-S6 screens
+- "Full" toggle: flips parking state (available/full) and auto-navigates to S4
+- Start Demo: auto-navigates S1->S2->S3->S4->S5->S6 on 4s timer
+- Simulate bookings: `POST /api/events/karan-aujla-jln-2026/simulate-booking` (makes counter tick down live)
 
 **Theme:** Light (white cards, grey page bg, navy CTAs with white text) — inspired by District by Zomato UI.
 
