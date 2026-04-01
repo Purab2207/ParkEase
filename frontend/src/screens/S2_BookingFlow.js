@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { fetchEvent, fetchBays, createBooking } from '../api';
 import useLiveSpots from '../hooks/useLiveSpots';
+import UPIPaymentModal from '../components/UPIPaymentModal';
 
 const ArrowLeftIcon = () => (
   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -56,6 +57,8 @@ export default function BookingFlowScreen({ onPaymentSuccess, onNavigateBack, us
   const [contactPhone, setContactPhone] = useState(userPhone || '');
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [pendingBookingId, setPendingBookingId] = useState(null);
 
   useEffect(() => {
     Promise.all([fetchEvent(EVENT_ID), fetchBays(EVENT_ID)])
@@ -78,29 +81,31 @@ export default function BookingFlowScreen({ onPaymentSuccess, onNavigateBack, us
     setSelectedLot(activeLotMeta);
   };
 
-  const handlePay = async () => {
+  const handlePay = () => {
     if (!selectedBay || !selectedWindow || contactPhone.length !== 10) return;
-    setPaymentLoading(true);
     setPaymentError(null);
-    try {
-      const result = await createBooking({
-        event_id: EVENT_ID,
-        bay_id: selectedBay.pillar_code,
-        lot_id: selectedLotId,
-        phone: contactPhone,
-        entry_window: selectedWindow,
-        group_size: groupSize,
-      });
-      // Update local bay state
-      setAllBays(prev => prev.map(b =>
-        b.pillar_code === selectedBay.pillar_code ? { ...b, status: 'taken' } : b
-      ));
-      onPaymentSuccess?.(result.booking_id);
-    } catch (err) {
-      setPaymentError(err.response?.data?.detail || 'Booking failed. Please try again.');
-      setPaymentLoading(false);
-    }
+    setShowPaymentModal(true);
   };
+
+  const handleCreateBooking = useCallback(async () => {
+    const result = await createBooking({
+      event_id: EVENT_ID,
+      bay_id: selectedBay.pillar_code,
+      lot_id: selectedLotId,
+      phone: contactPhone,
+      entry_window: selectedWindow,
+      group_size: groupSize,
+    });
+    setAllBays(prev => prev.map(b =>
+      b.pillar_code === selectedBay.pillar_code ? { ...b, status: 'taken' } : b
+    ));
+    setPendingBookingId(result.booking_id);
+  }, [selectedBay, selectedLotId, contactPhone, selectedWindow, groupSize]);
+
+  const handlePaymentSuccess = useCallback(() => {
+    setShowPaymentModal(false);
+    onPaymentSuccess?.(pendingBookingId);
+  }, [pendingBookingId, onPaymentSuccess]);
 
   if (loading) {
     return (
@@ -341,6 +346,17 @@ export default function BookingFlowScreen({ onPaymentSuccess, onNavigateBack, us
           </div>
         </div>
       </div>
+
+      {/* UPI Payment Modal */}
+      <UPIPaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onSuccess={handlePaymentSuccess}
+        onCreateBooking={handleCreateBooking}
+        amount={consumerPrice}
+        bayCode={selectedBay?.pillar_code || ''}
+        lotName={selectedLot?.label || ''}
+      />
     </div>
   );
 }
