@@ -2,11 +2,16 @@
 """
 ParkEase Backend API Testing Suite
 Tests all backend endpoints for the parking platform MVP
+Including WebSocket real-time scarcity counter (Task 2)
 """
 
 import requests
 import sys
 import json
+import asyncio
+import websockets
+import threading
+import time
 from datetime import datetime
 
 class ParkEaseAPITester:
@@ -316,8 +321,217 @@ class ParkEaseAPITester:
                 print(f"   ⚠️ Missing enriched fields: {missing_fields}")
         return success
 
+    def test_simulate_booking(self):
+        """Test POST /api/events/{event_id}/simulate-booking creates fake booking"""
+        success, response = self.run_test(
+            "Simulate Booking",
+            "POST",
+            f"api/events/{self.event_id}/simulate-booking",
+            200
+        )
+        
+        if success:
+            required_fields = ['message', 'spots_remaining', 'booked_spots']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                print(f"   ✓ Simulation successful: {response.get('message')}")
+                print(f"   ✓ Spots remaining: {response.get('spots_remaining')}")
+                print(f"   ✓ Booked spots: {response.get('booked_spots')}")
+                
+                # Store the new counts for WebSocket testing
+                self.simulated_spots_remaining = response.get('spots_remaining')
+                self.simulated_booked_spots = response.get('booked_spots')
+                return True
+            else:
+                print(f"   ⚠️ Missing simulation fields: {missing_fields}")
+        return success
+
+    def test_websocket_connection(self):
+        """Test WebSocket connection to /api/ws/events/{event_id}/live"""
+        print(f"\n🔍 Testing WebSocket Connection...")
+        
+        # Convert HTTP URL to WebSocket URL
+        ws_url = self.base_url.replace('https://', 'wss://').replace('http://', 'ws://')
+        ws_endpoint = f"{ws_url}/api/ws/events/{self.event_id}/live"
+        print(f"   WebSocket URL: {ws_endpoint}")
+        
+        self.tests_run += 1
+        
+        try:
+            # Run WebSocket test in async context
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            result = loop.run_until_complete(self._test_websocket_async(ws_endpoint))
+            loop.close()
+            
+            if result:
+                self.tests_passed += 1
+                print("✅ Passed - WebSocket connection and initial data received")
+                return True
+            else:
+                print("❌ Failed - WebSocket connection or data issues")
+                self.failed_tests.append({
+                    "test": "WebSocket Connection",
+                    "error": "Connection failed or no initial data received"
+                })
+                return False
+                
+        except Exception as e:
+            print(f"❌ Failed - WebSocket Error: {str(e)}")
+            self.failed_tests.append({
+                "test": "WebSocket Connection",
+                "error": str(e)
+            })
+            return False
+
+    async def _test_websocket_async(self, ws_url):
+        """Async WebSocket test helper"""
+        try:
+            # Remove timeout from connect call - use asyncio.wait_for instead
+            async with websockets.connect(ws_url) as websocket:
+                print("   ✓ WebSocket connection established")
+                
+                # Wait for initial message
+                try:
+                    message = await asyncio.wait_for(websocket.recv(), timeout=5)
+                    data = json.loads(message)
+                    print(f"   ✓ Received initial data: {data.get('type')}")
+                    
+                    # Validate initial data structure
+                    required_fields = ['type', 'spots_remaining', 'booked_spots', 'fill_percent', 'total_spots']
+                    missing_fields = [field for field in required_fields if field not in data]
+                    
+                    if not missing_fields and data.get('type') == 'live_count':
+                        print(f"   ✓ Initial spots remaining: {data.get('spots_remaining')}")
+                        print(f"   ✓ Initial booked spots: {data.get('booked_spots')}")
+                        print(f"   ✓ Fill percent: {data.get('fill_percent')}%")
+                        
+                        # Store initial values for comparison
+                        self.initial_spots_remaining = data.get('spots_remaining')
+                        self.initial_booked_spots = data.get('booked_spots')
+                        
+                        # Test ping/pong
+                        await websocket.send("ping")
+                        pong_response = await asyncio.wait_for(websocket.recv(), timeout=3)
+                        pong_data = json.loads(pong_response)
+                        if pong_data.get('type') == 'pong':
+                            print("   ✓ Ping/pong working")
+                        
+                        return True
+                    else:
+                        print(f"   ⚠️ Invalid initial data structure. Missing: {missing_fields}")
+                        return False
+                        
+                except asyncio.TimeoutError:
+                    print("   ❌ Timeout waiting for initial WebSocket message")
+                    return False
+                    
+        except Exception as e:
+            print(f"   ❌ WebSocket connection error: {str(e)}")
+            return False
+
+    def test_websocket_live_updates(self):
+        """Test that WebSocket receives updates when simulate-booking is called"""
+        print(f"\n🔍 Testing WebSocket Live Updates...")
+        
+        if not hasattr(self, 'initial_spots_remaining'):
+            print("   ⚠️ No initial WebSocket data available from previous test")
+            return False
+        
+        # Convert HTTP URL to WebSocket URL
+        ws_url = self.base_url.replace('https://', 'wss://').replace('http://', 'ws://')
+        ws_endpoint = f"{ws_url}/api/ws/events/{self.event_id}/live"
+        
+        self.tests_run += 1
+        
+        try:
+            # Run WebSocket live update test in async context
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            result = loop.run_until_complete(self._test_websocket_live_updates_async(ws_endpoint))
+            loop.close()
+            
+            if result:
+                self.tests_passed += 1
+                print("✅ Passed - WebSocket received live updates after simulate-booking")
+                return True
+            else:
+                print("❌ Failed - WebSocket did not receive expected updates")
+                self.failed_tests.append({
+                    "test": "WebSocket Live Updates",
+                    "error": "No live updates received after simulate-booking"
+                })
+                return False
+                
+        except Exception as e:
+            print(f"❌ Failed - WebSocket Live Updates Error: {str(e)}")
+            self.failed_tests.append({
+                "test": "WebSocket Live Updates",
+                "error": str(e)
+            })
+            return False
+
+    async def _test_websocket_live_updates_async(self, ws_url):
+        """Async WebSocket live updates test helper"""
+        try:
+            async with websockets.connect(ws_url) as websocket:
+                print("   ✓ WebSocket connection established for live updates test")
+                
+                # Receive initial message
+                initial_message = await asyncio.wait_for(websocket.recv(), timeout=5)
+                initial_data = json.loads(initial_message)
+                initial_spots = initial_data.get('spots_remaining')
+                initial_booked = initial_data.get('booked_spots')
+                print(f"   ✓ Initial state - Spots: {initial_spots}, Booked: {initial_booked}")
+                
+                # Trigger simulate-booking in a separate thread
+                def trigger_simulate_booking():
+                    time.sleep(1)  # Small delay
+                    try:
+                        url = f"{self.base_url}/api/events/{self.event_id}/simulate-booking"
+                        response = requests.post(url, headers={'Content-Type': 'application/json'})
+                        print(f"   ✓ Simulate-booking triggered: {response.status_code}")
+                    except Exception as e:
+                        print(f"   ❌ Error triggering simulate-booking: {e}")
+                
+                # Start the simulate-booking in background
+                thread = threading.Thread(target=trigger_simulate_booking)
+                thread.start()
+                
+                # Wait for WebSocket update (should come within a few seconds)
+                try:
+                    update_message = await asyncio.wait_for(websocket.recv(), timeout=10)
+                    update_data = json.loads(update_message)
+                    
+                    if update_data.get('type') == 'live_count':
+                        updated_spots = update_data.get('spots_remaining')
+                        updated_booked = update_data.get('booked_spots')
+                        
+                        print(f"   ✓ Received update - Spots: {updated_spots}, Booked: {updated_booked}")
+                        
+                        # Verify the count decreased by 1
+                        if updated_spots == initial_spots - 1 and updated_booked == initial_booked + 1:
+                            print("   ✓ Live update correctly shows spot count decreased by 1")
+                            return True
+                        else:
+                            print(f"   ⚠️ Unexpected count change. Expected spots: {initial_spots - 1}, got: {updated_spots}")
+                            return False
+                    else:
+                        print(f"   ⚠️ Received non-live_count message: {update_data.get('type')}")
+                        return False
+                        
+                except asyncio.TimeoutError:
+                    print("   ❌ Timeout waiting for WebSocket live update")
+                    return False
+                finally:
+                    thread.join(timeout=2)
+                    
+        except Exception as e:
+            print(f"   ❌ WebSocket live updates error: {str(e)}")
+            return False
+
     def run_all_tests(self):
-        """Run all backend API tests"""
         print("=" * 60)
         print("🚀 ParkEase Backend API Testing Suite")
         print("=" * 60)
@@ -333,6 +547,10 @@ class ParkEaseAPITester:
             self.test_create_booking_success,
             self.test_create_booking_conflict,
             self.test_get_booking_details,
+            # New WebSocket tests for Task 2
+            self.test_websocket_connection,
+            self.test_simulate_booking,
+            self.test_websocket_live_updates,
         ]
         
         for test_method in test_methods:

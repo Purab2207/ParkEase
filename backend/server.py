@@ -1,12 +1,14 @@
 import os
 import uuid
+import asyncio
+import json
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
@@ -116,6 +118,62 @@ def seed_demo_data():
         })
     if mock_bookings:
         bookings_col.insert_many(mock_bookings)
+
+
+# ---------------------------------------------------------------------------
+# WebSocket connection manager for live scarcity updates
+# ---------------------------------------------------------------------------
+class LiveCounterManager:
+    def __init__(self):
+        self.connections: dict[str, list[WebSocket]] = {}
+
+    async def connect(self, event_id: str, ws: WebSocket):
+        await ws.accept()
+        if event_id not in self.connections:
+            self.connections[event_id] = []
+        self.connections[event_id].append(ws)
+
+    def disconnect(self, event_id: str, ws: WebSocket):
+        if event_id in self.connections:
+            self.connections[event_id] = [c for c in self.connections[event_id] if c != ws]
+
+    async def broadcast(self, event_id: str):
+        if event_id not in self.connections:
+            return
+        data = _get_live_counts(event_id)
+        if data is None:
+            return
+        msg = json.dumps(data)
+        dead = []
+        for ws in self.connections[event_id]:
+            try:
+                await ws.send_text(msg)
+            except Exception:
+                dead.append(ws)
+        for ws in dead:
+            self.disconnect(event_id, ws)
+
+
+def _get_live_counts(event_id: str):
+    doc = events_col.find_one({"event_id": event_id}, {"_id": 0, "total_spots": 1, "redirect_threshold_spots": 1})
+    if not doc:
+        return None
+    total = doc["total_spots"]
+    booked = bookings_col.count_documents({"event_id": event_id, "status": "confirmed"})
+    spots_remaining = max(total - booked, 0)
+    fill_percent = round((booked / total) * 100) if total > 0 else 0
+    return {
+        "type": "live_count",
+        "spots_remaining": spots_remaining,
+        "booked_spots": booked,
+        "fill_percent": fill_percent,
+        "total_spots": total,
+        "redirect_active": booked >= doc.get("redirect_threshold_spots", total),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+live_manager = LiveCounterManager()
 
 
 # ---------------------------------------------------------------------------
@@ -246,7 +304,7 @@ def get_event_stats(event_id: str):
 
 
 @app.post("/api/bookings", status_code=201)
-def create_booking(data: BookingCreate):
+async def create_booking(data: BookingCreate):
     # Check event exists
     event = events_col.find_one({"event_id": data.event_id}, {"_id": 0})
     if not event:
@@ -285,6 +343,9 @@ def create_booking(data: BookingCreate):
         {"$set": {"status": "taken"}}
     )
 
+    # Broadcast live count to all connected WebSocket clients
+    await live_manager.broadcast(data.event_id)
+
     # Return booking without _id
     booking_doc.pop("_id", None)
     return booking_doc
@@ -317,4 +378,64 @@ def get_booking(booking_id: str):
         "lot_name": lot_info.get("name", ""),
         "distance_to_gate_metres": lot_info.get("distance_m", 0),
         "gate_name": lot_info.get("gate_name", ""),
+    }
+
+
+# ---------------------------------------------------------------------------
+# WebSocket: Live scarcity counter
+# ---------------------------------------------------------------------------
+@app.websocket("/api/ws/events/{event_id}/live")
+async def websocket_live_counter(websocket: WebSocket, event_id: str):
+    await live_manager.connect(event_id, websocket)
+    # Send initial count immediately
+    data = _get_live_counts(event_id)
+    if data:
+        await websocket.send_text(json.dumps(data))
+    try:
+        while True:
+            # Keep connection alive, listen for pings
+            msg = await websocket.receive_text()
+            if msg == "ping":
+                await websocket.send_text(json.dumps({"type": "pong"}))
+    except WebSocketDisconnect:
+        live_manager.disconnect(event_id, websocket)
+
+
+# ---------------------------------------------------------------------------
+# Demo simulation: fake bookings to show live counter in action
+# ---------------------------------------------------------------------------
+@app.post("/api/events/{event_id}/simulate-booking")
+async def simulate_booking(event_id: str):
+    """Create a fake booking to demonstrate live counter updates."""
+    event = events_col.find_one({"event_id": event_id}, {"_id": 0})
+    if not event:
+        raise HTTPException(404, "Event not found")
+
+    booked = bookings_col.count_documents({"event_id": event_id, "status": "confirmed"})
+    if booked >= event["total_spots"]:
+        return {"message": "Event is full", "spots_remaining": 0}
+
+    idx = booked + 1
+    lot_id = "north" if idx % 2 == 0 else "south"
+    bookings_col.insert_one({
+        "booking_id": f"PE-SIM-{uuid.uuid4().hex[:8].upper()}",
+        "event_id": event_id,
+        "bay_id": f"SIM-{idx:03d}",
+        "lot_id": lot_id,
+        "phone": f"90000{10000+idx}",
+        "entry_window": "5:30-7:00 PM",
+        "group_size": 1,
+        "amount_paid": event["consumer_price"],
+        "status": "confirmed",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+
+    # Broadcast to all connected clients
+    await live_manager.broadcast(event_id)
+
+    new_count = bookings_col.count_documents({"event_id": event_id, "status": "confirmed"})
+    return {
+        "message": "Simulated booking created",
+        "spots_remaining": max(event["total_spots"] - new_count, 0),
+        "booked_spots": new_count,
     }

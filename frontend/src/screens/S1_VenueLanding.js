@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchEvent } from '../api';
+import useLiveSpots from '../hooks/useLiveSpots';
 
 const MapPinIcon = () => (
   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -261,30 +262,23 @@ const BookCTA = ({ spotsRemaining, consumerPrice, onBook }) => {
 
 export default function VenueLandingScreen({ onNavigateToBooking, onNavigateToRedirect, selectedVenue }) {
   const [venue, setVenue] = useState(FALLBACK_VENUE);
-  const [spotsRemaining, setSpotsRemaining] = useState(FALLBACK_VENUE.spots_remaining);
   const [loading, setLoading] = useState(true);
 
+  const eventId = selectedVenue?.id || 'karan-aujla-jln-2026';
+  const live = useLiveSpots(eventId);
+
   useEffect(() => {
-    const eventId = selectedVenue?.id || 'karan-aujla-jln-2026';
     fetchEvent(eventId)
       .then(data => {
         setVenue(data);
-        setSpotsRemaining(data.spots_remaining);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [selectedVenue]);
+  }, [eventId]);
 
-  // Poll for live spot count every 15s
-  useEffect(() => {
-    const eventId = venue.event_id || 'karan-aujla-jln-2026';
-    const interval = setInterval(() => {
-      fetchEvent(eventId)
-        .then(data => setSpotsRemaining(data.spots_remaining))
-        .catch(() => {});
-    }, 15000);
-    return () => clearInterval(interval);
-  }, [venue.event_id]);
+  // Use live WebSocket data when available, otherwise fall back to venue data
+  const spotsRemaining = live.spotsRemaining ?? venue.spots_remaining ?? 0;
+  const bookingCount = live.bookedSpots ?? venue.booking_count ?? (venue.total_spots - spotsRemaining);
 
   const handleBook = () => {
     if (spotsRemaining === 0) onNavigateToRedirect?.();
@@ -303,9 +297,16 @@ export default function VenueLandingScreen({ onNavigateToBooking, onNavigateToRe
     <div className="min-h-[100dvh] bg-gray-50 font-sans" data-testid="venue-landing">
       <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-50 flex flex-col px-4 py-5 gap-4 sm:shadow-2xl">
         <VenueHero eventName={venue.event_name} subTitle={venue.sub_title} venueName={venue.venue} city={venue.city} />
+        {/* Live connection indicator */}
+        <div className="flex items-center justify-center gap-1.5" data-testid="live-indicator">
+          <span className={`w-2 h-2 rounded-full ${live.connected ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`} />
+          <span className="text-[10px] text-gray-400 uppercase tracking-widest font-semibold">
+            {live.connected ? 'Live' : 'Updating...'}
+          </span>
+        </div>
         <EventMetaRow date={venue.date} doorsOpen={venue.doors_open} showTime={venue.show_time} />
         <DistanceHeadline distanceM={venue.distance_to_gate_metres} gateName={venue.gate_name} covered={venue.covered_parking} price={`\u20B9${venue.consumer_price}`} />
-        <ScarcityCounter spotsRemaining={spotsRemaining} totalSpots={venue.total_spots} bookingCount={venue.booking_count || venue.total_spots - spotsRemaining} />
+        <ScarcityCounter spotsRemaining={spotsRemaining} totalSpots={venue.total_spots} bookingCount={bookingCount} />
         <LotBreakdownList lots={venue.lots || []} />
         <AmenitiesList amenities={venue.amenities || []} />
         <ProhibitedItemsBanner items={venue.prohibited_items || []} />

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchEvent, fetchBays, createBooking } from '../api';
+import useLiveSpots from '../hooks/useLiveSpots';
 
 const ArrowLeftIcon = () => (
   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -43,8 +44,9 @@ const LOTS_META = [
 export default function BookingFlowScreen({ onPaymentSuccess, onNavigateBack, userPhone, isLoggedIn }) {
   const [event, setEvent] = useState(null);
   const [allBays, setAllBays] = useState([]);
-  const [spotsRemaining, setSpotsRemaining] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  const live = useLiveSpots(EVENT_ID);
 
   const [selectedLotId, setSelectedLotId] = useState('north');
   const [selectedBay, setSelectedBay] = useState(null);
@@ -60,11 +62,12 @@ export default function BookingFlowScreen({ onPaymentSuccess, onNavigateBack, us
       .then(([eventData, baysData]) => {
         setEvent(eventData);
         setAllBays(baysData);
-        setSpotsRemaining(eventData.spots_remaining);
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
+
+  const spotsRemaining = live.spotsRemaining ?? event?.spots_remaining ?? 0;
 
   const currentLotBays = allBays.filter(b => b.lot_id === selectedLotId);
   const activeLotMeta = LOTS_META.find(l => l.id === selectedLotId) || LOTS_META[0];
@@ -118,7 +121,12 @@ export default function BookingFlowScreen({ onPaymentSuccess, onNavigateBack, us
             <ArrowLeftIcon />
           </button>
           <span className="text-base font-semibold text-gray-900">Book Parking</span>
-          <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full border border-gray-200">Live</span>
+          <span className={`text-xs px-2.5 py-1 rounded-full border flex items-center gap-1.5 ${
+            live.connected ? 'bg-green-50 border-green-200 text-green-600' : 'bg-gray-100 border-gray-200 text-gray-400'
+          }`} data-testid="booking-live-badge">
+            <span className={`w-1.5 h-1.5 rounded-full ${live.connected ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`} />
+            {live.connected ? 'Live' : 'Updating'}
+          </span>
         </div>
 
         {/* Event bar */}
