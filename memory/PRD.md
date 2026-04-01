@@ -46,10 +46,27 @@ ParkEase is a two-sided event parking platform for India. Phase 0 prototype (6 s
 
 **Testing:** 100% pass rate (backend, frontend, integration)
 
+### Phase 1, Task 2: Real-time Scarcity Counter (2026-04-01)
+**Backend:**
+- WebSocket endpoint: `/api/ws/events/{event_id}/live`
+  - Sends initial count on connect
+  - Broadcasts updates to all clients when bookings happen
+  - Ping/pong for keep-alive
+- Simulation endpoint: `POST /api/events/{event_id}/simulate-booking` for demo
+- `create_booking` now broadcasts live counts to all connected WebSocket clients
+
+**Frontend:**
+- `useLiveSpots` hook: WebSocket connection with auto-reconnect + polling fallback
+- S1 Venue Landing: Green pulsing "LIVE" indicator, real-time spot count from WebSocket
+- S2 Booking Flow: "Live" badge in header, real-time scarcity banner
+
+**Testing:** 100% pass rate (14/14 backend, all frontend, all integration)
+
 ## Prioritized Backlog
 
 ### P0 (Phase 1 remaining)
-- [ ] Task 2: Real-time scarcity counter (WebSocket/polling)
+- [x] Task 1: Inventory Database + APIs
+- [x] Task 2: Real-time Scarcity Counter (WebSocket)
 - [ ] Task 3: UPI Payment mock flow improvement
 - [ ] Task 4: QR Code generation (qrcode library)
 - [ ] Task 5: OTP verification mock
