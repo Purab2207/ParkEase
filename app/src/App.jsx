@@ -8,14 +8,18 @@ import BookingConfirmationScreen from './screens/S3_BookingConfirmation';
 import RedirectScreen from './screens/S4_RedirectScreen';
 import OperatorDashboardScreen from './screens/S5_OperatorDashboard';
 import RetentionScreen from './screens/S6_RetentionScreen';
+import RCBBookingScreen from './screens/S7_RCBBooking';
+import RCBConfirmationScreen from './screens/S8_RCBConfirmation';
 
 const SCREENS = {
-  VENUE:        'venue',
-  BOOKING:      'booking',
-  CONFIRMATION: 'confirmation',
-  REDIRECT:     'redirect',
-  DASHBOARD:    'dashboard',
-  RETENTION:    'retention',
+  VENUE:            'venue',
+  BOOKING:          'booking',
+  CONFIRMATION:     'confirmation',
+  REDIRECT:         'redirect',
+  DASHBOARD:        'dashboard',
+  RETENTION:        'retention',
+  RCB_BOOKING:      'rcb-booking',
+  RCB_CONFIRMATION: 'rcb-confirmation',
 };
 
 // ---------------------------------------------------------------------------
@@ -30,7 +34,9 @@ const DemoNav = ({ current, onNavigate, parkingFull, onToggleParkingFull, onStar
         { id: SCREENS.CONFIRMATION, label: 'S3 Confirm' },
         { id: SCREENS.REDIRECT,     label: 'S4 Redirect' },
         { id: SCREENS.DASHBOARD,    label: 'S5 Ops' },
-        { id: SCREENS.RETENTION,    label: 'S6 Retain' },
+        { id: SCREENS.RETENTION,        label: 'S6 Retain' },
+        { id: SCREENS.RCB_BOOKING,      label: 'S7 RCB' },
+        { id: SCREENS.RCB_CONFIRMATION, label: 'S8 RCB✓' },
       ].map(({ id, label }) => (
         <button
           key={id}
@@ -78,6 +84,7 @@ export default function App() {
   const [parkingFull, setParkingFull]     = useState(false);
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [demoRunning, setDemoRunning] = useState(false);
+  const [rcbBookingData, setRcbBookingData] = useState(null);
 
   // Auth state
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -173,7 +180,21 @@ export default function App() {
       case SCREENS.DASHBOARD:
         return <OperatorDashboardScreen />;
       case SCREENS.RETENTION:
-        return <RetentionScreen />;
+        return <RetentionScreen onBookParking={() => navigate(SCREENS.RCB_BOOKING)} />;
+      case SCREENS.RCB_BOOKING:
+        return (
+          <RCBBookingScreen
+            onConfirm={(data) => { setRcbBookingData(data); navigate(SCREENS.RCB_CONFIRMATION); }}
+            onNavigateBack={() => navigate(SCREENS.RETENTION)}
+          />
+        );
+      case SCREENS.RCB_CONFIRMATION:
+        return (
+          <RCBConfirmationScreen
+            bookingData={rcbBookingData}
+            onDone={() => navigate(SCREENS.VENUE)}
+          />
+        );
       default:
         return <VenueLandingScreen onNavigateToBooking={() => navigate(SCREENS.BOOKING)} />;
     }

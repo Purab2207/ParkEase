@@ -258,11 +258,11 @@ const RepeatBookerBadge = () => (
   </div>
 );
 
-const OneClickRebookCTA = () => (
+const OneClickRebookCTA = ({ onBookParking }) => (
   <div className="sticky bottom-4 px-0">
-    <button className="w-full bg-[#1C1D2B] text-white rounded-2xl px-6 py-4 shadow-xl active:scale-[0.98] transition-transform">
+    <button onClick={onBookParking} className="w-full bg-[#1C1D2B] text-white rounded-2xl px-6 py-4 shadow-xl active:scale-[0.98] transition-transform">
       <p className="text-base font-black tracking-tight">Book Parking · ₹{EVENT.price}</p>
-      <p className="text-[11px] text-gray-400 mt-0.5 font-normal">Your details are saved · UPI checkout in 10 seconds</p>
+      <p className="text-[11px] text-gray-400 mt-0.5 font-normal">Your details are saved · select a bay in seconds</p>
     </button>
   </div>
 );
@@ -276,7 +276,7 @@ const SkipLink = () => (
 // ----------------------------------------------------------------------------
 // ROOT SCREEN
 // ----------------------------------------------------------------------------
-export default function RetentionScreen() {
+export default function RetentionScreen({ onBookParking }) {
   return (
     <div className="min-h-screen bg-gray-50 pb-32">
       <div className="max-w-md mx-auto px-4 pt-5 flex flex-col gap-4">
@@ -305,7 +305,7 @@ export default function RetentionScreen() {
         <RepeatBookerBadge />
 
         {/* Primary CTA — sticky */}
-        <OneClickRebookCTA />
+        <OneClickRebookCTA onBookParking={onBookParking} />
 
         {/* Secondary escape */}
         <SkipLink />
