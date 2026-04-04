@@ -100,7 +100,7 @@ const VenueHero = ({ eventName, subTitle, venueName, city }) => (
     {/* Image placeholder */}
     <div className="w-full h-52 rounded-2xl overflow-hidden relative">
       <img
-        src="https://images.unsplash.com/photo-1501386761578-eaa54b4165e5?w=800&auto=format&fit=crop&q=80"
+        src="/concert.jpg"
         alt={eventName}
         className="w-full h-full object-cover"
       />
