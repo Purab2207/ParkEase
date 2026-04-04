@@ -25,11 +25,17 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
 
   if (!isOpen) return null;
 
+  const DEMO_OTP = "123456";
+
   function handlePhoneContinue() {
     if (phone.length < 10) return;
     setStep("otp");
     setOtp(Array(6).fill(""));
     setCountdown(30);
+    // Simulate SMS delivery — auto-fill demo OTP after 1s
+    setTimeout(() => {
+      setOtp(DEMO_OTP.split(""));
+    }, 1000);
   }
 
   function handleOtpChange(index, value) {
@@ -205,6 +211,12 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                   (Change)
                 </button>
               </p>
+
+              {/* Demo OTP hint */}
+              <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-4">
+                <span className="text-amber-500 text-sm">📱</span>
+                <p className="text-xs text-amber-700">Demo OTP <span className="font-mono font-bold tracking-widest">123456</span> — auto-filled via SMS</p>
+              </div>
 
               {/* 6 OTP boxes */}
               <div className="flex gap-2 mb-4 justify-center">
