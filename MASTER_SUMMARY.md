@@ -7,23 +7,44 @@
 
 **ParkEase** (working name also seen as ParkSmart in early PRD drafts) is a two-sided event parking platform for India. It pre-sells named parking bays to event attendees and provides operators a live dashboard + compliance report. When parking sells out, it redirects users to Ola/Uber/Rapido via deep-link.
 
-**Stage:** Phase 0 COMPLETE. Phase 1 (MVP Backend) COMPLETE — all 7 tasks done.
-**Prototype status:** All 6 screens done. Active codebase is `frontend/` (React CRA) + `backend/` (FastAPI + MongoDB). `app/` is the Vite prototype — **this is what Vercel deploys**.
-**Stack:** React 18 (CRA) + Tailwind CSS v3 + React Router v6 (frontend, port 3000) | FastAPI + MongoDB (backend, port 8001)
+**Stage:** Phase 0 COMPLETE. Phase 1 (MVP Backend) COMPLETE. Template architecture migration COMPLETE.
+**Prototype status:** 8 screens live. **`app/`** (Vite) is the single canonical codebase — deployed on Vercel, data-driven, works for any event. `frontend/` (CRA) is frozen/deprecated — do not edit.
+**Stack:** React 19 + Tailwind CSS v4 + React Router v7 (app/, Vite) | FastAPI + MongoDB (backend, port 8001)
 **Next milestone:** Demo to event organisers.
 **Notion:** PRD and Business Model pages in Notion are kept in sync — both updated to match .md files.
 
-> ⚠️ **VERCEL DEPLOY RULE — read before every UI fix:**
-> The live site `https://park-ease-rho.vercel.app` deploys from **`app/`** (Vite, `.jsx` files), NOT `frontend/`.
-> Config: `app/vercel.json` — buildCommand: `npm run build`, outputDirectory: `dist`, framework: `vite`.
-> **Any UI change that needs to appear on the live site MUST be made in `app/src/`, not `frontend/src/`.**
-> `frontend/` is the Phase 1 local dev build (CRA + real backend). It is NOT on Vercel.
+> ⚠️ **CANONICAL CODEBASE RULE:**
+> All changes go into **`app/src/`** only. `frontend/` is deprecated (CRA is unmaintained) and must not be edited.
+> Live site: `https://park-ease-rho.vercel.app` — auto-deploys on every push to `main`.
+> Routes: `/events/:eventId` (S1) · `/events/:eventId/book` (S2) · `/confirmation/:bookingId` (S3) · `/redirect` · `/dashboard` · `/retain` · `/retain/book` (S7) · `/retain/confirm` (S8)
 
 **Team size:** 2 founders, full-stack ownership.
 
 ---
 
 ## Session Log
+
+### Template architecture migration (4 April 2026)
+
+**What changed:** `app/` is now a fully data-driven, modular frontend. Adding a new event requires zero code changes.
+
+**Architecture before:** Each event = a new hardcoded file. S1 had `MOCK_VENUE`, S2 had `MOCK_EVENT` — all pointing at Karan Aujla. S7 was a copy-paste of S2 for RCB. Not scalable.
+
+**Architecture after:**
+- `app/src/api.js` — `fetchEvent(eventId)` tries real backend, falls back to `FALLBACK_EVENTS[eventId]` (graceful degradation — Vercel works without backend)
+- `app/src/hooks/useLiveSpots.js` — WebSocket live counter with polling fallback, ported from `frontend/`
+- `S1_VenueLanding.jsx` — reads `eventId` from `useParams()`, fetches event data, renders generically
+- `S2_BookingFlow.jsx` — reads `eventId` from `useParams()`, fetches event data, renders generically
+- `S3_BookingConfirmation.jsx` — reads `bookingId` from `useParams()`
+- `SearchOverlay.jsx` — shows 4 real events (Karan Aujla, Arijit Singh, Coldplay, Diljit Dosanjh), navigates to `/events/:eventId`
+- `App.jsx` — full React Router migration, routes: `/events/:eventId`, `/events/:eventId/book`, `/confirmation/:bookingId`
+- `backend/server.py` — seeds 4 events total: Karan Aujla (existing) + Arijit Singh DY Patil + Coldplay NMS Ahmedabad + Diljit Dosanjh PCA Mohali
+
+**`frontend/`** — deprecated. CRA is unmaintained since 2023. All API logic ported to `app/`. Do not edit `frontend/`.
+
+**APM/LinkedIn narrative:** "Started with a hardcoded prototype to validate UX fast. Once the core flow was proven, migrated to a data-driven template architecture — S1 and S2 now render any event from a single component. Adding a new event organiser requires one database insert and zero code changes. Search bar shows live inventory. This is the architectural decision that separates a prototype from a product."
+
+---
 
 ### QA audit — live Vercel site (4 April 2026)
 
