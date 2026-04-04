@@ -50,6 +50,25 @@ const UPI_APPS = [
 ];
 
 const UPIAppsBlock = ({ amount, bookingId }) => {
+  const [paymentQrUrl, setPaymentQrUrl] = useState('');
+
+  const upiPaymentUrl = (() => {
+    const params = new URLSearchParams({
+      pa: 'parksease@okaxis',
+      pn: 'ParkEase',
+      am: String(amount),
+      cu: 'INR',
+      tn: `Parking booking ${bookingId}`,
+    });
+    return `upi://pay?${params.toString()}`;
+  })();
+
+  useEffect(() => {
+    QRCode.toDataURL(upiPaymentUrl, { width: 160, margin: 1 })
+      .then(url => setPaymentQrUrl(url))
+      .catch(() => {});
+  }, [upiPaymentUrl]);
+
   const buildUPIUrl = (scheme) => {
     const params = new URLSearchParams({
       pa: 'parksease@okaxis',
@@ -64,7 +83,19 @@ const UPIAppsBlock = ({ amount, bookingId }) => {
   return (
     <div className="w-full flex flex-col gap-3">
       <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">Pay via UPI</span>
-      <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-4 py-4 flex flex-col gap-3">
+      <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-4 py-4 flex flex-col gap-4">
+        {/* UPI payment QR */}
+        <div className="flex flex-col items-center gap-2">
+          <div className="bg-white p-2 rounded-xl border border-gray-100 shadow-sm">
+            {paymentQrUrl
+              ? <img src={paymentQrUrl} alt="UPI payment QR" width={120} height={120} />
+              : <div className="w-[120px] h-[120px] bg-gray-100 rounded-lg animate-pulse" />
+            }
+          </div>
+          <p className="text-xs text-gray-400 text-center">Scan with any UPI app to pay ₹{amount}</p>
+        </div>
+        <div className="w-full h-px bg-gray-100" />
+        {/* UPI app buttons */}
         <div className="grid grid-cols-4 gap-2">
           {UPI_APPS.map(({ id, name, scheme, icon }) => (
             <a
@@ -78,7 +109,7 @@ const UPIAppsBlock = ({ amount, bookingId }) => {
           ))}
         </div>
         <p className="text-xs text-gray-400 text-center">
-          Opens your UPI app · ₹{amount} · Booking {(bookingId || '').slice(-8).toUpperCase()}
+          Or open your UPI app directly · ₹{amount} · Booking {(bookingId || '').slice(-8).toUpperCase()}
         </p>
       </div>
     </div>
@@ -200,9 +231,15 @@ export default function BookingConfirmationScreen({ bookingId, onNavigateToReten
           <p className="text-xs text-gray-400 font-mono">Booking ID - #{(booking.booking_id || bookingId || '').slice(-8).toUpperCase()}</p>
         </div>
 
-        <RealQRCode bookingId={booking.booking_id || bookingId} />
-
         <UPIAppsBlock amount={booking.consumer_price || 169} bookingId={booking.booking_id || bookingId} />
+
+        {/* Entry pass */}
+        <div className="w-full flex flex-col gap-3">
+          <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">Your entry pass</span>
+          <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-4 py-4 flex flex-col items-center gap-1">
+            <RealQRCode bookingId={booking.booking_id || bookingId} />
+          </div>
+        </div>
 
         {/* Summary card */}
         <div className="w-full bg-white border border-gray-200 shadow-md rounded-2xl px-5 py-4 flex flex-col gap-3" data-testid="booking-summary">
