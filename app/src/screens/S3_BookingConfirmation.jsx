@@ -58,16 +58,99 @@ const WhatsAppIcon = () => (
 );
 
 // ----------------------------------------------------------------------------
-// MOCK QR CODE — visual placeholder for demo
-// Represents the unique booking QR scanned by attendant at gate
-// In MVP: generated server-side from bookingId using qrcode library
+// UPI PAYMENT SECTION — shown first, before the booking entry QR
+// ----------------------------------------------------------------------------
+const UPI_APPS = [
+  {
+    id: 'gpay', name: 'GPay',
+    icon: (
+      <svg viewBox="0 0 48 48" className="w-5 h-5" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4z" fill="#4285F4"/>
+        <path d="M24 4C12.95 4 4 12.95 4 24h20V4z" fill="#EA4335"/>
+        <path d="M4 24c0 11.05 8.95 20 20 20V24H4z" fill="#FBBC04"/>
+        <path d="M44 24c0-11.05-8.95-20-20-20v20h20z" fill="#34A853"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'phonepe', name: 'PhonePe',
+    icon: (
+      <svg viewBox="0 0 48 48" className="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
+        <rect width="48" height="48" rx="10" fill="#5f259f"/>
+        <text x="50%" y="58%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="11" fontWeight="bold">PhPe</text>
+      </svg>
+    ),
+  },
+  {
+    id: 'paytm', name: 'Paytm',
+    icon: (
+      <svg viewBox="0 0 48 48" className="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
+        <rect width="48" height="48" rx="10" fill="#00BAF2"/>
+        <text x="50%" y="58%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="11" fontWeight="bold">Paytm</text>
+      </svg>
+    ),
+  },
+  {
+    id: 'bhim', name: 'BHIM',
+    icon: (
+      <svg viewBox="0 0 48 48" className="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
+        <rect width="48" height="48" rx="10" fill="#1a237e"/>
+        <text x="50%" y="58%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="13" fontWeight="bold">BHIM</text>
+      </svg>
+    ),
+  },
+];
+
+const UPIPaymentSection = ({ amount, bookingId }) => {
+  const upiData = `upi://pay?pa=parksease@okaxis&pn=ParkEase&am=${amount}&cu=INR&tn=Parking+${bookingId}`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(upiData)}`;
+
+  const buildDeepLink = (scheme) => {
+    const params = new URLSearchParams({ pa: 'parksease@okaxis', pn: 'ParkEase', am: String(amount), cu: 'INR', tn: `Parking ${bookingId}` });
+    return `${scheme}?${params.toString()}`;
+  };
+
+  return (
+    <div className="w-full flex flex-col gap-3">
+      <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">Pay via UPI</span>
+      <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-4 py-4 flex flex-col gap-4">
+        {/* Payment QR */}
+        <div className="flex flex-col items-center gap-2">
+          <div className="bg-white border border-gray-100 rounded-xl p-2 shadow-sm">
+            <img src={qrUrl} alt="UPI payment QR" width={140} height={140} />
+          </div>
+          <p className="text-xs text-gray-400 text-center">Scan with any UPI app to pay ₹{amount}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-px bg-gray-100" />
+          <span className="text-xs text-gray-400 font-medium">or open an app</span>
+          <div className="flex-1 h-px bg-gray-100" />
+        </div>
+        {/* App buttons */}
+        <div className="grid grid-cols-4 gap-2">
+          {UPI_APPS.map(({ id, name, icon }) => (
+            <a key={id} href={buildDeepLink(id === 'gpay' ? 'gpay://upi/pay' : id === 'phonepe' ? 'phonepe://pay' : id === 'paytm' ? 'paytmmp://pay' : 'upi://pay')}
+              className="flex flex-col items-center gap-1.5 py-3 rounded-xl border border-gray-100 bg-gray-50 hover:bg-gray-100 active:scale-95 transition-all">
+              {icon}
+              <span className="text-[11px] font-semibold text-gray-700">{name}</span>
+            </a>
+          ))}
+        </div>
+        <p className="text-xs text-gray-400 text-center">
+          ₹{amount} · Booking {(bookingId || '').slice(-8).toUpperCase()}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// ----------------------------------------------------------------------------
+// BOOKING ENTRY QR — shown after payment section
 // ----------------------------------------------------------------------------
 const MockQRCode = ({ bookingId }) => {
-  // Deterministic pixel grid seeded from bookingId for visual variety
   const seed = bookingId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
   const grid = Array.from({ length: 11 }, (_, r) =>
     Array.from({ length: 11 }, (_, c) => {
-      // Always fill corners (finder patterns)
       if ((r < 3 && c < 3) || (r < 3 && c > 7) || (r > 7 && c < 3)) return true;
       return ((seed * (r + 1) * (c + 1) * 31) % 7) > 3;
     })
@@ -79,53 +162,13 @@ const MockQRCode = ({ bookingId }) => {
         <div className="grid gap-0.5" style={{ gridTemplateColumns: 'repeat(11, 1fr)', width: 132 }}>
           {grid.map((row, r) =>
             row.map((filled, c) => (
-              <div
-                key={`${r}-${c}`}
-                className={`w-3 h-3 rounded-sm ${filled ? 'bg-gray-900' : 'bg-white'}`}
-              />
+              <div key={`${r}-${c}`} className={`w-3 h-3 rounded-sm ${filled ? 'bg-gray-900' : 'bg-white'}`} />
             ))
           )}
         </div>
       </div>
-      <div className="text-xs text-gray-400 font-mono tracking-widest">
-        #{bookingId.slice(-8).toUpperCase()}
-      </div>
-      <p className="text-xs text-gray-400 text-center max-w-[200px]">
-        Show this to the attendant at the parking gate
-      </p>
-      <div className="w-full flex flex-col gap-2 mt-2">
-        <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold text-center">
-          Pay via
-        </p>
-        <div className="flex items-center gap-2 w-full">
-          <div className="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-200 rounded-2xl py-3 shadow-sm">
-            <svg viewBox="0 0 48 48" className="w-5 h-5" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4z" fill="#4285F4"/>
-              <path d="M24 4C12.95 4 4 12.95 4 24h20V4z" fill="#EA4335"/>
-              <path d="M4 24c0 11.05 8.95 20 20 20V24H4z" fill="#FBBC04"/>
-              <path d="M44 24c0-11.05-8.95-20-20-20v20h20z" fill="#34A853"/>
-            </svg>
-            <span className="text-sm font-semibold text-gray-900">GPay</span>
-          </div>
-          <div className="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-200 rounded-2xl py-3 shadow-sm">
-            <svg viewBox="0 0 48 48" className="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
-              <rect width="48" height="48" rx="10" fill="#002970"/>
-              <text x="50%" y="58%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="13" fontWeight="bold">PhPe</text>
-            </svg>
-            <span className="text-sm font-semibold text-gray-900">PhonePe</span>
-          </div>
-          <div className="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-200 rounded-2xl py-3 shadow-sm">
-            <svg viewBox="0 0 48 48" className="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
-              <rect width="48" height="48" rx="10" fill="#00BAF2"/>
-              <text x="50%" y="58%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="11" fontWeight="bold">Paytm</text>
-            </svg>
-            <span className="text-sm font-semibold text-gray-900">Paytm</span>
-          </div>
-        </div>
-        <p className="text-xs text-gray-400 text-center">
-          UPI · QR code sent to your phone after payment
-        </p>
-      </div>
+      <div className="text-xs text-gray-400 font-mono tracking-widest">#{bookingId.slice(-8).toUpperCase()}</div>
+      <p className="text-xs text-gray-400 text-center max-w-[200px]">Show this to the attendant at the parking gate</p>
     </div>
   );
 };
@@ -385,8 +428,16 @@ export default function BookingConfirmationScreen({ bookingId = 'pe-2026-karan-a
         {/* Confirmation header */}
         <ConfirmationHeader bookingId={booking.bookingId} />
 
-        {/* QR Code — shown to attendant at gate */}
-        <MockQRCode bookingId={booking.bookingId} />
+        {/* UPI payment section — pay first */}
+        <UPIPaymentSection amount={booking.consumerPrice} bookingId={booking.bookingId} />
+
+        {/* Booking entry QR — show at gate after payment */}
+        <div className="w-full flex flex-col gap-3">
+          <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">Your entry pass</span>
+          <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-4 py-4 flex flex-col items-center">
+            <MockQRCode bookingId={booking.bookingId} />
+          </div>
+        </div>
 
         {/* Clean booking summary — PRD: must survive WhatsApp screenshot */}
         <BookingSummaryCard booking={booking} />

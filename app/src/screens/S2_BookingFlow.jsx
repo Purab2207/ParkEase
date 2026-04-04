@@ -444,23 +444,26 @@ const PricingBreakdown = ({ event, groupSize, onGroupSizeChange }) => (
 );
 
 // Step 5 — UPI Payment
-const UPIPaymentButton = ({ consumerPrice, selectedBay, selectedWindow, contactPhoneValid, isLoading, onPay }) => {
-  const isDisabledBay = !selectedBay;
-  const isDisabledWindow = selectedBay && !selectedWindow;
-  const isDisabled = isDisabledBay || isDisabledWindow || !contactPhoneValid || isLoading;
+const UPIPaymentButton = ({ consumerPrice, selectedBay, selectedWindow, contactPhoneValid, isLoading, onPay, onOpenBaySelection }) => {
+  const isDisabled = isLoading || (selectedBay && (!selectedWindow || !contactPhoneValid));
 
   const getLabel = () => {
     if (isLoading) return 'Processing...';
-    if (isDisabledBay) return 'Select a bay to continue';
-    if (isDisabledWindow) return 'Select arrival time to continue';
+    if (!selectedBay) return 'Select a bay to continue';
+    if (!selectedWindow) return 'Select arrival time to continue';
     if (!contactPhoneValid) return 'Enter contact number to continue';
     return `Pay ₹${consumerPrice} via UPI`;
+  };
+
+  const handleClick = () => {
+    if (!selectedBay) { onOpenBaySelection?.(); return; }
+    onPay();
   };
 
   return (
     <div className="w-full sticky bottom-4 mt-2">
       <button
-        onClick={onPay}
+        onClick={handleClick}
         disabled={isDisabled}
         className={`w-full font-bold text-base rounded-2xl py-4 transition-all shadow-lg shadow-black/40
           ${isDisabled
@@ -613,14 +616,11 @@ export default function BookingFlowScreen({ onPaymentSuccess, onNavigateBack, on
         />
 
         {/* Step 2 — Bay selection */}
-        {currentStep >= 2 || currentStep === 1 ? (
+        {currentStep >= 2 ? (
           <div className="w-full flex flex-col gap-3">
-            <button
-              onClick={() => setCurrentStep(2)}
-              className="text-xs text-gray-500 uppercase tracking-widest font-semibold text-left"
-            >
+            <span className="text-xs text-gray-500 uppercase tracking-widest font-semibold">
               2 · Select your bay
-            </button>
+            </span>
             {currentStep === 2 ? (
               <BaySelectionPanel
                 lots={LOTS}
@@ -718,6 +718,7 @@ export default function BookingFlowScreen({ onPaymentSuccess, onNavigateBack, on
           contactPhoneValid={contactPhone.length === 10}
           isLoading={paymentLoading}
           onPay={handlePay}
+          onOpenBaySelection={() => setCurrentStep(2)}
         />
 
         <BookingFooter />
