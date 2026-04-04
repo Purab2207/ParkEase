@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import QRCode from 'qrcode';
 import { fetchBooking } from '../api';
+import Toast from '../components/Toast';
 
 // ---------------------------------------------------------------------------
 // UPI APP DEEP-LINKS
@@ -115,22 +117,22 @@ const WhatsAppIcon = () => (
   </svg>
 );
 
-const MockQRCode = ({ bookingId }) => {
-  const seed = (bookingId || '').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  const grid = Array.from({ length: 11 }, (_, r) =>
-    Array.from({ length: 11 }, (_, c) => {
-      if ((r < 3 && c < 3) || (r < 3 && c > 7) || (r > 7 && c < 3)) return true;
-      return ((seed * (r + 1) * (c + 1) * 31) % 7) > 3;
-    })
-  );
+const RealQRCode = ({ bookingId }) => {
+  const [qrDataUrl, setQrDataUrl] = useState('');
+
+  useEffect(() => {
+    QRCode.toDataURL(bookingId || 'PE-2026-DEMO1234', { width: 160, margin: 1 })
+      .then(url => setQrDataUrl(url))
+      .catch(() => {});
+  }, [bookingId]);
+
   return (
     <div className="flex flex-col items-center gap-3" data-testid="qr-code">
       <div className="bg-white p-3 rounded-2xl shadow-lg shadow-black/30">
-        <div className="grid gap-0.5" style={{ gridTemplateColumns: 'repeat(11, 1fr)', width: 132 }}>
-          {grid.map((row, r) => row.map((filled, c) => (
-            <div key={`${r}-${c}`} className={`w-3 h-3 rounded-sm ${filled ? 'bg-gray-900' : 'bg-white'}`} />
-          )))}
-        </div>
+        {qrDataUrl
+          ? <img src={qrDataUrl} alt="Booking QR code" width={132} height={132} />
+          : <div className="w-[132px] h-[132px] bg-gray-100 rounded-lg animate-pulse" />
+        }
       </div>
       <div className="text-xs text-gray-400 font-mono tracking-widest">#{(bookingId || '').slice(-8).toUpperCase()}</div>
       <p className="text-xs text-gray-400 text-center max-w-[200px]">Show this to the attendant at the parking gate</p>
@@ -154,6 +156,7 @@ const FALLBACK_BOOKING = {
 export default function BookingConfirmationScreen({ bookingId, onNavigateToRetention }) {
   const [booking, setBooking] = useState(FALLBACK_BOOKING);
   const [groupSize, setGroupSize] = useState(5);
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     if (bookingId && bookingId !== 'PE-2026-DEMO1234') {
@@ -162,6 +165,10 @@ export default function BookingConfirmationScreen({ bookingId, onNavigateToReten
         .catch(() => {});
     }
   }, [bookingId]);
+
+  useEffect(() => {
+    setShowToast(true);
+  }, []);
 
   const splitAmount = Math.ceil((booking.consumer_price || 169) / groupSize);
   const departureNudgeTime = '6:00 PM';
@@ -180,6 +187,9 @@ export default function BookingConfirmationScreen({ bookingId, onNavigateToReten
 
   return (
     <div className="min-h-[100dvh] bg-gray-50 font-sans" data-testid="booking-confirmation">
+      {showToast && (
+        <Toast message="We'll remind you to leave by 6:00 PM — push notification sent 90 mins before event" />
+      )}
       <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-50 flex flex-col px-4 py-6 gap-5 pb-20 sm:shadow-2xl">
         {/* Header */}
         <div className="w-full flex flex-col items-center gap-2 pt-2 pb-1">
@@ -190,7 +200,7 @@ export default function BookingConfirmationScreen({ bookingId, onNavigateToReten
           <p className="text-xs text-gray-400 font-mono">Booking ID - #{(booking.booking_id || bookingId || '').slice(-8).toUpperCase()}</p>
         </div>
 
-        <MockQRCode bookingId={booking.booking_id || bookingId} />
+        <RealQRCode bookingId={booking.booking_id || bookingId} />
 
         <UPIAppsBlock amount={booking.consumer_price || 169} bookingId={booking.booking_id || bookingId} />
 
