@@ -18,6 +18,27 @@
 
 ## Session Log
 
+### Phase 1 — MVP Backend IN PROGRESS (4 April 2026)
+
+**Status:** 4 of 7 tasks complete. All demo/mock — zero third-party charges.
+
+---
+
+### Phase 1, Task 4 — React Router + UPI deep-links + bug fixes (4 April 2026)
+
+**Changes:**
+- `frontend/src/index.js` — Wrapped `<App />` in `<BrowserRouter>` (react-router-dom v6)
+- `frontend/src/App.js` — Replaced `useState` screen routing with React Router v6 `<Routes>/<Route>`. `SCREENS` enum → `PATHS` constant. `DemoNav` now uses `useNavigate()` + `useLocation()` hooks internally. `lastBookingId` passed via `navigate(PATHS.CONFIRMATION, { state: { bookingId } })` — `ConfirmationRoute` wrapper reads it from `useLocation().state`.
+- `frontend/src/hooks/useLiveSpots.js` — Fixed WebSocket URL bug: `BACKEND_URL.replace(/^http/, 'ws')` was producing `ws://` even on HTTPS pages, silently blocked as mixed content. Fixed to derive protocol from `window.location.protocol` and strip scheme from BACKEND_URL separately.
+- `frontend/src/screens/S3_BookingConfirmation.js` — Added `UPI_APPS` array + `UPIAppsBlock` component (GPay, PhonePe, Paytm, BHIM deep-links via standard UPI URI scheme). Rendered below `<MockQRCode>`.
+- `frontend/package.json` — Added `react-router-dom@^6.23.0`
+- `01_Product/ParkEase_PRD.md` — Added compliance methodology notes: §2.2 (55% Western benchmark, India baseline post-Event-1) and §6 R1 (compliance calibration plan)
+- `02_Financials/Business Valuation.md` — Added methodology notes: §4 vehicles diverted (sensitivity: 30%→35 vehicles, 20%→24) and §7 High Severity compliance rate risk
+
+**Routes:** `/` S1, `/booking` S2, `/confirmation` S3, `/redirect` S4, `/dashboard` S5, `/retain` S6
+
+---
+
 ### Phase 1 — MVP Backend IN PROGRESS (1 April 2026)
 
 **Status:** 3 of 7 tasks complete. All demo/mock — zero third-party charges.
@@ -360,23 +381,24 @@ Fill rate 87%, 65 spots remaining, 118 redirect taps, ~65 diverted. Per-lot capa
 ### S6 — Retention Screen (`S6_RetentionScreen.jsx`)
 Arjun's re-engagement arc — RCB Playoffs. Components: NotificationBanner, EventCard, FillRateUrgencyBar, LastTimeMemoryChip, TrustSignalRow, RepeatBookerBadge, OneClickRebookCTA. Accessible from S3 via "See you at the next event →" link.
 
-### App.jsx — Demo Router + Global State
-No React Router — plain `useState` for current screen routing. Global state:
-- `currentScreen`: VENUE | BOOKING | CONFIRMATION | REDIRECT | DASHBOARD | RETENTION
+### App.js — Demo Router + Global State
+React Router v6 — URL-based routing via `<Routes>/<Route>`. Routes: `/` S1, `/booking` S2, `/confirmation` S3, `/redirect` S4, `/dashboard` S5, `/retain` S6. Global state:
 - `isLoggedIn`, `userPhone`: auth state (set by AuthModal)
 - `selectedVenue`: venue from SearchOverlay, passed to S1
 - `showAuth`, `showSearch`: overlay visibility
 - `parkingFull`: demo toggle that auto-navigates to S4/S1
 - `demoRunning`: guided demo mode state
+- `bookingId` passed to S3 via `navigate('/confirmation', { state: { bookingId } })` — read in `ConfirmationRoute` via `useLocation().state`
 
 **Component tree:**
 ```
-<App>
-  ├─ <Navbar> (fixed, z-50, showing on S1/S2/S3/S4/S6)
-  ├─ <div> (current screen — S1 to S6, with pt-16 offset)
-  ├─ <AuthModal> (global overlay, z-50)
-  ├─ <SearchOverlay> (global overlay, z-50)
-  └─ <DemoNav> (bottom bar — "Demo mode · ParkEase v0.5" + ▶ Start Demo button)
+<BrowserRouter>  ← index.js
+  <App>
+    ├─ <Navbar> (fixed, z-50, showing on S1/S2/S3/S4/S6)
+    ├─ <Routes> (S1–S6 via URL paths)
+    ├─ <AuthModal> (global overlay, z-50)
+    ├─ <SearchOverlay> (global overlay, z-50)
+    └─ <DemoNav> (bottom bar — "Demo mode · ParkEase v0.5" + ▶ Start Demo button)
 ```
 
 **▶ Start Demo** auto-navigates S1→S2→S3→S4→S5→S6 on 4-second timer. Hand phone to investor and say "just watch".
@@ -473,4 +495,4 @@ Target contacts: venue operations managers at JLN Stadium (Delhi) and Chinnaswam
 
 ---
 
-*Last updated: 31 March 2026 — UI redesign complete (light theme + Navbar + AuthModal + SearchOverlay, all wired and running)*
+*Last updated: 4 April 2026 — React Router v6 wired, UPI deep-links in S3, WebSocket HTTPS bug fixed, PRD/BV compliance methodology notes added*

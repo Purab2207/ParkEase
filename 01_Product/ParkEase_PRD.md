@@ -50,6 +50,8 @@ These metrics signal whether the product is heading in the right direction befor
 
 Note on redirect tracking: At MVP stage, redirect CTA tap rate serves as a proxy for behaviour change — it measures intent, not confirmed cab booking completion. This is a known architectural constraint of the Ola/Uber deep-link redirect and will be addressed in V2 via API callback integration for hard conversion confirmation.
 
+Compliance methodology note: The 55% compliance discount is a Western market benchmark (Waze/Google Maps). This will be replaced with a ParkEase India baseline after Event 1. The compliance report shows both raw tap count and estimated diversion — methodology transparency is a product feature.
+
 ---
 
 ### 2.3 B2B Proof Point
@@ -1501,6 +1503,8 @@ The entire ParkEase thesis rests on one behavioural bet: when shown a parking fu
 This risk cannot be eliminated before the first event. It can only be measured. The MVP is specifically designed to test this hypothesis at minimum cost before investing in automation, sensor infrastructure, or multi-city expansion.
 
 Mitigation: Redirect screen design must be optimised for conversion — clear value framing, fare estimate, three platform options, and honest copy about surge pricing. The screen is not informational. It is a conversion asset.
+
+Compliance calibration plan: Event 1 data becomes the new baseline. Re-run the financial model before the annual contract conversation. Never present 55% as confirmed — present it as the pre-pilot benchmark.
 
 ---
 

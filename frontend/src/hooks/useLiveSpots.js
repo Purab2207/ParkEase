@@ -4,8 +4,12 @@ import { fetchEvent } from '../api';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 
 function getWsUrl(eventId) {
-  const base = BACKEND_URL.replace(/^http/, 'ws');
-  return `${base}/api/ws/events/${eventId}/live`;
+  // Always match the page protocol: wss:// on HTTPS, ws:// on HTTP.
+  // /^http/ would leave "http://" → "ws://" even when the page is HTTPS,
+  // which browsers block as mixed content with no thrown error.
+  const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
+  const host = BACKEND_URL.replace(/^https?:\/\//, '') || window.location.host;
+  return `${proto}://${host}/api/ws/events/${eventId}/live`;
 }
 
 export default function useLiveSpots(eventId) {

@@ -160,6 +160,9 @@ Same contribution-based LTV methodology (correct), recalculated with ₹47 net f
 |Ev 8 (repeat)|₹15,275|₹15,000|−₹4,500|₹25,775|
 |**Total**|**₹1,22,200**|**₹1,20,000**|**−₹44,000**|**₹1,98,200**|
 
+> **Vehicles diverted — methodology note**
+> Pre-pilot benchmark: 55% (Western market). Post-Event-1: replace with India baseline. Sensitivity: at 30% compliance ~35 vehicles diverted, at 20% ~24. Compliance report always shows raw tap count + discounted estimate with rate labelled. Lead with exit clearance time as primary metric — treat vehicles diverted as supporting evidence.
+
 ---
 
 # 5 · Break-even analysis — corrected
@@ -256,6 +259,9 @@ Siddharth signs B2B contract
 > **First event at every new venue is contribution-negative**
 
 > At 35% MVP fill, new-venue ops cost (₹8,500) exceeds platform fee revenue (₹8,222). Every new venue is a −₹275 loss before fixed costs. The B2B annual contract must be signed before bay mapping begins — not after.
+
+> **Compliance rate risk**
+> Below 25% materially weakens the compliance report. Mitigation: make raw CTA tap count the headline metric. Municipal authorities respond to exit clearance time, not diversion estimates.
 
 ## Medium severity
 

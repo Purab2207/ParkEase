@@ -1,6 +1,88 @@
 import React, { useState, useEffect } from 'react';
 import { fetchBooking } from '../api';
 
+// ---------------------------------------------------------------------------
+// UPI APP DEEP-LINKS
+// Standard UPI scheme — Android shows app chooser or opens direct app.
+// VPA parksease@okaxis is a placeholder — replace with real merchant VPA in MVP.
+// ---------------------------------------------------------------------------
+const UPI_APPS = [
+  {
+    id: 'gpay', name: 'GPay', scheme: 'gpay://upi/pay',
+    icon: (
+      <svg viewBox="0 0 48 48" className="w-6 h-6" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4z" fill="#4285F4"/>
+        <path d="M24 4C12.95 4 4 12.95 4 24h20V4z" fill="#EA4335"/>
+        <path d="M4 24c0 11.05 8.95 20 20 20V24H4z" fill="#FBBC04"/>
+        <path d="M44 24c0-11.05-8.95-20-20-20v20h20z" fill="#34A853"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'phonepe', name: 'PhonePe', scheme: 'phonepe://pay',
+    icon: (
+      <svg viewBox="0 0 48 48" className="w-6 h-6" xmlns="http://www.w3.org/2000/svg">
+        <rect width="48" height="48" rx="10" fill="#5f259f"/>
+        <text x="50%" y="58%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="11" fontWeight="bold">PhPe</text>
+      </svg>
+    ),
+  },
+  {
+    id: 'paytm', name: 'Paytm', scheme: 'paytmmp://pay',
+    icon: (
+      <svg viewBox="0 0 48 48" className="w-6 h-6" xmlns="http://www.w3.org/2000/svg">
+        <rect width="48" height="48" rx="10" fill="#00BAF2"/>
+        <text x="50%" y="58%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="11" fontWeight="bold">Paytm</text>
+      </svg>
+    ),
+  },
+  {
+    id: 'bhim', name: 'BHIM', scheme: 'upi://pay',
+    icon: (
+      <svg viewBox="0 0 48 48" className="w-6 h-6" xmlns="http://www.w3.org/2000/svg">
+        <rect width="48" height="48" rx="10" fill="#1a237e"/>
+        <text x="50%" y="58%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="13" fontWeight="bold">BHIM</text>
+      </svg>
+    ),
+  },
+];
+
+const UPIAppsBlock = ({ amount, bookingId }) => {
+  const buildUPIUrl = (scheme) => {
+    const params = new URLSearchParams({
+      pa: 'parksease@okaxis',
+      pn: 'ParkEase',
+      am: String(amount),
+      cu: 'INR',
+      tn: `Parking booking ${bookingId}`,
+    });
+    return `${scheme}?${params.toString()}`;
+  };
+
+  return (
+    <div className="w-full flex flex-col gap-3">
+      <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">Pay via UPI</span>
+      <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-4 py-4 flex flex-col gap-3">
+        <div className="grid grid-cols-4 gap-2">
+          {UPI_APPS.map(({ id, name, scheme, icon }) => (
+            <a
+              key={id}
+              href={buildUPIUrl(scheme)}
+              className="flex flex-col items-center gap-1.5 py-3 rounded-xl border border-gray-100 bg-gray-50 hover:bg-gray-100 active:scale-95 transition-all"
+            >
+              {icon}
+              <span className="text-[11px] font-semibold text-gray-700">{name}</span>
+            </a>
+          ))}
+        </div>
+        <p className="text-xs text-gray-400 text-center">
+          Opens your UPI app · ₹{amount} · Booking {(bookingId || '').slice(-8).toUpperCase()}
+        </p>
+      </div>
+    </div>
+  );
+};
+
 const CheckCircleIcon = () => (
   <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -109,6 +191,8 @@ export default function BookingConfirmationScreen({ bookingId, onNavigateToReten
         </div>
 
         <MockQRCode bookingId={booking.booking_id || bookingId} />
+
+        <UPIAppsBlock amount={booking.consumer_price || 169} bookingId={booking.booking_id || bookingId} />
 
         {/* Summary card */}
         <div className="w-full bg-white border border-gray-200 shadow-md rounded-2xl px-5 py-4 flex flex-col gap-3" data-testid="booking-summary">

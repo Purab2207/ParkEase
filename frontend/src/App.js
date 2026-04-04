@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
 import Navbar from './components/Navbar';
 import AuthModal from './components/AuthModal';
@@ -10,72 +11,92 @@ import RedirectScreen from './screens/S4_RedirectScreen';
 import OperatorDashboardScreen from './screens/S5_OperatorDashboard';
 import RetentionScreen from './screens/S6_RetentionScreen';
 
-const SCREENS = {
-  VENUE:        'venue',
-  BOOKING:      'booking',
-  CONFIRMATION: 'confirmation',
-  REDIRECT:     'redirect',
-  DASHBOARD:    'dashboard',
-  RETENTION:    'retention',
+const PATHS = {
+  VENUE:        '/',
+  BOOKING:      '/booking',
+  CONFIRMATION: '/confirmation',
+  REDIRECT:     '/redirect',
+  DASHBOARD:    '/dashboard',
+  RETENTION:    '/retain',
 };
 
-const DemoNav = ({ current, onNavigate, parkingFull, onToggleParkingFull, onStartDemo, demoRunning }) => (
-  <div className="fixed bottom-0 left-0 right-0 z-[100] flex flex-col items-center pb-2 px-4 pointer-events-none">
-    <div className="bg-gray-950/95 border border-gray-700 rounded-2xl px-2 py-2 flex items-center gap-0.5 shadow-2xl pointer-events-auto w-full overflow-x-auto max-w-md">
-      {[
-        { id: SCREENS.VENUE,        label: 'S1 Landing' },
-        { id: SCREENS.BOOKING,      label: 'S2 Booking' },
-        { id: SCREENS.CONFIRMATION, label: 'S3 Confirm' },
-        { id: SCREENS.REDIRECT,     label: 'S4 Redirect' },
-        { id: SCREENS.DASHBOARD,    label: 'S5 Ops' },
-        { id: SCREENS.RETENTION,    label: 'S6 Retain' },
-      ].map(({ id, label }) => (
+const NAVBAR_PATHS = new Set([PATHS.VENUE, PATHS.BOOKING, PATHS.CONFIRMATION, PATHS.REDIRECT, PATHS.RETENTION]);
+
+// Reads bookingId from navigation state so App doesn't need to hold it.
+const ConfirmationRoute = () => {
+  const navigate = useNavigate();
+  const { state } = useLocation();
+  return (
+    <BookingConfirmationScreen
+      bookingId={state?.bookingId || 'PE-2026-DEMO1234'}
+      onNavigateToRetention={() => navigate(PATHS.RETENTION)}
+    />
+  );
+};
+
+const DemoNav = ({ parkingFull, onToggleParkingFull, onStartDemo, demoRunning }) => {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-[100] flex flex-col items-center pb-2 px-4 pointer-events-none">
+      <div className="bg-gray-950/95 border border-gray-700 rounded-2xl px-2 py-2 flex items-center gap-0.5 shadow-2xl pointer-events-auto w-full overflow-x-auto max-w-md">
+        {[
+          { path: PATHS.VENUE,        label: 'S1 Landing', id: 'venue' },
+          { path: PATHS.BOOKING,      label: 'S2 Booking', id: 'booking' },
+          { path: PATHS.CONFIRMATION, label: 'S3 Confirm', id: 'confirmation' },
+          { path: PATHS.REDIRECT,     label: 'S4 Redirect', id: 'redirect' },
+          { path: PATHS.DASHBOARD,    label: 'S5 Ops',     id: 'dashboard' },
+          { path: PATHS.RETENTION,    label: 'S6 Retain',  id: 'retention' },
+        ].map(({ path, label, id }) => (
+          <button
+            key={path}
+            data-testid={`demo-nav-${id}`}
+            onClick={() => navigate(path)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              pathname === path
+                ? 'bg-white text-gray-900'
+                : 'text-gray-400 hover:text-white hover:bg-gray-800'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+        <div className="w-px h-5 bg-gray-700 mx-1 shrink-0" />
         <button
-          key={id}
-          data-testid={`demo-nav-${id}`}
-          onClick={() => onNavigate(id)}
-          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            current === id
-              ? 'bg-white text-gray-900'
-              : 'text-gray-400 hover:text-white hover:bg-gray-800'
+          data-testid="demo-toggle-full"
+          onClick={onToggleParkingFull}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+            parkingFull ? 'bg-red-600 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800'
           }`}
         >
-          {label}
+          {parkingFull ? 'Full' : 'Avail'}
         </button>
-      ))}
-      <div className="w-px h-5 bg-gray-700 mx-1 shrink-0" />
+      </div>
       <button
-        data-testid="demo-toggle-full"
-        onClick={onToggleParkingFull}
-        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
-          parkingFull ? 'bg-red-600 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800'
+        data-testid="demo-start-btn"
+        onClick={onStartDemo}
+        disabled={demoRunning}
+        className={`w-full max-w-md py-1.5 rounded-lg text-[11px] font-bold tracking-wide transition-all pointer-events-auto ${
+          demoRunning
+            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            : 'bg-[#1C1D2B] text-white active:scale-95'
         }`}
       >
-        {parkingFull ? 'Full' : 'Avail'}
+        {demoRunning ? 'Demo running...' : 'Start Demo'}
       </button>
+      <span className="text-[10px] text-gray-600 mt-1 pointer-events-none">Demo mode - ParkEase v0.5</span>
     </div>
-    <button
-      data-testid="demo-start-btn"
-      onClick={onStartDemo}
-      disabled={demoRunning}
-      className={`w-full max-w-md py-1.5 rounded-lg text-[11px] font-bold tracking-wide transition-all pointer-events-auto ${
-        demoRunning
-          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-          : 'bg-[#1C1D2B] text-white active:scale-95'
-      }`}
-    >
-      {demoRunning ? 'Demo running...' : 'Start Demo'}
-    </button>
-    <span className="text-[10px] text-gray-600 mt-1 pointer-events-none">Demo mode - ParkEase v0.5</span>
-  </div>
-);
+  );
+};
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState(SCREENS.VENUE);
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+
   const [parkingFull, setParkingFull] = useState(false);
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [demoRunning, setDemoRunning] = useState(false);
-  const [lastBookingId, setLastBookingId] = useState(null);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userPhone, setUserPhone] = useState('');
@@ -85,12 +106,10 @@ export default function App() {
   const [activeNav, setActiveNav] = useState('For You');
   const [selectedCity] = useState('Delhi');
 
-  const navigate = (screen) => setCurrentScreen(screen);
-
   const handleToggleParkingFull = () => {
     setParkingFull(prev => {
       const next = !prev;
-      setCurrentScreen(next ? SCREENS.REDIRECT : SCREENS.VENUE);
+      navigate(next ? PATHS.REDIRECT : PATHS.VENUE);
       return next;
     });
   };
@@ -107,10 +126,7 @@ export default function App() {
   };
 
   const startDemo = () => {
-    const flow = [
-      SCREENS.VENUE, SCREENS.BOOKING, SCREENS.CONFIRMATION,
-      SCREENS.REDIRECT, SCREENS.DASHBOARD, SCREENS.RETENTION,
-    ];
+    const flow = [PATHS.VENUE, PATHS.BOOKING, PATHS.CONFIRMATION, PATHS.REDIRECT, PATHS.DASHBOARD, PATHS.RETENTION];
     setDemoRunning(true);
     let i = 0;
     navigate(flow[i]);
@@ -125,50 +141,7 @@ export default function App() {
     }, 4000);
   };
 
-  const showNavbar = [SCREENS.VENUE, SCREENS.BOOKING, SCREENS.CONFIRMATION, SCREENS.REDIRECT, SCREENS.RETENTION].includes(currentScreen);
-  const navbarOffset = showNavbar ? 'pt-16' : '';
-
-  const renderScreen = () => {
-    switch (currentScreen) {
-      case SCREENS.VENUE:
-        return (
-          <VenueLandingScreen
-            parkingFull={parkingFull}
-            selectedVenue={selectedVenue}
-            onNavigateToBooking={() => navigate(SCREENS.BOOKING)}
-            onNavigateToRedirect={() => navigate(SCREENS.REDIRECT)}
-          />
-        );
-      case SCREENS.BOOKING:
-        return (
-          <BookingFlowScreen
-            onPaymentSuccess={(bookingId) => {
-              setLastBookingId(bookingId);
-              navigate(SCREENS.CONFIRMATION);
-            }}
-            onNavigateBack={() => navigate(SCREENS.VENUE)}
-            onParkingFull={() => navigate(SCREENS.REDIRECT)}
-            userPhone={userPhone}
-            isLoggedIn={isLoggedIn}
-          />
-        );
-      case SCREENS.CONFIRMATION:
-        return (
-          <BookingConfirmationScreen
-            bookingId={lastBookingId || "PE-2026-DEMO1234"}
-            onNavigateToRetention={() => navigate(SCREENS.RETENTION)}
-          />
-        );
-      case SCREENS.REDIRECT:
-        return <RedirectScreen />;
-      case SCREENS.DASHBOARD:
-        return <OperatorDashboardScreen />;
-      case SCREENS.RETENTION:
-        return <RetentionScreen />;
-      default:
-        return <VenueLandingScreen onNavigateToBooking={() => navigate(SCREENS.BOOKING)} />;
-    }
-  };
+  const showNavbar = NAVBAR_PATHS.has(pathname);
 
   return (
     <div className="min-h-screen bg-gray-50" data-testid="app-root">
@@ -185,13 +158,39 @@ export default function App() {
         />
       )}
 
-      <div className={navbarOffset}>
-        {renderScreen()}
+      <div className={showNavbar ? 'pt-16' : ''}>
+        <Routes>
+          <Route path={PATHS.VENUE} element={
+            <VenueLandingScreen
+              parkingFull={parkingFull}
+              selectedVenue={selectedVenue}
+              onNavigateToBooking={() => navigate(PATHS.BOOKING)}
+              onNavigateToRedirect={() => navigate(PATHS.REDIRECT)}
+            />
+          } />
+          <Route path={PATHS.BOOKING} element={
+            <BookingFlowScreen
+              onPaymentSuccess={(bookingId) => navigate(PATHS.CONFIRMATION, { state: { bookingId } })}
+              onNavigateBack={() => navigate(PATHS.VENUE)}
+              onParkingFull={() => navigate(PATHS.REDIRECT)}
+              userPhone={userPhone}
+              isLoggedIn={isLoggedIn}
+            />
+          } />
+          <Route path={PATHS.CONFIRMATION} element={<ConfirmationRoute />} />
+          <Route path={PATHS.REDIRECT} element={<RedirectScreen />} />
+          <Route path={PATHS.DASHBOARD} element={<OperatorDashboardScreen />} />
+          <Route path={PATHS.RETENTION} element={<RetentionScreen />} />
+          <Route path="*" element={
+            <VenueLandingScreen
+              onNavigateToBooking={() => navigate(PATHS.BOOKING)}
+              onNavigateToRedirect={() => navigate(PATHS.REDIRECT)}
+            />
+          } />
+        </Routes>
       </div>
 
       <DemoNav
-        current={currentScreen}
-        onNavigate={navigate}
         parkingFull={parkingFull}
         onToggleParkingFull={handleToggleParkingFull}
         onStartDemo={startDemo}
@@ -210,7 +209,7 @@ export default function App() {
         onVenueSelect={(venue) => {
           setSelectedVenue(venue);
           setShowSearch(false);
-          navigate(SCREENS.VENUE);
+          navigate(PATHS.VENUE);
         }}
       />
     </div>
