@@ -7,17 +7,48 @@
 
 **ParkEase** (working name also seen as ParkSmart in early PRD drafts) is a two-sided event parking platform for India. It pre-sells named parking bays to event attendees and provides operators a live dashboard + compliance report. When parking sells out, it redirects users to Ola/Uber/Rapido via deep-link.
 
-**Stage:** Phase 0 COMPLETE. Phase 1 (MVP Backend) IN PROGRESS — Tasks 1–4 complete, Tasks 5–7 pending.
-**Prototype status:** All 6 screens done. Active codebase is `frontend/` (React CRA) + `backend/` (FastAPI + MongoDB). `app/` is archived Phase 0 prototype on Vercel.
+**Stage:** Phase 0 COMPLETE. Phase 1 (MVP Backend) COMPLETE — all 7 tasks done.
+**Prototype status:** All 6 screens done. Active codebase is `frontend/` (React CRA) + `backend/` (FastAPI + MongoDB). `app/` is the Vite prototype — **this is what Vercel deploys**.
 **Stack:** React 18 (CRA) + Tailwind CSS v3 + React Router v6 (frontend, port 3000) | FastAPI + MongoDB (backend, port 8001)
-**Next milestone:** Phase 1 Tasks 5–7 (see below), then demo to event organisers.
+**Next milestone:** Demo to event organisers.
 **Notion:** PRD and Business Model pages in Notion are kept in sync — both updated to match .md files.
+
+> ⚠️ **VERCEL DEPLOY RULE — read before every UI fix:**
+> The live site `https://park-ease-rho.vercel.app` deploys from **`app/`** (Vite, `.jsx` files), NOT `frontend/`.
+> Config: `app/vercel.json` — buildCommand: `npm run build`, outputDirectory: `dist`, framework: `vite`.
+> **Any UI change that needs to appear on the live site MUST be made in `app/src/`, not `frontend/src/`.**
+> `frontend/` is the Phase 1 local dev build (CRA + real backend). It is NOT on Vercel.
 
 **Team size:** 2 founders, full-stack ownership.
 
 ---
 
 ## Session Log
+
+### Phase 1 Tasks 5–7 + UI fixes (4 April 2026)
+
+**Status:** All 7 Phase 1 tasks complete. All demo/mock — zero third-party charges.
+
+**Tasks 5–7 (applied to `frontend/src/`):**
+- Task 5 — `S3_BookingConfirmation.js`: replaced `MockQRCode` pixel-grid with real QR via `qrcode` npm package (`QRCode.toDataURL(bookingId)` → `<img>`). Shows gray pulse placeholder while generating.
+- Task 6 — new `Toast.js` component (fixed bottom, dark pill, auto-dismiss 4s). Fires on S3 mount: "We'll remind you to leave by 6:00 PM — push notification sent 90 mins before event".
+- Task 7 — OTP wiring verified correct, no changes needed. `AuthModal` fires `onLoginSuccess(phone)` → App.js sets `isLoggedIn + userPhone` → S2 shows "✓ Verified" badge.
+
+**UI bug fixes (applied to BOTH `app/src/` for Vercel AND `frontend/src/` for local):**
+
+`app/src/screens/S3_BookingConfirmation.jsx` + `frontend/src/screens/S3_BookingConfirmation.js`:
+- UPI payment section (payment QR + GPay/PhonePe/Paytm/BHIM app buttons) now appears **before** the booking entry QR.
+- `app/` uses `api.qrserver.com` for payment QR (no npm dep). `frontend/` uses `qrcode` npm package.
+- Booking entry QR now labelled "Your entry pass" and appears below payment section.
+
+`app/src/screens/S2_BookingFlow.jsx` + `frontend/src/screens/S2_BookingFlow.js`:
+- Bay grid hidden on page load. CTA button ("Select a bay to continue") is now active/dark on load — clicking it opens the bay grid.
+- "Select your bay" heading converted from `<button>` (was accidentally triggering grid) to plain `<span>`.
+- Selecting a bay collapses the grid to the selected bay card. "Change" reopens grid.
+
+**Root cause discovered:** All previous fixes were going into `frontend/` only. Vercel deploys `app/`. Live site showed no changes. Fixed by always editing `app/src/` for Vercel-visible changes.
+
+---
 
 ### Phase 1 — MVP Backend IN PROGRESS (4 April 2026)
 
