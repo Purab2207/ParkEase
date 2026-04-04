@@ -393,6 +393,74 @@ const DirectionsButton = ({ gateName, venueName }) => (
 );
 
 // ----------------------------------------------------------------------------
+// PAYMENT SCREEN — stage 1: user pays before seeing the entry QR
+// ----------------------------------------------------------------------------
+
+const PaymentScreen = ({ booking, onPaymentConfirmed }) => {
+  const [processing, setProcessing] = useState(false);
+
+  const handleSimulate = () => {
+    setProcessing(true);
+    setTimeout(() => onPaymentConfirmed(), 2000);
+  };
+
+  if (processing) {
+    return (
+      <div className="min-h-[100dvh] bg-gray-50 flex flex-col items-center justify-center gap-6 px-4">
+        <div className="relative w-20 h-20">
+          <div className="absolute inset-0 rounded-full border-4 border-gray-200" />
+          <div className="absolute inset-0 rounded-full border-4 border-t-gray-900 animate-spin" />
+        </div>
+        <div className="flex flex-col items-center gap-1">
+          <p className="text-base font-semibold text-gray-900">Verifying payment…</p>
+          <p className="text-sm text-gray-400">Confirming with UPI network</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-[100dvh] bg-gray-50 font-sans">
+      <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-50 flex flex-col px-4 py-6 gap-5 pb-24 sm:shadow-2xl">
+
+        {/* Header */}
+        <div className="flex flex-col items-center gap-1 pt-2">
+          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1">
+            <ShieldIcon />
+          </div>
+          <h1 className="text-xl font-bold text-gray-900">Complete Payment</h1>
+          <p className="text-xs text-gray-400">Pay ₹{booking.consumerPrice} to confirm your bay</p>
+        </div>
+
+        {/* Booking context — compact */}
+        <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-4 py-3 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-bold text-gray-900">{booking.eventName} · Bay {booking.bayPillarCode}</p>
+            <p className="text-xs text-gray-500">{booking.venue}</p>
+          </div>
+          <span className="text-lg font-black text-gray-900">₹{booking.consumerPrice}</span>
+        </div>
+
+        {/* UPI payment section */}
+        <UPIPaymentSection amount={booking.consumerPrice} bookingId={booking.bookingId} />
+
+        {/* Demo CTA */}
+        <div className="w-full sticky bottom-4 mt-2 flex flex-col gap-2">
+          <button
+            onClick={handleSimulate}
+            className="w-full bg-[#1C1D2B] text-white font-bold text-base rounded-2xl py-4 active:scale-95 transition-all shadow-lg shadow-black/40 tracking-wide uppercase"
+          >
+            Simulate Payment ✓
+          </button>
+          <p className="text-xs text-center text-gray-400">Demo only — no real charge made</p>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+// ----------------------------------------------------------------------------
 // MAIN SCREEN COMPONENT
 // ----------------------------------------------------------------------------
 
@@ -418,9 +486,16 @@ export default function BookingConfirmationScreen({ bookingId = 'pe-2026-karan-a
     cancellationDeadline: 'Fri, 11 Apr 2026',
   };
 
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [groupSize, setGroupSize] = useState(5); // PRD demo: Rahul's group of 5
   const splitAmount = Math.ceil(booking.consumerPrice / groupSize);
 
+  // Stage 1 — payment screen
+  if (!paymentConfirmed) {
+    return <PaymentScreen booking={booking} onPaymentConfirmed={() => setPaymentConfirmed(true)} />;
+  }
+
+  // Stage 2 — confirmed: entry QR + all post-payment content
   return (
     <div className="min-h-[100dvh] bg-gray-50 font-sans sm:bg-gray-50">
       <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-50 flex flex-col px-4 py-6 gap-5 pb-20 sm:shadow-2xl">
@@ -428,10 +503,7 @@ export default function BookingConfirmationScreen({ bookingId = 'pe-2026-karan-a
         {/* Confirmation header */}
         <ConfirmationHeader bookingId={booking.bookingId} />
 
-        {/* UPI payment section — pay first */}
-        <UPIPaymentSection amount={booking.consumerPrice} bookingId={booking.bookingId} />
-
-        {/* Booking entry QR — show at gate after payment */}
+        {/* Booking entry QR */}
         <div className="w-full flex flex-col gap-3">
           <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">Your entry pass</span>
           <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-4 py-4 flex flex-col items-center">
