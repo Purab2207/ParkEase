@@ -1,6 +1,8 @@
 # ParkEase — Master Project Summary
 ## Read this first in every new session
 
+> 📋 **MASTER SUMMARY RULE:** Update this file at the end of every session — log what changed, what was tested, what was fixed, and what's next. Do not let sessions go unlogged. This is the single source of truth across all Claude Code conversations.
+
 ---
 
 ## What this project is
@@ -43,6 +45,36 @@
 **`frontend/`** — deprecated. CRA is unmaintained since 2023. All API logic ported to `app/`. Do not edit `frontend/`.
 
 **APM/LinkedIn narrative:** "Started with a hardcoded prototype to validate UX fast. Once the core flow was proven, migrated to a data-driven template architecture — S1 and S2 now render any event from a single component. Adding a new event organiser requires one database insert and zero code changes. Search bar shows live inventory. This is the architectural decision that separates a prototype from a product."
+
+---
+
+### Live site verification — post template migration (4 April 2026)
+
+**Tested:** `https://park-ease-rho.vercel.app` — all routes checked via HTTP status + bundle inspection.
+
+**Route status (all 200, no 404s):**
+
+| Route | Status |
+|---|---|
+| `/` | 200 — redirects to `/events/karan-aujla-jln-2026` ✓ |
+| `/events/karan-aujla-jln-2026` | 200 ✓ |
+| `/events/arijit-singh-dy-patil-2026` | 200 ✓ |
+| `/confirmation/PE-2026-DEMO1234` | 200 ✓ |
+| `/retain` | 200 ✓ |
+| `/retain/book` | 200 ✓ |
+| `/dashboard` | 200 ✓ |
+
+**Bundle content verified:**
+- All 4 events present: Karan Aujla, Arijit Singh, Coldplay, Diljit Dosanjh ✓
+- All 4 venues: Chinnaswamy, DY Patil Stadium, Narendra Modi Stadium, PCA Cricket Stadium ✓
+- OTP demo auto-fill (123456) ✓
+- "Simulate Payment" button (S3 payment-first flow) ✓
+- "Entry QR" reveal (post-payment stage) ✓
+- S7 / S8 RCB screens ✓
+- `retain/book` + `retain/confirm` routes in bundle ✓
+- SPA rewrite rule active — no direct-URL 404s ✓
+
+**Deployed bundle:** `index-BVTmH-T4.js` — latest commit `07d17b9`
 
 ---
 
