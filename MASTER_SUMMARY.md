@@ -25,6 +25,37 @@
 
 ## Session Log
 
+### QA audit — live Vercel site (4 April 2026)
+
+**Tested:** `https://park-ease-rho.vercel.app` — all 6 screens via DemoNav.
+
+**S2 + S3 fixes confirmed working:**
+- S2: Bay grid hidden on load, CTA "Select a bay to continue" is active/clickable, opens grid. Heading no longer a button. ✅
+- S3: UPI payment QR + app buttons appear before booking entry QR. ✅
+
+**3 bugs found — not yet fixed:**
+
+| # | Severity | Screen | Issue |
+|---|----------|--------|-------|
+| 1 | Critical | All | Sub-routes (`/booking`, `/confirmation`, `/redirect`, `/dashboard`, `/retain`) return **404** when accessed directly. `app/vercel.json` missing rewrite rules. Fix: add `"rewrites": [{"source": "/(.*)", "destination": "/index.html"}]` to `app/vercel.json`. |
+| 2 | High | S6 | "Book Parking · ₹199" CTA button has no `onClick` — tapping it does nothing. Should navigate to S2. |
+| 3 | Medium | S4, S6 | Both reference **Chinnaswamy Stadium, Bangalore** while S1/S2/S3 use **JLN Stadium, Delhi**. Breaks demo narrative. |
+
+**Non-blocking observations:**
+- S1: "3 booked in the last 2 mins" is static hardcoded text, not a real counter.
+- S4: Redirect counter increments via `Math.random()` — cosmetically fake.
+- S5: PDF download is a `.txt` blob renamed `.pdf`, not a real PDF.
+- S3: UPI VPA `parksease@okaxis` is a placeholder — not labelled as demo in UI.
+
+---
+
+### Repo cleanup — Emergent leftovers removed (4 April 2026)
+
+**Deleted:** `.emergent/`, `.gitconfig` (Emergent agent identity `github@emergent.sh`), `03_Code_Blueprints/`, `memory/PRD.md`, `test_reports/`, `concert.jpg` (root duplicate).
+**Moved:** `backend_test.py` → `backend/backend_test.py`
+
+---
+
 ### Phase 1 Tasks 5–7 + UI fixes (4 April 2026)
 
 **Status:** All 7 Phase 1 tasks complete. All demo/mock — zero third-party charges.
@@ -569,15 +600,15 @@ Target contacts: venue operations managers at JLN Stadium (Delhi) and Chinnaswam
 
 ## Files to read for full context
 
-| Need | Read this |
-|------|-----------|
-| Full product spec | `01_Product/ParkEase_PRD.md` (large — use offset/limit, search with Grep) |
-| Revenue / pricing | `02_Financials/Business Valuation.md` |
-| Active frontend | `frontend/src/` — App.js, screens/, components/, hooks/ |
-| Active backend | `backend/server.py` — FastAPI, MongoDB, WebSocket |
-| Notion PRD | Page ID `33018e3e-67e7-81a1-ba57-c11d06f4db91` |
-| Notion Business Model | Page ID `33218e3e-67e7-8146-bc2a-ed8acd5f2622` |
-| Archived prototype | `app/` — Phase 0 Vite, all mocked, on Vercel (do not edit) |
+| Need                  | Read this                                                                 |
+| --------------------- | ------------------------------------------------------------------------- |
+| Full product spec     | `01_Product/ParkEase_PRD.md` (large — use offset/limit, search with Grep) |
+| Revenue / pricing     | `02_Financials/Business Valuation.md`                                     |
+| Active frontend       | `frontend/src/` — App.js, screens/, components/, hooks/                   |
+| Active backend        | `backend/server.py` — FastAPI, MongoDB, WebSocket                         |
+| Notion PRD            | Page ID `33018e3e-67e7-81a1-ba57-c11d06f4db91`                            |
+| Notion Business Model | Page ID `33218e3e-67e7-8146-bc2a-ed8acd5f2622`                            |
+| Archived prototype    | `app/` — Phase 0 Vite, all mocked, on Vercel (do not edit)                |
 
 ---
 
