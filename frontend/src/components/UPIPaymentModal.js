@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import QRCode from 'qrcode';
 
 const UPI_APPS = [
   { id: 'gpay', name: 'Google Pay', short: 'GPay', color: 'bg-white border-gray-200', icon: (
@@ -44,6 +45,14 @@ export default function UPIPaymentModal({ isOpen, onClose, onSuccess, amount, ba
   const [selectedApp, setSelectedApp] = useState(null);
   const [countdown, setCountdown] = useState(5);
   const [dots, setDots] = useState('');
+  const [paymentQrUrl, setPaymentQrUrl] = useState('');
+
+  useEffect(() => {
+    const upiUrl = `upi://pay?pa=parksease@okaxis&pn=ParkEase&am=${amount}&cu=INR&tn=ParkEase+Parking`;
+    QRCode.toDataURL(upiUrl, { width: 160, margin: 1 })
+      .then(url => setPaymentQrUrl(url))
+      .catch(() => {});
+  }, [amount]);
 
   // Reset on open
   useEffect(() => {
@@ -128,7 +137,23 @@ export default function UPIPaymentModal({ isOpen, onClose, onSuccess, amount, ba
         <div className="bg-white px-6 pt-6 pb-8">
           {stage === 'select' && (
             <>
-              <p className="text-gray-900 text-sm font-semibold mb-4">Pay using UPI</p>
+              {/* UPI Payment QR */}
+              <div className="flex flex-col items-center gap-2 mb-5">
+                <div className="bg-white border border-gray-100 rounded-2xl p-3 shadow-sm">
+                  {paymentQrUrl
+                    ? <img src={paymentQrUrl} alt="UPI payment QR" width={140} height={140} />
+                    : <div className="w-[140px] h-[140px] bg-gray-100 rounded-xl animate-pulse" />
+                  }
+                </div>
+                <p className="text-xs text-gray-400 text-center">Scan with any UPI app to pay ₹{amount}</p>
+              </div>
+
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex-1 h-px bg-gray-100" />
+                <span className="text-xs text-gray-400 font-medium">or choose an app</span>
+                <div className="flex-1 h-px bg-gray-100" />
+              </div>
+
               <div className="flex flex-col gap-2.5">
                 {UPI_APPS.map(app => (
                   <button
