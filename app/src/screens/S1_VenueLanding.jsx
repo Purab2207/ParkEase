@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { fetchEvent, FALLBACK_EVENTS } from '../api';
+import useLiveSpots from '../hooks/useLiveSpots';
 
 // S1 — Venue / Event Landing Page
 // React / Tailwind Implementation
@@ -52,43 +55,29 @@ const ShieldIcon = () => (
   </svg>
 );
 
-// ----------------------------------------------------------------------------
-// MOCK DATA
-// ----------------------------------------------------------------------------
-const MOCK_VENUE = {
-  eventId: 'karan-aujla-jln-2026',
-  eventName: 'Karan Aujla',
-  subTitle: 'The Bombairiya Tour',
-  venue: 'Jawaharlal Nehru Stadium',
-  city: 'Delhi',
-  date: 'Sat, 12 Apr 2026',
-  doorsOpen: '6:00 PM',
-  showTime: '8:00 PM',
-  totalSpots: 500,
-  spotsRemaining: 47,           // PRD demo value — the number that does the work
-  consumerPrice: 169,
-  distanceToGateMetres: 180,    // PRD: distance to gate is headline — Priya's decision signal
-  gateName: 'Gate 2',
-  coveredParking: true,
-  lots: [
-    { name: 'JLN North Lot', spots: 300, distanceM: 180 },
-    { name: 'JLN South Lot', spots: 200, distanceM: 280 },
-  ],
-  prohibitedItems: [
-    'Professional cameras / DSLR',
-    'Outside food & beverages',
-    'Laser pointers',
-    'Selfie sticks / tripods',
-    'Power banks above 20,000 mAh',
-  ],
-  amenities: [
-    'Covered parking',
-    'Pillar-mapped bays',
-    'QR entry enforcement',
-    'Pre-assigned bay number',
-  ],
-  bookingCount: 453,   // social proof counter
-};
+// Normalise API response (snake_case) → component shape (camelCase)
+function normaliseEvent(e) {
+  return {
+    eventId: e.event_id,
+    eventName: e.event_name,
+    subTitle: e.sub_title,
+    venue: e.venue,
+    city: e.city,
+    date: e.date,
+    doorsOpen: e.doors_open,
+    showTime: e.show_time,
+    totalSpots: e.total_spots,
+    spotsRemaining: e.spots_remaining,
+    consumerPrice: e.consumer_price,
+    distanceToGateMetres: e.distance_to_gate_metres,
+    gateName: e.gate_name,
+    coveredParking: e.covered_parking,
+    lots: (e.lots || []).map(l => ({ name: l.name, spots: l.total, distanceM: l.distance_m })),
+    prohibitedItems: e.prohibited_items || [],
+    amenities: e.amenities || [],
+    bookingCount: e.booking_count || 0,
+  };
+}
 
 // ----------------------------------------------------------------------------
 // SUB-COMPONENTS
@@ -339,34 +328,30 @@ const BookCTA = ({ spotsRemaining, consumerPrice, onBook }) => {
 // ----------------------------------------------------------------------------
 // MAIN SCREEN
 // ----------------------------------------------------------------------------
-export default function VenueLandingScreen({ onNavigateToBooking, onNavigateToRedirect, selectedVenue }) {
-  const [venue] = useState(() => {
-    if (!selectedVenue) return MOCK_VENUE;
-    return {
-      ...MOCK_VENUE,
-      eventName: selectedVenue.name,
-      venue: selectedVenue.location,
-      consumerPrice: selectedVenue.price,
-    };
-  });
-  const [spotsRemaining, setSpotsRemaining] = useState(MOCK_VENUE.spotsRemaining);
+export default function VenueLandingScreen({ parkingFull }) {
+  const { eventId } = useParams();
+  const navigate = useNavigate();
 
-  // Simulate live counter decay for demo realism
+  const [venue, setVenue] = useState(() =>
+    normaliseEvent(FALLBACK_EVENTS[eventId] || FALLBACK_EVENTS['karan-aujla-jln-2026'])
+  );
+  const [loading, setLoading] = useState(true);
+  const live = useLiveSpots(eventId);
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      setSpotsRemaining(prev => Math.max(prev - 1, 0));
-    }, 45000);
-    return () => clearInterval(interval);
-  }, []);
+    setLoading(true);
+    fetchEvent(eventId).then(data => {
+      setVenue(normaliseEvent(data));
+      setLoading(false);
+    });
+  }, [eventId]);
+
+  const spotsRemaining = live.spotsRemaining ?? venue.spotsRemaining;
+  const bookingCount = live.bookedSpots ?? venue.bookingCount;
 
   const handleBook = () => {
-    if (spotsRemaining === 0) {
-      // Navigate to S4 — redirect screen
-      onNavigateToRedirect?.();
-    } else {
-      // Navigate to S2 — booking flow
-      onNavigateToBooking?.();
-    }
+    if (parkingFull || spotsRemaining === 0) navigate('/redirect');
+    else navigate(`/events/${eventId}/book`);
   };
 
   return (
@@ -399,7 +384,7 @@ export default function VenueLandingScreen({ onNavigateToBooking, onNavigateToRe
         <ScarcityCounter
           spotsRemaining={spotsRemaining}
           totalSpots={venue.totalSpots}
-          bookingCount={venue.bookingCount}
+          bookingCount={bookingCount}
         />
 
         {/* Lot breakdown */}

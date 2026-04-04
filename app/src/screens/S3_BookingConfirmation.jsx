@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 
 // S3 — Booking Confirmation Screen
 // React / Tailwind Implementation
@@ -464,7 +465,11 @@ const PaymentScreen = ({ booking, onPaymentConfirmed }) => {
 // MAIN SCREEN COMPONENT
 // ----------------------------------------------------------------------------
 
-export default function BookingConfirmationScreen({ bookingId = 'pe-2026-karan-aujla-b18', onNavigateToRetention }) {
+export default function BookingConfirmationScreen() {
+  const { bookingId: routeBookingId } = useParams();
+  const navigate = useNavigate();
+  const bookingId = routeBookingId || 'pe-2026-karan-aujla-b18';
+  const onNavigateToRetention = () => navigate('/retain');
 
   // In MVP these values arrive as route params from S2 (navigate('/confirmation/:bookingId'))
   const booking = {

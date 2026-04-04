@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { fetchEvent, FALLBACK_EVENTS } from '../api';
 
 // S2 — Parking Pre-Booking Flow
 // React / Tailwind Implementation
@@ -50,28 +52,23 @@ const UsersIcon = () => (
   </svg>
 );
 
-// ----------------------------------------------------------------------------
-// MOCK DATA — seeded per PRD demo values
-// ----------------------------------------------------------------------------
+// Normalise API event → S2 shape
+function normaliseEvent(e) {
+  return {
+    id: e.event_id,
+    name: e.event_name,
+    venue: `${e.venue}, ${e.city}`,
+    date: e.date,
+    eventTier: e.event_tier || 'Standard',
+    consumerPrice: e.consumer_price,
+    venueBaseRate: e.venue_base_rate || e.consumer_price - 49,
+    parkEaseFee: e.park_ease_fee || 49,
+    entryWindows: e.entry_windows || ['5:30–7:00 PM', '7:00–8:30 PM'],
+    prohibitedItems: e.prohibited_items || [],
+  };
+}
 
-const MOCK_EVENT = {
-  id: 'karan-aujla-jln-2026',
-  name: 'Karan Aujla',
-  venue: 'Jawaharlal Nehru Stadium, Delhi',
-  date: 'Sat, 12 Apr 2026',
-  eventTier: 'Standard IPL',
-  consumerPrice: 169,
-  venueBaseRate: 120,
-  parkEaseFee: 49,
-  entryWindows: ['5:30–7:00 PM', '7:00–8:30 PM'],
-  prohibitedItems: [
-    'Professional cameras / DSLR',
-    'Outside food & beverages',
-    'Laser pointers',
-    'Selfie sticks / tripods',
-    'Power banks above 20,000 mAh',
-  ],
-};
+const DEFAULT_EVENT = normaliseEvent(FALLBACK_EVENTS['karan-aujla-jln-2026']);
 
 // JLN North Lot — 20 bays, pillar-based (B-series)
 // ~35% taken to match MVP 35% fill rate target
@@ -512,13 +509,22 @@ const StepCompletedChip = ({ label, value, onClick }) => (
 // MAIN SCREEN COMPONENT
 // ----------------------------------------------------------------------------
 
-export default function BookingFlowScreen({ onPaymentSuccess, onNavigateBack, onNavigateToRedirect, userPhone, isLoggedIn }) {
+export default function BookingFlowScreen({ userPhone, isLoggedIn }) {
+  const { eventId } = useParams();
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
 
-  // Event + inventory
-  const [event] = useState(MOCK_EVENT);
-  const [spotsRemaining, setSpotsRemaining] = useState(47); // PRD demo value
+  // Event data — fetched from API, falls back to local data
+  const [event, setEvent] = useState(DEFAULT_EVENT);
+  const [spotsRemaining, setSpotsRemaining] = useState(47);
   const totalSpots = 500;
+
+  useEffect(() => {
+    fetchEvent(eventId).then(data => {
+      setEvent(normaliseEvent(data));
+      setSpotsRemaining(data.spots_remaining ?? 47);
+    });
+  }, [eventId]);
 
   // Selections
   const [selectedLotId, setSelectedLotId] = useState('north');
@@ -567,11 +573,10 @@ export default function BookingFlowScreen({ onPaymentSuccess, onNavigateBack, on
   const handlePay = () => {
     if (!selectedBay || !selectedWindow) return;
     setPaymentLoading(true);
-    // PLACEHOLDER — UPI integration (Razorpay / PayU intent in MVP)
     setTimeout(() => {
       setPaymentLoading(false);
       setPaymentSuccess(true);
-      onPaymentSuccess?.();
+      navigate('/confirmation/PE-2026-DEMO1234');
     }, 1500);
   };
 
@@ -598,7 +603,7 @@ export default function BookingFlowScreen({ onPaymentSuccess, onNavigateBack, on
       <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-50 flex flex-col px-4 py-5 gap-4 pb-20 sm:shadow-2xl">
 
         {/* Header */}
-        <BookingHeader currentStep={currentStep} onBack={() => onNavigateBack?.()} />
+        <BookingHeader currentStep={currentStep} onBack={() => navigate(`/events/${eventId}`)} />
 
         {/* Always visible — event context */}
         <EventSummaryBar event={event} />

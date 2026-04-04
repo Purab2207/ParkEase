@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import AuthModal from './components/AuthModal';
 import SearchOverlay from './components/SearchOverlay';
@@ -11,102 +12,94 @@ import RetentionScreen from './screens/S6_RetentionScreen';
 import RCBBookingScreen from './screens/S7_RCBBooking';
 import RCBConfirmationScreen from './screens/S8_RCBConfirmation';
 
-const SCREENS = {
-  VENUE:            'venue',
-  BOOKING:          'booking',
-  CONFIRMATION:     'confirmation',
-  REDIRECT:         'redirect',
-  DASHBOARD:        'dashboard',
-  RETENTION:        'retention',
-  RCB_BOOKING:      'rcb-booking',
-  RCB_CONFIRMATION: 'rcb-confirmation',
-};
+const DEFAULT_EVENT = 'karan-aujla-jln-2026';
+
+// Paths that show the global navbar
+const NAVBAR_PATHS = ['/redirect', '/retain'];
 
 // ---------------------------------------------------------------------------
-// Demo switcher bar (visible at bottom, not part of final product)
+// Demo Nav — quick jump bar for presentations
 // ---------------------------------------------------------------------------
-const DemoNav = ({ current, onNavigate, parkingFull, onToggleParkingFull, onStartDemo, demoRunning }) => (
-  <div className="fixed bottom-0 left-0 right-0 z-[100] flex flex-col items-center pb-2 px-4 pointer-events-none">
-    <div className="bg-gray-950/95 border border-gray-700 rounded-2xl px-2 py-2 flex items-center gap-0.5 shadow-2xl pointer-events-auto w-full overflow-x-auto max-w-md">
-      {[
-        { id: SCREENS.VENUE,        label: 'S1 Landing' },
-        { id: SCREENS.BOOKING,      label: 'S2 Booking' },
-        { id: SCREENS.CONFIRMATION, label: 'S3 Confirm' },
-        { id: SCREENS.REDIRECT,     label: 'S4 Redirect' },
-        { id: SCREENS.DASHBOARD,    label: 'S5 Ops' },
-        { id: SCREENS.RETENTION,        label: 'S6 Retain' },
-        { id: SCREENS.RCB_BOOKING,      label: 'S7 RCB' },
-        { id: SCREENS.RCB_CONFIRMATION, label: 'S8 RCB✓' },
-      ].map(({ id, label }) => (
+const DemoNav = ({ onStartDemo, demoRunning, parkingFull, onToggleParkingFull }) => {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  const SCREENS = [
+    { label: 'S1 Landing',  path: `/events/${DEFAULT_EVENT}` },
+    { label: 'S2 Booking',  path: `/events/${DEFAULT_EVENT}/book` },
+    { label: 'S3 Confirm',  path: `/confirmation/PE-2026-DEMO1234` },
+    { label: 'S4 Redirect', path: '/redirect' },
+    { label: 'S5 Ops',      path: '/dashboard' },
+    { label: 'S6 Retain',   path: '/retain' },
+    { label: 'S7 RCB',      path: '/retain/book' },
+    { label: 'S8 RCB✓',     path: '/retain/confirm' },
+  ];
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-[100] flex flex-col items-center pb-2 px-4 pointer-events-none">
+      <div className="bg-gray-950/95 border border-gray-700 rounded-2xl px-2 py-2 flex items-center gap-0.5 shadow-2xl pointer-events-auto w-full overflow-x-auto max-w-md">
+        {SCREENS.map(({ label, path }) => (
+          <button
+            key={path}
+            onClick={() => navigate(path)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              pathname === path || pathname.startsWith(path + '/')
+                ? 'bg-white text-gray-900'
+                : 'text-gray-400 hover:text-white hover:bg-gray-800'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+        <div className="w-px h-5 bg-gray-700 mx-1 shrink-0" />
         <button
-          key={id}
-          onClick={() => onNavigate(id)}
-          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            current === id
-              ? 'bg-white text-gray-900'
-              : 'text-gray-400 hover:text-white hover:bg-gray-800'
+          onClick={onToggleParkingFull}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+            parkingFull ? 'bg-red-600 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800'
           }`}
         >
-          {label}
+          {parkingFull ? '🔴 Full' : 'Avail'}
         </button>
-      ))}
-      <div className="w-px h-5 bg-gray-700 mx-1 shrink-0" />
+      </div>
       <button
-        onClick={onToggleParkingFull}
-        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
-          parkingFull ? 'bg-red-600 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800'
+        onClick={onStartDemo}
+        disabled={demoRunning}
+        className={`w-full max-w-md py-1.5 rounded-lg text-[11px] font-bold tracking-wide transition-all pointer-events-auto ${
+          demoRunning ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-[#1C1D2B] text-white active:scale-95'
         }`}
       >
-        {parkingFull ? '🔴 Full' : 'Avail'}
+        {demoRunning ? 'Demo running…' : '▶ Start Demo'}
       </button>
+      <span className="text-[10px] text-gray-600 mt-1 pointer-events-none">Demo mode · ParkEase v0.6</span>
     </div>
-    <button
-      onClick={onStartDemo}
-      disabled={demoRunning}
-      className={`w-full max-w-md py-1.5 rounded-lg text-[11px] font-bold tracking-wide transition-all pointer-events-auto ${
-        demoRunning
-          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-          : 'bg-[#1C1D2B] text-white active:scale-95'
-      }`}
-    >
-      {demoRunning ? 'Demo running…' : '▶ Start Demo'}
-    </button>
-    <span className="text-[10px] text-gray-600 mt-1 pointer-events-none">Demo mode · ParkEase v0.5</span>
-  </div>
-);
+  );
+};
 
 // ---------------------------------------------------------------------------
 // App
 // ---------------------------------------------------------------------------
 export default function App() {
-  // Screen routing
-  const [currentScreen, setCurrentScreen] = useState(SCREENS.VENUE);
-  const [parkingFull, setParkingFull]     = useState(false);
-  const [selectedVenue, setSelectedVenue] = useState(null);
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  const [parkingFull, setParkingFull] = useState(false);
   const [demoRunning, setDemoRunning] = useState(false);
   const [rcbBookingData, setRcbBookingData] = useState(null);
 
   // Auth state
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userPhone, setUserPhone]   = useState('');
-  const [showAuth, setShowAuth]     = useState(false);
+  const [userPhone, setUserPhone] = useState('');
+  const [showAuth, setShowAuth] = useState(false);
 
   // Search
   const [showSearch, setShowSearch] = useState(false);
 
   // Navbar
-  const [activeNav, setActiveNav]       = useState('For You');
-  const [selectedCity, setSelectedCity] = useState('Delhi');
+  const [activeNav, setActiveNav] = useState('For You');
+  const [selectedCity] = useState('Delhi');
 
-  const navigate = (screen) => setCurrentScreen(screen);
-
-  const handleToggleParkingFull = () => {
-    setParkingFull(prev => {
-      const next = !prev;
-      setCurrentScreen(next ? SCREENS.REDIRECT : SCREENS.VENUE);
-      return next;
-    });
-  };
+  const showNavbar = pathname.startsWith('/events') || NAVBAR_PATHS.includes(pathname) ||
+    pathname.startsWith('/confirmation') || pathname === '/redirect';
 
   const handleLoginSuccess = (phone) => {
     setIsLoggedIn(true);
@@ -114,101 +107,41 @@ export default function App() {
     setShowAuth(false);
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUserPhone('');
+  const handleToggleParkingFull = () => {
+    setParkingFull(prev => {
+      const next = !prev;
+      navigate(next ? '/redirect' : `/events/${DEFAULT_EVENT}`);
+      return next;
+    });
   };
 
   const startDemo = () => {
     const flow = [
-      SCREENS.VENUE,
-      SCREENS.BOOKING,
-      SCREENS.CONFIRMATION,
-      SCREENS.REDIRECT,
-      SCREENS.DASHBOARD,
-      SCREENS.RETENTION,
+      `/events/${DEFAULT_EVENT}`,
+      `/events/${DEFAULT_EVENT}/book`,
+      `/confirmation/PE-2026-DEMO1234`,
+      '/redirect',
+      '/dashboard',
+      '/retain',
     ];
     setDemoRunning(true);
     let i = 0;
     navigate(flow[i]);
     const interval = setInterval(() => {
       i++;
-      if (i >= flow.length) {
-        clearInterval(interval);
-        setDemoRunning(false);
-        return;
-      }
+      if (i >= flow.length) { clearInterval(interval); setDemoRunning(false); return; }
       navigate(flow[i]);
     }, 4000);
   };
 
-  // Screens that show the Navbar
-  const showNavbar = [SCREENS.VENUE, SCREENS.BOOKING, SCREENS.CONFIRMATION, SCREENS.REDIRECT, SCREENS.RETENTION].includes(currentScreen);
-  // Dashboard has its own header
-  const navbarOffset = showNavbar ? 'pt-16' : '';
-
-  const renderScreen = () => {
-    switch (currentScreen) {
-      case SCREENS.VENUE:
-        return (
-          <VenueLandingScreen
-            parkingFull={parkingFull}
-            selectedVenue={selectedVenue}
-            onNavigateToBooking={() => navigate(SCREENS.BOOKING)}
-            onNavigateToRedirect={() => navigate(SCREENS.REDIRECT)}
-          />
-        );
-      case SCREENS.BOOKING:
-        return (
-          <BookingFlowScreen
-            onPaymentSuccess={() => navigate(SCREENS.CONFIRMATION)}
-            onNavigateBack={() => navigate(SCREENS.VENUE)}
-            onParkingFull={() => navigate(SCREENS.REDIRECT)}
-            userPhone={userPhone}
-            isLoggedIn={isLoggedIn}
-          />
-        );
-      case SCREENS.CONFIRMATION:
-        return (
-          <BookingConfirmationScreen
-            bookingId="PE-2026-12A9KD"
-            onNavigateToRetention={() => navigate(SCREENS.RETENTION)}
-          />
-        );
-      case SCREENS.REDIRECT:
-        return <RedirectScreen />;
-      case SCREENS.DASHBOARD:
-        return <OperatorDashboardScreen />;
-      case SCREENS.RETENTION:
-        return <RetentionScreen onBookParking={() => navigate(SCREENS.RCB_BOOKING)} />;
-      case SCREENS.RCB_BOOKING:
-        return (
-          <RCBBookingScreen
-            onConfirm={(data) => { setRcbBookingData(data); navigate(SCREENS.RCB_CONFIRMATION); }}
-            onNavigateBack={() => navigate(SCREENS.RETENTION)}
-          />
-        );
-      case SCREENS.RCB_CONFIRMATION:
-        return (
-          <RCBConfirmationScreen
-            bookingData={rcbBookingData}
-            onDone={() => navigate(SCREENS.VENUE)}
-          />
-        );
-      default:
-        return <VenueLandingScreen onNavigateToBooking={() => navigate(SCREENS.BOOKING)} />;
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Global Navbar */}
       {showNavbar && (
         <Navbar
           activeNav={activeNav}
           onNavChange={setActiveNav}
           onSearchOpen={() => setShowSearch(true)}
-          onAuthOpen={() => (isLoggedIn ? handleLogout() : setShowAuth(true))}
+          onAuthOpen={() => isLoggedIn ? (setIsLoggedIn(false), setUserPhone('')) : setShowAuth(true)}
           isLoggedIn={isLoggedIn}
           userPhone={userPhone}
           selectedCity={selectedCity}
@@ -216,38 +149,93 @@ export default function App() {
         />
       )}
 
-      {/* Page content — offset below fixed navbar */}
-      <div className={navbarOffset}>
-        {renderScreen()}
+      <div className={showNavbar ? 'pt-16' : ''}>
+        <Routes>
+          {/* Default → Karan Aujla landing */}
+          <Route path="/" element={<Navigate to={`/events/${DEFAULT_EVENT}`} replace />} />
+
+          {/* S1 — Venue landing: any event by ID */}
+          <Route
+            path="/events/:eventId"
+            element={
+              <VenueLandingScreen
+                parkingFull={parkingFull}
+                isLoggedIn={isLoggedIn}
+                userPhone={userPhone}
+              />
+            }
+          />
+
+          {/* S2 — Booking flow: same template, any event */}
+          <Route
+            path="/events/:eventId/book"
+            element={
+              <BookingFlowScreen
+                userPhone={userPhone}
+                isLoggedIn={isLoggedIn}
+              />
+            }
+          />
+
+          {/* S3 — Confirmation */}
+          <Route
+            path="/confirmation/:bookingId"
+            element={<BookingConfirmationScreen />}
+          />
+
+          {/* S4 — Redirect to cab */}
+          <Route path="/redirect" element={<RedirectScreen />} />
+
+          {/* S5 — Operator dashboard */}
+          <Route path="/dashboard" element={<OperatorDashboardScreen />} />
+
+          {/* S6 — Retention */}
+          <Route
+            path="/retain"
+            element={<RetentionScreen onBookParking={() => navigate('/retain/book')} />}
+          />
+
+          {/* S7 — RCB booking (retention flow) */}
+          <Route
+            path="/retain/book"
+            element={
+              <RCBBookingScreen
+                onConfirm={(data) => { setRcbBookingData(data); navigate('/retain/confirm'); }}
+                onNavigateBack={() => navigate('/retain')}
+              />
+            }
+          />
+
+          {/* S8 — RCB confirmation */}
+          <Route
+            path="/retain/confirm"
+            element={
+              <RCBConfirmationScreen
+                bookingData={rcbBookingData}
+                onDone={() => navigate(`/events/${DEFAULT_EVENT}`)}
+              />
+            }
+          />
+
+          {/* Catch-all */}
+          <Route path="*" element={<Navigate to={`/events/${DEFAULT_EVENT}`} replace />} />
+        </Routes>
       </div>
 
-      {/* Demo switcher */}
       <DemoNav
-        current={currentScreen}
-        onNavigate={navigate}
-        parkingFull={parkingFull}
-        onToggleParkingFull={handleToggleParkingFull}
         onStartDemo={startDemo}
         demoRunning={demoRunning}
+        parkingFull={parkingFull}
+        onToggleParkingFull={handleToggleParkingFull}
       />
 
-      {/* Auth Modal */}
       <AuthModal
         isOpen={showAuth}
         onClose={() => setShowAuth(false)}
         onLoginSuccess={handleLoginSuccess}
       />
 
-      {/* Search Overlay */}
-      <SearchOverlay
-        isOpen={showSearch}
-        onClose={() => setShowSearch(false)}
-        onVenueSelect={(venue) => {
-          setSelectedVenue(venue);
-          setShowSearch(false);
-          navigate(SCREENS.VENUE);
-        }}
-      />
+      <SearchOverlay isOpen={showSearch} onClose={() => setShowSearch(false)} />
     </div>
   );
 }

@@ -28,7 +28,100 @@ bookings_col = db["bookings"]
 
 
 def seed_demo_data():
-    """Seed the Karan Aujla demo event, bays, and a few bookings."""
+    """Seed all demo events, bays, and bookings."""
+    _seed_karan_aujla()
+    _seed_simple_event(
+        event_id="arijit-singh-dy-patil-2026",
+        event_name="Arijit Singh",
+        sub_title="Arijit Singh Live in Concert",
+        venue="DY Patil Stadium", city="Navi Mumbai",
+        date="Fri, 18 Apr 2026", doors_open="5:30 PM", show_time="7:30 PM",
+        total_spots=600, consumer_price=149, venue_base_rate=100,
+        distance_to_gate_metres=150, gate_name="Gate 1",
+        lots=[
+            {"id": "north", "name": "DY Patil North Lot", "total": 350, "distance_m": 150, "gate_name": "Gate 1"},
+            {"id": "south", "name": "DY Patil South Lot", "total": 250, "distance_m": 250, "gate_name": "Gate 3"},
+        ],
+        booking_seed=480,
+    )
+    _seed_simple_event(
+        event_id="coldplay-nms-2026",
+        event_name="Coldplay",
+        sub_title="Music of the Spheres World Tour",
+        venue="Narendra Modi Stadium", city="Ahmedabad",
+        date="Sun, 26 Jan 2026", doors_open="4:00 PM", show_time="6:00 PM",
+        total_spots=800, consumer_price=199, venue_base_rate=150,
+        distance_to_gate_metres=200, gate_name="Gate A",
+        lots=[
+            {"id": "north", "name": "NMS North Lot", "total": 500, "distance_m": 200, "gate_name": "Gate A"},
+            {"id": "south", "name": "NMS South Lot", "total": 300, "distance_m": 300, "gate_name": "Gate D"},
+        ],
+        booking_seed=788,
+    )
+    _seed_simple_event(
+        event_id="diljit-dosanjh-pca-2026",
+        event_name="Diljit Dosanjh",
+        sub_title="Dil-Luminati Tour",
+        venue="PCA Cricket Stadium", city="Mohali",
+        date="Sat, 10 May 2026", doors_open="5:00 PM", show_time="7:00 PM",
+        total_spots=400, consumer_price=169, venue_base_rate=120,
+        distance_to_gate_metres=160, gate_name="Gate 3",
+        lots=[
+            {"id": "north", "name": "PCA North Lot", "total": 250, "distance_m": 160, "gate_name": "Gate 3"},
+            {"id": "south", "name": "PCA South Lot", "total": 150, "distance_m": 220, "gate_name": "Gate 5"},
+        ],
+        booking_seed=311,
+    )
+
+
+def _seed_simple_event(event_id, event_name, sub_title, venue, city, date,
+                        doors_open, show_time, total_spots, consumer_price,
+                        venue_base_rate, distance_to_gate_metres, gate_name,
+                        lots, booking_seed):
+    """Seed a generic event with B/C-series bays and mock bookings."""
+    if events_col.find_one({"event_id": event_id}):
+        return
+    events_col.insert_one({
+        "event_id": event_id, "event_name": event_name, "sub_title": sub_title,
+        "venue": venue, "city": city, "date": date,
+        "doors_open": doors_open, "show_time": show_time,
+        "total_spots": total_spots, "consumer_price": consumer_price,
+        "venue_base_rate": venue_base_rate, "park_ease_fee": 49,
+        "event_tier": "Standard", "distance_to_gate_metres": distance_to_gate_metres,
+        "gate_name": gate_name, "covered_parking": False,
+        "entry_windows": ["5:00-6:30 PM", "6:30-8:00 PM"],
+        "redirect_threshold_spots": int(total_spots * 0.9),
+        "lots": lots,
+        "prohibited_items": ["Professional cameras / DSLR", "Outside food & beverages", "Laser pointers"],
+        "amenities": ["Pillar-mapped bays", "QR entry enforcement", "Pre-assigned bay number"],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+    north_taken = {"B-01", "B-04", "B-07", "B-10", "B-13"}
+    south_taken = {"C-01", "C-03", "C-07", "C-10"}
+    bay_docs = []
+    for i in range(1, 21):
+        code = f"B-{i:02d}"
+        bay_docs.append({"event_id": event_id, "lot_id": "north", "lot_name": lots[0]["name"],
+                          "pillar_code": code, "status": "taken" if code in north_taken else "available"})
+    for i in range(1, 16):
+        code = f"C-{i:02d}"
+        bay_docs.append({"event_id": event_id, "lot_id": "south", "lot_name": lots[1]["name"],
+                          "pillar_code": code, "status": "taken" if code in south_taken else "available"})
+    bays_col.insert_many(bay_docs)
+    mock_bookings = [
+        {"booking_id": f"PE-SEED-{event_id[:4].upper()}-{idx:04d}", "event_id": event_id,
+         "bay_id": f"SEED-{idx:03d}", "lot_id": "north" if idx < booking_seed // 2 else "south",
+         "phone": f"98765{10000+idx}", "entry_window": "5:00-6:30 PM",
+         "group_size": 1, "amount_paid": consumer_price, "status": "confirmed",
+         "created_at": datetime.now(timezone.utc).isoformat()}
+        for idx in range(booking_seed)
+    ]
+    if mock_bookings:
+        bookings_col.insert_many(mock_bookings)
+
+
+def _seed_karan_aujla():
+    """Seed the original Karan Aujla demo event (unchanged)."""
     event_id = "karan-aujla-jln-2026"
 
     if events_col.find_one({"event_id": event_id}):
