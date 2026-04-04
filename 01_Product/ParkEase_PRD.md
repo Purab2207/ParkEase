@@ -614,6 +614,8 @@ ParkEase: ParkEase takes contractual liability for the parking product. SLA cove
 
 That third answer closes the conversation. They agree on a pilot — one event, two lots, 500 spots.
 
+Commercial decision — event 1 is free, deliberately: ParkEase charges no platform fee on the pilot event. The ops cost (bay mapping, attendant briefing, dashboard setup) is absorbed. This is not a discount — it is a pricing strategy. A paid pilot asks Siddharth for financial trust before he has seen the product work. A free pilot asks only for access. The fee conversation happens after the compliance report lands on his MD's desk, not before. Asking for money before delivering proof is the fastest way to lose a risk-averse buyer in India's events industry.
+
 Product decision — SLA and liability clause is a product feature: The contractual liability transfer is what converts B2B buyers in India's live events space. The SLA belongs in the PRD as a product requirement, not just a legal footnote.
 
 ---
@@ -805,13 +807,25 @@ Strategic note — the compliance report is an acquisition channel: Every report
 
 #### Stage 6 — Retention and Scale
 
-Touchpoint: Internal review meeting · Emotional state: Confident, expanding
+Touchpoint: Internal review meeting → commercial negotiation · Emotional state: Confident, then evaluating
 
 Three weeks later, Siddharth presents the report in his company's post-event review. His MD asks: "Can we use this for all our events this year?"
 
 He contacts ParkEase: "We have 8 more events this year across Mumbai, Delhi, and Bangalore. Can you scale?"
 
-One successful event with a documented compliance report converts Siddharth from a pilot customer to an annual contract.
+This is where the platform fee enters the conversation for the first time.
+
+ParkEase: "Event 1 was our pilot — complimentary to establish baseline data and earn your trust. From event 2 onwards, our platform fee is ₹15,000–₹25,000 per event, scaled by attendee count and lot complexity."
+
+Siddharth: "What does that include?"
+
+ParkEase: "Bay mapping exercise before every new venue, operator dashboard for your team, live monitoring on event night, auto-generated compliance report the morning after. Your ops team does nothing beyond initial configuration. We deliver the parking ops layer — you take the compliance report to your MD and your municipal contacts."
+
+Siddharth's internal calculation: his team currently spends 2–3 days per event managing informal parking arrangements with no documentation, no data, and full liability. A ₹15,000–₹25,000 fixed cost that eliminates that liability and produces a defensible compliance report is not a vendor fee — it is risk insurance with a paper trail.
+
+He agrees to an annual contract covering 8 events.
+
+Commercial note — the platform fee is 60% of per-event contribution margin: At a standard-tier event (500 spots, 87% fill, ₹169 consumer price), consumer bookings generate approximately ₹8,000–₹10,000 net to ParkEase. The ₹15,000–₹25,000 platform fee is the majority of the economics. This fee is non-negotiable at scale and must be introduced in the annual contract conversation — not discounted to close the deal. The free pilot is the reason Siddharth says yes to the fee, not a precedent for future free events.
 
 Strategic note — Siddharth is the distribution channel for the entire consumer product: His annual contract brings ParkEase to every event his company runs. Arjun books parking at checkout, Priya finds the venue page, Rahul gets the ticket confirmation link — all because Siddharth said yes. The B2B conversion multiplies B2C reach across every city his company operates in.
 
@@ -823,11 +837,11 @@ Strategic note — Siddharth is the distribution channel for the entire consumer
 |---|---|---|---|---|---|
 |Stage|Touchpoint|Action|Emotional State|Friction Point|Product Response|
 |Outreach|Targeted email + one-pager|Reads email, takes the call|Cautious|Generic pitches ignored|Email references JLN failure by name + manual fallback detail|
-|Sales call|30-min video call|Asks 3 liability questions|Objection-heavy|"Who is liable if it fails?"|Contractual SLA — ParkEase takes liability for parking product|
+|Sales call|30-min video call|Asks 3 liability questions; agrees to pilot|Objection-heavy|"Who is liable if it fails?"|Contractual SLA — ParkEase takes liability; pilot event is free (deliberate pricing strategy)|
 |Pre-event setup|Operator dashboard|Configures event, reviews live pre-event data|Methodical|Dashboard must work pre-event, not just event night|Full functional dashboard from day of configuration|
 |Event night|Operator dashboard — live|Monitors in real time, no manual intervention needed|Alert, monitoring|Must trust data accuracy under pressure|Live fill rate, redirect count, per-lot status, automated alert feed|
 |Post-event|Dashboard PDF download|Downloads report, shares with MD and authorities|Relieved|Report must be credible for municipal submission|Auto-generated PDF with honest methodology notes, industry baseline comparison|
-|Retention|Internal review meeting|Requests annual contract across 8 events|Confident|Consistent ops across multiple cities|Same dashboard and report template across all events|
+|Retention + commercial|Internal review → fee negotiation|MD asks to scale; Siddharth negotiates annual contract; platform fee introduced|Confident, then evaluating|Fee must be justified, not discounted|₹15,000–₹25,000/event platform fee presented as risk insurance; pilot compliance report is the justification|
 
 ---
 
@@ -842,6 +856,10 @@ The dashboard's one job on event night is to let Siddharth watch without interve
 The vehicles diverted metric must be honest. Raw redirect tap count overstates diversion. Applying the 55% compliance discount and labelling it transparently as an estimate is more credible to a municipal authority than an inflated number that cannot be defended.
 
 The compliance report uses verified journalism as the industry baseline. Rather than estimating unmanaged clearance on the same night — which is anecdotal — the report cites Business Standard and Free Press Journal documentation of real Indian concert chaos. This is honest, defensible, and backed by published sources.
+
+The platform fee is the business. Consumer booking margin (≈₹48/spot net) is meaningful but secondary. The ₹15,000–₹25,000 per-event platform fee is 60% of per-event contribution. It must be introduced in the annual contract conversation — not waived, not discounted, not deferred. The free pilot is what earns the right to name the fee. It is not a precedent.
+
+The fee conversation happens after the compliance report, never before. Introducing the fee before Siddharth has seen the product work inverts the trust dynamic. The sequencing is: access (pilot) → proof (compliance report) → fee (annual contract). Collapsing this sequence loses the sale.
 
 Siddharth is the distribution channel for the entire consumer product. His contract brings ParkEase to every event his company runs across every Tier 1 city. The B2B flywheel is the consumer product's growth engine.
 
