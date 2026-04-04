@@ -7,10 +7,11 @@
 
 **ParkEase** (working name also seen as ParkSmart in early PRD drafts) is a two-sided event parking platform for India. It pre-sells named parking bays to event attendees and provides operators a live dashboard + compliance report. When parking sells out, it redirects users to Ola/Uber/Rapido via deep-link.
 
-**Stage:** Phase 0 COMPLETE. Phase 1 (MVP Backend) IN PROGRESS — Tasks 1-3 done.
-**Prototype status:** All 6 sessions done. Now ported to Emergent platform (React CRA + FastAPI + MongoDB).
-**Stack:** React (CRA) + Tailwind CSS v3 (frontend, port 3000) | FastAPI + MongoDB (backend, port 8001)
-**Next milestone:** Complete remaining Phase 1 tasks (4-7), then demo to event organisers.
+**Stage:** Phase 0 COMPLETE. Phase 1 (MVP Backend) IN PROGRESS — Tasks 1–4 complete, Tasks 5–7 pending.
+**Prototype status:** All 6 screens done. Active codebase is `frontend/` (React CRA) + `backend/` (FastAPI + MongoDB). `app/` is archived Phase 0 prototype on Vercel.
+**Stack:** React 18 (CRA) + Tailwind CSS v3 + React Router v6 (frontend, port 3000) | FastAPI + MongoDB (backend, port 8001)
+**Next milestone:** Phase 1 Tasks 5–7 (see below), then demo to event organisers.
+**Notion:** PRD and Business Model pages in Notion are kept in sync — both updated to match .md files.
 
 **Team size:** 2 founders, full-stack ownership.
 
@@ -21,6 +22,26 @@
 ### Phase 1 — MVP Backend IN PROGRESS (4 April 2026)
 
 **Status:** 4 of 7 tasks complete. All demo/mock — zero third-party charges.
+
+---
+
+### PRD + BV + Notion sync — B2B fee & compliance notes (4 April 2026)
+
+**Problem fixed:** The ₹15,000–25,000/event B2B platform fee — 60% of per-event contribution margin — was missing from Siddharth's user journey in the PRD. A reviewer could not see when or how the fee gets introduced, negotiated, or agreed to.
+
+**Changes (all applied to both `.md` files and Notion pages):**
+
+`01_Product/ParkEase_PRD.md` + Notion PRD page:
+- **Siddharth Stage 2** — Added "Commercial decision — event 1 is free, deliberately" callout immediately after pilot agreement. Explains why: free pilot asks for access, not financial trust. Paid pilot inverts the trust dynamic.
+- **Siddharth Stage 6** — Renamed to "Retention + commercial". Added full fee negotiation dialogue verbatim: ParkEase names ₹15–25k, Siddharth asks what it covers, internal calculation shown (liability elimination + paper trail = worth it). "Commercial note" callout: fee is non-negotiable, sequencing is access → proof → fee.
+- **Flow table** — Sales call row notes free pilot. Retention row updated to show fee negotiation as the core friction/resolution.
+- **Key insights** — Two new paragraphs: "The platform fee is the business" (60% of CM, non-negotiable) and "The fee conversation happens after the compliance report, never before" (sequencing rule).
+- **§2.2** — Compliance methodology note: 55% is Western benchmark, India baseline replaces it post-Event-1.
+- **§6 R1** — Compliance calibration plan: re-run model before annual contract, never present 55% as confirmed.
+
+`02_Financials/Business Valuation.md` + Notion Business Model page:
+- **§4 B2B flywheel** — Vehicles diverted methodology note: sensitivity at 30% (~35 vehicles) and 20% (~24); lead with exit clearance time, treat diverted as supporting evidence.
+- **§7 High Severity** — Compliance rate risk: below 25% weakens compliance report; make raw CTA tap count the headline metric.
 
 ---
 
@@ -463,7 +484,39 @@ Audited against industry findings (Escape.tech, The Register, Towards Data Scien
 
 ---
 
-## Phase 4 exit criteria
+## Phase 1 — Remaining tasks (next session picks up here)
+
+**Tasks 1–4 complete. Pick up from Task 5.**
+
+### Task 5 — Real QR code generation (mock, client-side)
+- `qrcode` npm package is already installed (`frontend/package.json`)
+- Replace `<MockQRCode>` pixel-grid component in `S3_BookingConfirmation.js` with real QR generated from `bookingId` using `qrcode` library
+- Generate as data URL: `QRCode.toDataURL(bookingId)` → render as `<img>`
+- Keep the `#BOOKING_ID` mono text and "Show to attendant" caption below
+- No backend change needed — purely client-side
+
+### Task 6 — Mock push notification (toast)
+- S6 RetentionScreen shows a "reminder" card — wire it to a visible mock toast
+- On S3 load (booking confirmed), show a toast: "We'll remind you to leave by 6:00 PM — push notification sent 90 mins before event"
+- Use a simple in-app toast component (no OneSignal, no real push — all mock)
+- File: `frontend/src/components/Toast.js` (new) — simple fixed-bottom notification that auto-dismisses after 4s
+- Trigger from `S3_BookingConfirmation.js` on mount via `useEffect`
+
+### Task 7 — OTP verification wire-check
+- `AuthModal.js` has a 6-box OTP input with 30s countdown — verify it is fully wired
+- Check: does `onLoginSuccess(phone)` get called after OTP entry? Does `isLoggedIn` state in App.js update?
+- Check: does `userPhone` pre-fill the contact field in S2 with a "✓ Verified" badge?
+- If any of these are broken, fix. If all wired — mark complete, no change needed.
+
+---
+
+## Phase 1 exit criteria
+
+> All 7 tasks complete. Frontend runs clean at `localhost:3000`, backend at `localhost:8001`. Demo flow S1→S2→S3→S4→S5→S6 works end-to-end with real MongoDB data. Ready to demo to event organisers.
+
+---
+
+## Phase 2 exit criteria (do not build until Phase 1 demo lands)
 
 > At least one event organiser expresses genuine intent to pilot.
 
@@ -489,10 +542,24 @@ Target contacts: venue operations managers at JLN Stadium (Delhi) and Chinnaswam
 |------|-----------|
 | Full product spec | `01_Product/ParkEase_PRD.md` (large — use offset/limit, search with Grep) |
 | Revenue / pricing | `02_Financials/Business Valuation.md` |
-| Component specs | `03_Code_Blueprints/S2_BookingFlow_Blueprint.md`, `S4_Redirect_Blueprint.md` |
-| Running the app | `03_Code_Blueprints/SETUP.md` |
-| Any screen code | `03_Code_Blueprints/S1–S5 *.jsx` |
+| Active frontend | `frontend/src/` — App.js, screens/, components/, hooks/ |
+| Active backend | `backend/server.py` — FastAPI, MongoDB, WebSocket |
+| Notion PRD | Page ID `33018e3e-67e7-81a1-ba57-c11d06f4db91` |
+| Notion Business Model | Page ID `33218e3e-67e7-8146-bc2a-ed8acd5f2622` |
+| Archived prototype | `app/` — Phase 0 Vite, all mocked, on Vercel (do not edit) |
 
 ---
 
-*Last updated: 4 April 2026 — React Router v6 wired, UPI deep-links in S3, WebSocket HTTPS bug fixed, PRD/BV compliance methodology notes added*
+## Rule: all changes go to `frontend/` + `backend/`, never `app/`
+
+`app/` is the archived Phase 0 Vite prototype. It is on Vercel as a demo URL. Do not add features there. All active development happens in `frontend/` (React CRA, port 3000) and `backend/` (FastAPI, port 8001). When Emergent auto-commits changes, they go to both codebases — verify changes landed in `frontend/`, not just `app/`.
+
+---
+
+## Rule: all mocks, zero third-party charges
+
+No Razorpay, no Supabase, no OneSignal, no MSG91. All payments, notifications, OTP, and analytics are mocked client-side. Replace with real services only after the first paying event organiser is signed.
+
+---
+
+*Last updated: 4 April 2026 — B2B platform fee added to Siddharth journey (PRD + Notion), compliance methodology notes added, Phase 1 Tasks 5–7 documented for next session*
