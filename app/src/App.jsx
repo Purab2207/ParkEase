@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-
 import Navbar from './components/Navbar';
 import AuthModal from './components/AuthModal';
 import SearchOverlay from './components/SearchOverlay';
+import ProfileModal from './components/ProfileModal';
 import VenueLandingScreen from './screens/S1_VenueLanding';
 import BookingFlowScreen from './screens/S2_BookingFlow';
 import BookingConfirmationScreen from './screens/S3_BookingConfirmation';
@@ -94,6 +95,9 @@ export default function App() {
   // Search
   const [showSearch, setShowSearch] = useState(false);
 
+  // Profile
+  const [showProfile, setShowProfile] = useState(false);
+
   // Navbar
   const [activeNav, setActiveNav] = useState('For You');
   const [selectedCity] = useState('Delhi');
@@ -141,7 +145,7 @@ export default function App() {
           activeNav={activeNav}
           onNavChange={setActiveNav}
           onSearchOpen={() => setShowSearch(true)}
-          onAuthOpen={() => isLoggedIn ? (setIsLoggedIn(false), setUserPhone('')) : setShowAuth(true)}
+          onAuthOpen={() => isLoggedIn ? setShowProfile(true) : setShowAuth(true)}
           isLoggedIn={isLoggedIn}
           userPhone={userPhone}
           selectedCity={selectedCity}
@@ -236,6 +240,14 @@ export default function App() {
       />
 
       <SearchOverlay isOpen={showSearch} onClose={() => setShowSearch(false)} />
+
+      {showProfile && (
+        <ProfileModal
+          userPhone={userPhone}
+          onClose={() => setShowProfile(false)}
+          onLogout={() => { setIsLoggedIn(false); setUserPhone(''); }}
+        />
+      )}
     </div>
   );
 }

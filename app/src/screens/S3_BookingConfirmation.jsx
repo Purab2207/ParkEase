@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 // S3 — Booking Confirmation Screen
@@ -384,14 +384,23 @@ const CancellationPolicyBar = ({ eventDate }) => (
   </div>
 );
 
-const DirectionsButton = ({ gateName, venueName }) => (
-  <button className="w-full bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-600 font-semibold text-sm rounded-2xl py-3 flex items-center justify-center gap-2 active:scale-95 transition-all">
-    <MapPinIcon />
-    Get directions to {gateName} — {venueName}
-    <ArrowRightIcon />
-    {/* PLACEHOLDER — in MVP deep-links to Google Maps with parking gate coordinates */}
-  </button>
-);
+const DirectionsButton = ({ gateName, venueName, lat, lng }) => {
+  const mapsUrl = lat && lng
+    ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venueName)}`;
+  return (
+    <a
+      href={mapsUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="w-full bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 font-semibold text-sm rounded-2xl py-3 flex items-center justify-center gap-2 active:scale-95 transition-all"
+    >
+      <MapPinIcon />
+      Get directions to {gateName} · {venueName}
+      <ArrowRightIcon />
+    </a>
+  );
+};
 
 // ----------------------------------------------------------------------------
 // PAYMENT SCREEN — stage 1: user pays before seeing the entry QR
@@ -489,11 +498,37 @@ export default function BookingConfirmationScreen() {
     exitSection: 'Section B',
     exitEstimatedMins: 12,
     cancellationDeadline: 'Fri, 11 Apr 2026',
+    parkingLat: 28.5673,
+    parkingLng: 77.2431,
   };
 
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [groupSize, setGroupSize] = useState(5); // PRD demo: Rahul's group of 5
   const splitAmount = Math.ceil(booking.consumerPrice / groupSize);
+
+  // Save booking to localStorage when payment confirmed — powers the profile screen
+  useEffect(() => {
+    if (!paymentConfirmed) return;
+    try {
+      const existing = JSON.parse(localStorage.getItem('parkease_bookings') || '[]');
+      const alreadySaved = existing.some(b => b.bookingId === booking.bookingId);
+      if (!alreadySaved) {
+        const entry = {
+          bookingId: booking.bookingId,
+          eventId: booking.eventId,
+          eventName: booking.eventName,
+          venue: booking.venue,
+          date: booking.date,
+          bayPillarCode: booking.bayPillarCode,
+          lotName: booking.lotName,
+          consumerPrice: booking.consumerPrice,
+          status: 'upcoming',
+          bookedAt: new Date().toISOString(),
+        };
+        localStorage.setItem('parkease_bookings', JSON.stringify([entry, ...existing]));
+      }
+    } catch { /* localStorage unavailable */ }
+  }, [paymentConfirmed]);
 
   // Stage 1 — payment screen
   if (!paymentConfirmed) {
@@ -519,8 +554,13 @@ export default function BookingConfirmationScreen() {
         {/* Clean booking summary — PRD: must survive WhatsApp screenshot */}
         <BookingSummaryCard booking={booking} />
 
-        {/* Directions CTA */}
-        <DirectionsButton gateName={booking.gateName} venueName="JLN Stadium" />
+        {/* Directions CTA — PRD feature #18 */}
+        <DirectionsButton
+          gateName={booking.gateName}
+          venueName="JLN Stadium"
+          lat={booking.parkingLat}
+          lng={booking.parkingLng}
+        />
 
         {/* Departure nudge card — PRD: congestion management feature */}
         <DepartureNudgeCard

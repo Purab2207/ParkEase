@@ -42,6 +42,8 @@ export const FALLBACK_EVENTS = {
     prohibited_items: ['Professional cameras / DSLR', 'Outside food & beverages', 'Laser pointers', 'Selfie sticks / tripods', 'Power banks above 20,000 mAh'],
     amenities: ['Covered parking', 'Pillar-mapped bays', 'QR entry enforcement', 'Pre-assigned bay number'],
     booking_count: 453,
+    parking_lat: 28.5673,
+    parking_lng: 77.2431,
   },
   'arijit-singh-dy-patil-2026': {
     event_id: 'arijit-singh-dy-patil-2026',
@@ -69,6 +71,8 @@ export const FALLBACK_EVENTS = {
     prohibited_items: ['Professional cameras / DSLR', 'Outside food & beverages', 'Laser pointers', 'Drones'],
     amenities: ['Pillar-mapped bays', 'QR entry enforcement', 'Pre-assigned bay number'],
     booking_count: 480,
+    parking_lat: 19.0444,
+    parking_lng: 73.0169,
   },
   'coldplay-nms-2026': {
     event_id: 'coldplay-nms-2026',
@@ -96,6 +100,8 @@ export const FALLBACK_EVENTS = {
     prohibited_items: ['Professional cameras / DSLR', 'Outside food & beverages', 'Laser pointers', 'Selfie sticks / tripods', 'Power banks above 20,000 mAh', 'Confetti cannons'],
     amenities: ['Covered parking', 'Pillar-mapped bays', 'QR entry enforcement', 'Pre-assigned bay number', 'EV charging bays'],
     booking_count: 788,
+    parking_lat: 23.0922,
+    parking_lng: 72.5952,
   },
   'diljit-dosanjh-pca-2026': {
     event_id: 'diljit-dosanjh-pca-2026',
@@ -123,6 +129,8 @@ export const FALLBACK_EVENTS = {
     prohibited_items: ['Professional cameras / DSLR', 'Outside food & beverages', 'Laser pointers'],
     amenities: ['Pillar-mapped bays', 'QR entry enforcement', 'Pre-assigned bay number'],
     booking_count: 311,
+    parking_lat: 30.6942,
+    parking_lng: 76.7236,
   },
 };
 
