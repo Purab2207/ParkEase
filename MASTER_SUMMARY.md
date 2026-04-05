@@ -30,13 +30,7 @@
 - ~~Fix fake redirect counter in S4~~ ✅ DONE (5 Apr 2026) — removed `Math.random()` increment, replaced with "Redirect tracking live from Event 1 onwards"
 
 ### 🟠 HIGH
-- **PRD condensation → Notion push** *(in progress — paused mid-plan)*
-  - Full PRD read complete. 3 decisions needed before drafting:
-    1. North Star: reframe from fill rate → exit clearance time (strongest B2B story) or redirect completion rate (most honest). **Pending user decision.**
-    2. GTM path for Siddharth: cold email timed to documented failure / venue coordinator referral / compliance report as cold intro. **Pending user decision.**
-    3. User research gap: frame as "hypothesis vs. validated" inline — honest APM move, don't wait for research to finish condensation.
-  - Plan: decide 1+2 (5 min), condense to 12-page version, push as new Notion page alongside existing doc.
-  - Structure: Exec summary (1p) → Problem + market (2p) → Persona table (1p) → Features + MoSCoW (2p) → Metrics with methodology (1p) → Risks (1p) → Open questions / what we'd validate (1p)
+- ~~**PRD condensation → Notion push**~~ ✅ DONE (5 Apr 2026) — condensed to 7 sections, pushed to Notion as "ParkEase — Condensed PRD". Decisions: fill rate stays as North Star (not exit clearance time), GTM via warm college contacts as primary. Market size bottom-up added: ~110–130 addressable events/year in Tier 1, ₹20–25L Year 1 target. Prototype screenshots section added as placeholder — needs screenshots from live site.
 - **User research** — 5–8 concert/IPL attendees, 1–2 venue ops contacts. WhatsApp poll or Reddit (r/bangalore, r/mumbai). Output: 1-page "What we learned" artifact for PRD.
 
 ### 🟡 MEDIUM (code fixes)
