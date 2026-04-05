@@ -254,22 +254,10 @@ const AvailabilityFallbackNotice = () => (
 );
 
 const RedirectFooter = () => {
-  const [redirectCount, setRedirectCount] = useState(156);
-
-  useEffect(() => {
-    const tick = () => {
-      setRedirectCount(prev => prev + Math.floor(Math.random() * 3) + 1);
-      const next = 8000 + Math.random() * 7000;
-      timer = setTimeout(tick, next);
-    };
-    let timer = setTimeout(tick, 8000 + Math.random() * 7000);
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
     <div className="w-full flex flex-col items-center gap-4 py-4 pb-8">
       <div className="text-xs text-gray-400 bg-white border border-gray-200 px-3 py-1.5 rounded-full">
-        {redirectCount} people redirected to cabs tonight
+        Redirect tracking live from Event 1 onwards
       </div>
 
       <details className="group [&_summary::-webkit-details-marker]:hidden w-full max-w-sm">
