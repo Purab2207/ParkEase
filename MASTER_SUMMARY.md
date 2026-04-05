@@ -49,30 +49,6 @@
 
 ## Session Log
 
-### Dark red theme — all screens (5 April 2026)
-
-**Commit:** `b44986b`
-
-Applied Option B dark theme across 10 files — matches S7/S8 RCB aesthetic app-wide.
-
-**Rule applied:**
-- Backgrounds: `bg-gray-950` base, `bg-gray-900`/`bg-gray-800` cards
-- Text: `text-white` primary, `text-gray-400` secondary
-- Section labels: `text-red-400 uppercase tracking-widest` (signature accent)
-- CTA buttons: `bg-red-600 hover:bg-red-500` (was `bg-[#1C1D2B]` dark navy)
-- Navbar: dark bar, red `P` logo badge, red active pill
-- AuthModal: dark sheet, red accent stripe top, red CTA + links
-- SearchOverlay: full dark, red section label, dark event cards
-- ProfileModal: dark bottom sheet, red section labels, dark inputs
-
-**Preserved (functional colors — untouched):**
-- Scarcity bar gradient: `from-green-500 via-amber-500 to-red-500`
-- Scarcity count: dynamic green/amber/red based on spots remaining
-- Bay confirmed state: green
-- Amber warnings (surge, entry window hold)
-- S7, S8, S9: already dark — not touched
-
----
 
 ### S9 + Vehicle number + Per-concert images (5 April 2026)
 
