@@ -46,6 +46,30 @@ const RefreshIcon = () => (
   </svg>
 );
 
+const ClockIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+const BlockIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+  </svg>
+);
+
+const BellIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+  </svg>
+);
+
+const XIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
+
 // ----------------------------------------------------------------------------
 // MOCK DATA — seeded from PRD operator dashboard example (§5.x)
 // PRD values: 87% fill, 65 spots remaining, 118 redirect taps, ~65 diverted
@@ -569,27 +593,353 @@ const ManualFallbackNotice = () => (
 );
 
 // ----------------------------------------------------------------------------
+// TOAST NOTIFICATION — simulates push sent to users
+// ----------------------------------------------------------------------------
+const Toast = ({ message, onDismiss }) => (
+  <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[300] w-[92%] max-w-md
+                  bg-gray-900 text-white rounded-2xl px-4 py-3 shadow-2xl
+                  flex items-start gap-3 animate-[fadeInDown_0.3s_ease]">
+    <span className="text-lg shrink-0">📲</span>
+    <div className="flex-1 flex flex-col gap-0.5">
+      <span className="text-xs font-bold text-gray-300 uppercase tracking-wide">Push sent to users</span>
+      <span className="text-sm leading-snug">{message}</span>
+    </div>
+    <button onClick={onDismiss} className="shrink-0 p-1 text-gray-400 hover:text-white">
+      <XIcon />
+    </button>
+  </div>
+);
+
+// ----------------------------------------------------------------------------
+// EMERGENCY OVERLAY — full-screen, one-tap, all gates open
+// ----------------------------------------------------------------------------
+const EmergencyOverlay = ({ onDismiss }) => (
+  <div className="fixed inset-0 z-[400] bg-red-600 flex flex-col items-center justify-center gap-6 px-8 text-white">
+    <div className="flex flex-col items-center gap-3 text-center">
+      <div className="w-20 h-20 rounded-full bg-white/20 border-4 border-white flex items-center justify-center animate-pulse">
+        <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <h1 className="text-3xl font-black tracking-tight">EMERGENCY EXIT</h1>
+      <p className="text-xl font-bold">IN EFFECT</p>
+    </div>
+    <div className="w-full bg-white/20 rounded-2xl px-5 py-4 flex flex-col gap-2 text-center">
+      <p className="text-base font-semibold">All gates open</p>
+      <p className="text-sm text-red-100">QR enforcement suspended — proceed directly to your vehicle</p>
+      <p className="text-xs text-red-200 mt-1">Push notification sent to all 435 confirmed users</p>
+    </div>
+    <div className="w-full flex flex-col gap-2">
+      <p className="text-xs text-center text-red-200">
+        This override is logged in the compliance report with timestamp
+      </p>
+      <button
+        onClick={onDismiss}
+        className="w-full bg-white text-red-600 font-black text-base rounded-2xl py-4 active:scale-95 transition-all"
+      >
+        Dismiss — Situation Under Control
+      </button>
+    </div>
+  </div>
+);
+
+// ----------------------------------------------------------------------------
+// MANUAL OVERRIDE PANEL — live mode only
+// Answers Siddharth's 3 liability questions from PRD sales call
+// ----------------------------------------------------------------------------
+const ManualOverridePanel = ({ data, onToast, onEmergency, onAddAlert }) => {
+  // Show ends early
+  const [showEndTime, setShowEndTime] = useState(false);
+  const [newEndTime, setNewEndTime] = useState('21:30');
+  const [endTimeSent, setEndTimeSent] = useState(false);
+
+  // Lot blocked
+  const [showLotBlock, setShowLotBlock] = useState(false);
+  const [selectedLot, setSelectedLot] = useState('North Lot');
+  const [lotBlockSent, setLotBlockSent] = useState(false);
+
+  // Emergency confirm
+  const [showEmergencyConfirm, setShowEmergencyConfirm] = useState(false);
+
+  const handleEndTime = () => {
+    setEndTimeSent(true);
+    setShowEndTime(false);
+    onToast(`Event ending at ${newEndTime} — head to your bay now. Exit via Gate C, est. 9 mins to clear.`);
+    onAddAlert({ time: newEndTime, type: 'warning', message: `Show end time updated to ${newEndTime} — exit notifications pushed to all users` });
+  };
+
+  const handleLotBlock = () => {
+    const other = selectedLot === 'North Lot' ? 'South Lot' : 'North Lot';
+    setLotBlockSent(true);
+    setShowLotBlock(false);
+    onToast(`${selectedLot} temporarily closed. You've been reassigned to ${other} — new bay confirmed.`);
+    onAddAlert({ time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }), type: 'critical', message: `${selectedLot} marked as blocked — users reassigned to ${other}` });
+  };
+
+  const handleEmergency = () => {
+    setShowEmergencyConfirm(false);
+    onAddAlert({ time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }), type: 'critical', message: 'EMERGENCY OVERRIDE ACTIVE — all gates open, QR enforcement suspended' });
+    onEmergency();
+  };
+
+  return (
+    <div className="w-full flex flex-col gap-3">
+      <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">
+        Operator controls
+      </span>
+
+      {/* Show ends early */}
+      <div className="w-full bg-white border border-amber-200 rounded-2xl overflow-hidden">
+        <button
+          onClick={() => { setShowEndTime(v => !v); setShowLotBlock(false); }}
+          className="w-full px-4 py-3.5 flex items-center justify-between text-left hover:bg-amber-50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+              <ClockIcon />
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-bold text-gray-900">Show ends early</span>
+              <span className="text-xs text-gray-400">Update end time · push departure notification</span>
+            </div>
+          </div>
+          {endTimeSent
+            ? <span className="text-xs text-green-600 font-semibold bg-green-50 px-2 py-1 rounded-full shrink-0">Sent ✓</span>
+            : <span className="text-xs text-amber-600 font-semibold bg-amber-50 px-2 py-1 rounded-full shrink-0">Tap to use</span>
+          }
+        </button>
+        {showEndTime && (
+          <div className="px-4 pb-4 flex flex-col gap-3 border-t border-amber-100 pt-3">
+            <div className="flex items-center gap-3">
+              <label className="text-xs text-gray-500 shrink-0">New end time</label>
+              <input
+                type="time"
+                value={newEndTime}
+                onChange={e => setNewEndTime(e.target.value)}
+                className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              />
+            </div>
+            <p className="text-xs text-gray-400">
+              Notification preview: "Event ending at {newEndTime} — head to Bay B-18 now. Exit via Gate C, est. 9 mins."
+            </p>
+            <button
+              onClick={handleEndTime}
+              className="w-full bg-amber-500 hover:bg-amber-400 text-white font-bold text-sm rounded-xl py-2.5 flex items-center justify-center gap-2 active:scale-95 transition-all"
+            >
+              <BellIcon /> Send notification to 435 users
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Lot blocked */}
+      <div className="w-full bg-white border border-orange-200 rounded-2xl overflow-hidden">
+        <button
+          onClick={() => { setShowLotBlock(v => !v); setShowEndTime(false); }}
+          className="w-full px-4 py-3.5 flex items-center justify-between text-left hover:bg-orange-50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+              <BlockIcon />
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-bold text-gray-900">Lot blocked / closed</span>
+              <span className="text-xs text-gray-400">Close a lot · auto-reassign affected users</span>
+            </div>
+          </div>
+          {lotBlockSent
+            ? <span className="text-xs text-green-600 font-semibold bg-green-50 px-2 py-1 rounded-full shrink-0">Done ✓</span>
+            : <span className="text-xs text-orange-600 font-semibold bg-orange-50 px-2 py-1 rounded-full shrink-0">Tap to use</span>
+          }
+        </button>
+        {showLotBlock && (
+          <div className="px-4 pb-4 flex flex-col gap-3 border-t border-orange-100 pt-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs text-gray-500">Select lot to close</label>
+              <div className="flex gap-2">
+                {data.lots.map(lot => (
+                  <button
+                    key={lot.name}
+                    onClick={() => setSelectedLot(lot.name)}
+                    className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition-all ${
+                      selectedLot === lot.name
+                        ? 'bg-orange-500 text-white border-orange-500'
+                        : 'bg-white text-gray-700 border-gray-200 hover:border-orange-300'
+                    }`}
+                  >
+                    {lot.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p className="text-xs text-gray-400">
+              Notification preview: "{selectedLot} temporarily closed. Reassigned to {selectedLot === 'North Lot' ? 'South Lot' : 'North Lot'} — new bay confirmed."
+            </p>
+            <button
+              onClick={handleLotBlock}
+              className="w-full bg-orange-500 hover:bg-orange-400 text-white font-bold text-sm rounded-xl py-2.5 flex items-center justify-center gap-2 active:scale-95 transition-all"
+            >
+              <BellIcon /> Block lot · notify affected users
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Emergency override */}
+      {!showEmergencyConfirm ? (
+        <button
+          onClick={() => setShowEmergencyConfirm(true)}
+          className="w-full bg-red-600 hover:bg-red-500 text-white font-black text-sm rounded-2xl py-4 flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-red-900/30"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          Emergency Override — Open All Gates
+        </button>
+      ) : (
+        <div className="w-full bg-red-50 border-2 border-red-400 rounded-2xl px-4 py-4 flex flex-col gap-3">
+          <p className="text-sm font-bold text-red-700 text-center">
+            This will open all gates and push an emergency exit notification to all 435 users. Confirm?
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowEmergencyConfirm(false)}
+              className="flex-1 bg-white border border-gray-300 text-gray-700 font-semibold text-sm rounded-xl py-2.5 active:scale-95 transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleEmergency}
+              className="flex-1 bg-red-600 text-white font-black text-sm rounded-xl py-2.5 active:scale-95 transition-all"
+            >
+              Confirm Emergency
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ----------------------------------------------------------------------------
+// PRE-EVENT OPS CHECKLIST — pre-event mode only
+// Directly addresses RCB/JLN failure: "event conducted without any SOP"
+// Karnataka Crowd Control Bill 2025 — documented SOPs now a legal requirement
+// ----------------------------------------------------------------------------
+const CHECKLIST_ITEMS = [
+  { id: 'bay_mapping',   label: 'Bay pillar mapping completed',         sub: 'Photos logged for all bays in both lots' },
+  { id: 'fallback',      label: 'Printed fallback lists at each gate',  sub: 'Backup if app goes down on event night' },
+  { id: 'attendants',    label: 'Attendants briefed',                   sub: 'QR scan protocol + reassignment authority' },
+  { id: 'drop_zone',     label: 'Cab drop zone marked + signed',        sub: 'Physical "ParkEase Drop Zone" sign at Gate 4' },
+  { id: 'prohibited',    label: 'Prohibited items banners placed',       sub: 'Printed sign at each lot entry gate' },
+  { id: 'sla_signed',    label: 'Venue SLA signed',                     sub: 'Exclusivity clause + liability transfer confirmed' },
+];
+
+const PreEventChecklist = () => {
+  const [checked, setChecked] = useState({});
+  const allDone = CHECKLIST_ITEMS.every(item => checked[item.id]);
+
+  const toggle = (id) => setChecked(prev => ({ ...prev, [id]: !prev[id] }));
+
+  return (
+    <div className="w-full flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">
+          Pre-event ops checklist
+        </span>
+        <span className="text-xs text-gray-400">
+          {Object.values(checked).filter(Boolean).length}/{CHECKLIST_ITEMS.length} complete
+        </span>
+      </div>
+      <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl overflow-hidden">
+        {CHECKLIST_ITEMS.map((item, i) => (
+          <button
+            key={item.id}
+            onClick={() => toggle(item.id)}
+            className={`w-full px-4 py-3.5 flex items-start gap-3 text-left transition-colors
+              ${i > 0 ? 'border-t border-gray-100' : ''}
+              ${checked[item.id] ? 'bg-green-50' : 'hover:bg-gray-50'}`}
+          >
+            <div className={`w-5 h-5 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-all ${
+              checked[item.id] ? 'bg-green-500 border-green-500' : 'border-gray-300'
+            }`}>
+              {checked[item.id] && (
+                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className={`text-sm font-semibold ${checked[item.id] ? 'text-green-700 line-through decoration-green-400' : 'text-gray-900'}`}>
+                {item.label}
+              </span>
+              <span className="text-xs text-gray-400">{item.sub}</span>
+            </div>
+          </button>
+        ))}
+      </div>
+      <button
+        disabled={!allDone}
+        className={`w-full font-black text-sm rounded-2xl py-4 transition-all active:scale-95 ${
+          allDone
+            ? 'bg-green-600 text-white shadow-lg shadow-green-900/20'
+            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+        }`}
+      >
+        {allDone ? '✓ All checks complete — event is ready to go live' : 'Complete all checks to go live'}
+      </button>
+      <p className="text-xs text-gray-400 text-center px-2">
+        Checklist completion is logged in the compliance report — required under Karnataka Crowd Control Bill 2025
+      </p>
+    </div>
+  );
+};
+
+// ----------------------------------------------------------------------------
 // MAIN SCREEN
 // ----------------------------------------------------------------------------
 export default function OperatorDashboardScreen() {
   const [mode, setMode] = useState('live');
-  const data = MODE_OPTIONS.find(m => m.id === mode)?.data ?? MOCK_DASHBOARD;
   const [lastRefreshed, setLastRefreshed] = useState(MOCK_DASHBOARD.lastUpdated);
+  const [toast, setToast] = useState(null);
+  const [showEmergency, setShowEmergency] = useState(false);
+  const [liveAlerts, setLiveAlerts] = useState(null); // null = use mode default
 
-  const vehiclesDiverted = Math.round(data.redirectCTATaps * data.complianceRate);
+  const baseData = MODE_OPTIONS.find(m => m.id === mode)?.data ?? MOCK_DASHBOARD;
+  const data = liveAlerts ? { ...baseData, alerts: liveAlerts } : baseData;
 
   const handleRefresh = () => {
-    // PLACEHOLDER — polls ParkEase inventory API in MVP
     setLastRefreshed(new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }));
-    console.log('Refresh: poll inventory API');
+  };
+
+  const handleModeChange = (newMode) => {
+    setMode(newMode);
+    setLiveAlerts(null); // reset any added alerts when switching mode
+  };
+
+  const showToast = (message) => {
+    setToast(message);
+    setTimeout(() => setToast(null), 5000);
+  };
+
+  const addAlert = (alert) => {
+    const current = liveAlerts ?? baseData.alerts;
+    setLiveAlerts([alert, ...current]);
   };
 
   return (
     <div className="min-h-[100dvh] bg-gray-50 font-sans sm:bg-gray-50">
+
+      {/* Toast — simulates push notification to users */}
+      {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
+
+      {/* Emergency overlay */}
+      {showEmergency && <EmergencyOverlay onDismiss={() => setShowEmergency(false)} />}
+
       <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-50 flex flex-col px-4 py-5 gap-5 sm:shadow-2xl">
 
         {/* Mode toggle */}
-        <ModeToggle activeMode={mode} onModeChange={setMode} />
+        <ModeToggle activeMode={mode} onModeChange={handleModeChange} />
 
         {/* Header */}
         <DashboardHeader
@@ -599,41 +949,57 @@ export default function OperatorDashboardScreen() {
           onRefresh={handleRefresh}
         />
 
-        {/* Redirect status — PRD: prominent above all metrics */}
-        <RedirectStatusBlock
-          active={data.redirectActive}
-          taps={data.redirectCTATaps}
-          threshold={data.redirectThresholdSpots}
-          total={data.totalSpots}
-        />
+        {/* PRE-EVENT: ops checklist */}
+        {mode === 'pre' && <PreEventChecklist />}
 
-        {/* Row 1 — Four primary metric cards */}
-        <PrimaryMetricsGrid data={data} />
+        {/* LIVE: redirect status + metrics */}
+        {mode === 'live' && (
+          <>
+            <RedirectStatusBlock
+              active={data.redirectActive}
+              taps={data.redirectCTATaps}
+              threshold={data.redirectThresholdSpots}
+              total={data.totalSpots}
+            />
+            <PrimaryMetricsGrid data={data} />
+            <LotCapacityBars lots={data.lots} />
+            <DemandShiftingPanel
+              taps={data.redirectCTATaps}
+              compliance={data.complianceRate}
+              totalSpots={data.totalSpots}
+            />
+            <ManualFallbackNotice />
 
-        {/* Per-lot capacity bars */}
-        <LotCapacityBars lots={data.lots} />
+            {/* Manual override controls */}
+            <ManualOverridePanel
+              data={data}
+              onToast={showToast}
+              onEmergency={() => setShowEmergency(true)}
+              onAddAlert={addAlert}
+            />
+          </>
+        )}
 
-        {/* Demand shifting performance */}
-        <DemandShiftingPanel
-          taps={data.redirectCTATaps}
-          compliance={data.complianceRate}
-          totalSpots={data.totalSpots}
-        />
+        {/* POST-EVENT: exit clearance + compliance report */}
+        {mode === 'post' && (
+          <>
+            <PrimaryMetricsGrid data={data} />
+            <LotCapacityBars lots={data.lots} />
+            <DemandShiftingPanel
+              taps={data.redirectCTATaps}
+              compliance={data.complianceRate}
+              totalSpots={data.totalSpots}
+            />
+            <ExitClearanceComparison />
+            <PDFReportButton data={data} />
+          </>
+        )}
 
-        {/* Exit clearance comparison */}
-        <ExitClearanceComparison />
-
-        {/* Manual fallback notice */}
-        <ManualFallbackNotice />
-
-        {/* Alert feed */}
+        {/* Alert feed — all modes */}
         <AlertFeed alerts={data.alerts} />
 
-        {/* Event configuration */}
-        <EventConfigSummary data={data} />
-
-        {/* PDF compliance report download */}
-        <PDFReportButton data={data} />
+        {/* Event config — pre + live */}
+        {mode !== 'post' && <EventConfigSummary data={data} />}
 
         <div className="pb-6" />
 
