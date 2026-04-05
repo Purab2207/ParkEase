@@ -18,6 +18,7 @@ async function apiFetch(path) {
 export const FALLBACK_EVENTS = {
   'karan-aujla-jln-2026': {
     event_id: 'karan-aujla-jln-2026',
+    hero_image: 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=800&q=80&auto=format&fit=crop',
     event_name: 'Karan Aujla',
     sub_title: 'The Bombairiya Tour',
     venue: 'Jawaharlal Nehru Stadium',
@@ -47,6 +48,7 @@ export const FALLBACK_EVENTS = {
   },
   'arijit-singh-dy-patil-2026': {
     event_id: 'arijit-singh-dy-patil-2026',
+    hero_image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&q=80&auto=format&fit=crop',
     event_name: 'Arijit Singh',
     sub_title: 'Arijit Singh Live in Concert',
     venue: 'DY Patil Stadium',
@@ -76,6 +78,7 @@ export const FALLBACK_EVENTS = {
   },
   'coldplay-nms-2026': {
     event_id: 'coldplay-nms-2026',
+    hero_image: 'https://images.unsplash.com/photo-1501386761578-eaa54b1ea5b5?w=800&q=80&auto=format&fit=crop',
     event_name: 'Coldplay',
     sub_title: 'Music of the Spheres World Tour',
     venue: 'Narendra Modi Stadium',
@@ -105,6 +108,7 @@ export const FALLBACK_EVENTS = {
   },
   'diljit-dosanjh-pca-2026': {
     event_id: 'diljit-dosanjh-pca-2026',
+    hero_image: 'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=800&q=80&auto=format&fit=crop',
     event_name: 'Diljit Dosanjh',
     sub_title: 'Dil-Luminati Tour',
     venue: 'PCA Cricket Stadium',

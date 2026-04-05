@@ -10,7 +10,7 @@
 **ParkEase** (working name also seen as ParkSmart in early PRD drafts) is a two-sided event parking platform for India. It pre-sells named parking bays to event attendees and provides operators a live dashboard + compliance report. When parking sells out, it redirects users to Ola/Uber/Rapido via deep-link.
 
 **Stage:** Phase 0 COMPLETE. Phase 1 (MVP Backend) COMPLETE. Template architecture migration COMPLETE.
-**Prototype status:** 8 screens live. **`app/`** (Vite) is the single canonical codebase — deployed on Vercel, data-driven, works for any event. `frontend/` (CRA) is frozen/deprecated — do not edit.
+**Prototype status:** 9 screens live. **`app/`** (Vite) is the single canonical codebase — deployed on Vercel, data-driven, works for any event. `frontend/` (CRA) is frozen/deprecated — do not edit.
 **Stack:** React 19 + Tailwind CSS v4 + React Router v7 (app/, Vite) | FastAPI + MongoDB (backend, port 8001)
 **Next milestone:** Demo to event organisers.
 **Notion:** PRD and Business Model pages in Notion are kept in sync — both updated to match .md files.
@@ -18,7 +18,7 @@
 > ⚠️ **CANONICAL CODEBASE RULE:**
 > All changes go into **`app/src/`** only. `frontend/` is deprecated (CRA is unmaintained) and must not be edited.
 > Live site: `https://park-ease-rho.vercel.app` — auto-deploys on every push to `main`.
-> Routes: `/events/:eventId` (S1) · `/events/:eventId/book` (S2) · `/confirmation/:bookingId` (S3) · `/redirect` · `/dashboard` · `/retain` · `/retain/book` (S7) · `/retain/confirm` (S8)
+> Routes: `/events/:eventId` (S1) · `/events/:eventId/book` (S2) · `/confirmation/:bookingId` (S3) · `/redirect` · `/dashboard` · `/retain` · `/retain/book` (S7) · `/retain/confirm` (S8) · `/attendant` (S9)
 
 **Team size:** 2 founders, full-stack ownership.
 
@@ -48,6 +48,61 @@
 ---
 
 ## Session Log
+
+### S9 + Vehicle number + Per-concert images (5 April 2026)
+
+**Commits:** this session
+
+**S9 — Attendant Scanner (`app/src/screens/S9_AttendantScanner.jsx`) · Route: `/attendant`**
+- Ground-staff PWA screen for parking attendants at each gate/zone
+- Shift login: phone OTP + zone selection (Gate A/B/C) — all scans tied to attendant identity
+- 3 demo scan scenarios (cycle via "Simulate Scan"):
+  1. Match → "Mark Bay X Occupied" → logged
+  2. Vehicle plate mismatch → deny entry + log mismatch
+  3. Bay blocked → pick alternate from nearby list → reassign → system updated
+- Session audit log: Arrived / Flagged / Reassigned with timestamps — feeds S5 compliance report
+- Dark high-contrast UI for outdoor use, large tap targets
+- DemoNav: "S9 Staff" button added
+
+**Vehicle number — end-to-end (`parkease_vehicle_no` in localStorage)**
+- S2: new step 4c — vehicle number field, required before pay, auto-uppercases Indian plate format
+- S2: autofills from localStorage on mount; shows "⚡ Autofilled from your profile" if saved
+- S3: reads `parkease_vehicle_no` from localStorage, saves it into the booking record on payment confirm
+- ProfileModal: new "My vehicle" section above bookings — view, add, edit inline, saves to same key
+- S9: attendant sees vehicle number from booking for plate verification
+
+**Per-concert Unsplash hero images**
+- `api.js`: added `hero_image` URL to all 4 events in `FALLBACK_EVENTS`
+- `S1_VenueLanding.jsx`: `normaliseEvent` maps `hero_image → heroImage`, `VenueHero` renders it with `/concert.jpg` fallback
+- Images: Karan Aujla (high-energy crowd) · Arijit Singh (warm stage lights) · Coldplay (colorful stadium) · Diljit Dosanjh (massive outdoor crowd)
+- No API key needed — Unsplash CDN direct URLs
+
+---
+
+### S9 — Attendant Scanner (5 April 2026)
+
+**File:** `app/src/screens/S9_AttendantScanner.jsx` · Route: `/attendant`
+
+**What it does:** Ground-staff-facing PWA screen for parking attendants at each gate/zone.
+
+*Shift login:*
+- Phone OTP flow + zone selection (Gate A/B/C) — attendant identity ties all scans to an audit trail
+- Dark high-contrast UI (outdoor daylight use)
+
+*Scan flow (3 demo scenarios, cycle with "Simulate Scan"):*
+1. **Match (green path)** — QR decoded, vehicle plate confirmed → "Mark Bay X Occupied" → logged to dashboard
+2. **Mismatch (red path)** — plate on QR vs plate present don't match → "Log Mismatch + Scan Next" → denied entry + supervisor alert logged
+3. **Bay unavailable (amber path)** — original bay blocked → attendant picks alternate from nearby list → "Reassign to Bay Y" → system + driver record updated
+
+*Scan log:* live session log of all scans (Arrived / Flagged / Reassigned) with timestamps — syncs to S5 operator dashboard.
+
+*Auto-return:* success state auto-resets to ready scan after 2.2s.
+
+**Why this matters (APM narrative):** Closes the loop between "booking confirmed" and "bay actually occupied". Without S9, the entry QR on S3 is decorative. With S9: compliance report gains "verified occupied" count vs. "sold" count, no-shows are detectable, plate mismatches are caught, and bay reassignments have an audit trail — legal cover for the operator.
+
+**Pre-requisite noted:** Vehicle number is not currently collected in S2. S9 demo uses seeded vehicle numbers. Before Event 1, add vehicle number field to S2 booking flow.
+
+---
 
 ### S5 operator overrides + S4 fix + Google Maps + Profile (5 April 2026)
 

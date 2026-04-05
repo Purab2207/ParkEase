@@ -513,6 +513,7 @@ export default function BookingConfirmationScreen() {
       const existing = JSON.parse(localStorage.getItem('parkease_bookings') || '[]');
       const alreadySaved = existing.some(b => b.bookingId === booking.bookingId);
       if (!alreadySaved) {
+        const vehicleNo = localStorage.getItem('parkease_vehicle_no') || '';
         const entry = {
           bookingId: booking.bookingId,
           eventId: booking.eventId,
@@ -522,6 +523,7 @@ export default function BookingConfirmationScreen() {
           bayPillarCode: booking.bayPillarCode,
           lotName: booking.lotName,
           consumerPrice: booking.consumerPrice,
+          vehicleNo,
           status: 'upcoming',
           bookedAt: new Date().toISOString(),
         };

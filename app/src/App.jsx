@@ -12,6 +12,7 @@ import OperatorDashboardScreen from './screens/S5_OperatorDashboard';
 import RetentionScreen from './screens/S6_RetentionScreen';
 import RCBBookingScreen from './screens/S7_RCBBooking';
 import RCBConfirmationScreen from './screens/S8_RCBConfirmation';
+import AttendantScannerScreen from './screens/S9_AttendantScanner';
 
 const DEFAULT_EVENT = 'karan-aujla-jln-2026';
 
@@ -34,6 +35,7 @@ const DemoNav = ({ onStartDemo, demoRunning, parkingFull, onToggleParkingFull })
     { label: 'S6 Retain',   path: '/retain' },
     { label: 'S7 RCB',      path: '/retain/book' },
     { label: 'S8 RCB✓',     path: '/retain/confirm' },
+    { label: 'S9 Staff',    path: '/attendant' },
   ];
 
   return (
@@ -220,6 +222,9 @@ export default function App() {
               />
             }
           />
+
+          {/* S9 — Attendant scanner (ground staff) */}
+          <Route path="/attendant" element={<AttendantScannerScreen />} />
 
           {/* Catch-all */}
           <Route path="*" element={<Navigate to={`/events/${DEFAULT_EVENT}`} replace />} />

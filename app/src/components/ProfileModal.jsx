@@ -101,9 +101,41 @@ const BookingCard = ({ booking, onViewEvent }) => {
   );
 };
 
+const CarIcon = () => (
+  <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 2h8l2-2zM13 16l2-2h3l1-5H13v7z" />
+  </svg>
+);
+
+const EditIcon = () => (
+  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+  </svg>
+);
+
 export default function ProfileModal({ userPhone, onClose, onLogout }) {
   const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
+
+  // Vehicle number — shared with S2 via localStorage
+  const [vehicleNo, setVehicleNo] = useState(() => {
+    try { return localStorage.getItem('parkease_vehicle_no') || ''; } catch { return ''; }
+  });
+  const [editingVehicle, setEditingVehicle] = useState(false);
+  const [vehicleDraft, setVehicleDraft] = useState('');
+
+  const handleEditVehicle = () => {
+    setVehicleDraft(vehicleNo);
+    setEditingVehicle(true);
+  };
+
+  const handleSaveVehicle = () => {
+    const formatted = vehicleDraft.toUpperCase().replace(/[^A-Z0-9 ]/g, '');
+    setVehicleNo(formatted);
+    try { localStorage.setItem('parkease_vehicle_no', formatted); } catch {}
+    setEditingVehicle(false);
+  };
 
   useEffect(() => {
     try {
@@ -161,6 +193,62 @@ export default function ProfileModal({ userPhone, onClose, onLogout }) {
 
         {/* Content — scrollable */}
         <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-5">
+
+          {/* My vehicle */}
+          <div className="flex flex-col gap-2">
+            <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">My vehicle</span>
+            <div className="w-full bg-white border border-gray-200 rounded-2xl px-4 py-3 flex flex-col gap-2">
+              {editingVehicle ? (
+                <div className="flex flex-col gap-2">
+                  <input
+                    type="text"
+                    maxLength={13}
+                    value={vehicleDraft}
+                    onChange={e => setVehicleDraft(e.target.value.toUpperCase().replace(/[^A-Z0-9 ]/g, ''))}
+                    placeholder="e.g. DL 3C AB 1234"
+                    autoFocus
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm font-mono tracking-wider text-gray-900 outline-none focus:border-gray-500"
+                  />
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleSaveVehicle}
+                      disabled={vehicleDraft.length < 6}
+                      className="flex-1 bg-[#1C1D2B] disabled:opacity-40 text-white text-xs font-bold py-2 rounded-xl active:scale-95 transition-all"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => setEditingVehicle(false)}
+                      className="flex-1 bg-gray-100 text-gray-600 text-xs font-semibold py-2 rounded-xl active:scale-95 transition-all"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <CarIcon />
+                    {vehicleNo ? (
+                      <span className="text-sm font-mono font-bold text-gray-900 tracking-wider">{vehicleNo}</span>
+                    ) : (
+                      <span className="text-sm text-gray-400">No vehicle saved</span>
+                    )}
+                  </div>
+                  <button
+                    onClick={handleEditVehicle}
+                    className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-700 transition-colors px-2 py-1 rounded-lg hover:bg-gray-50"
+                  >
+                    <EditIcon />
+                    {vehicleNo ? 'Edit' : 'Add'}
+                  </button>
+                </div>
+              )}
+              {vehicleNo && !editingVehicle && (
+                <p className="text-xs text-gray-400">Auto-fills at booking · shown to attendant at gate</p>
+              )}
+            </div>
+          </div>
 
           {/* Upcoming bookings */}
           {upcoming.length > 0 && (

@@ -78,6 +78,7 @@ function normaliseEvent(e) {
     bookingCount: e.booking_count || 0,
     parkingLat: e.parking_lat || null,
     parkingLng: e.parking_lng || null,
+    heroImage: e.hero_image || '/concert.jpg',
   };
 }
 
@@ -85,13 +86,11 @@ function normaliseEvent(e) {
 // SUB-COMPONENTS
 // ----------------------------------------------------------------------------
 
-// Hero image placeholder — in MVP replaced with actual venue photo
-const VenueHero = ({ eventName, subTitle, venueName, city }) => (
+const VenueHero = ({ eventName, subTitle, venueName, city, heroImage }) => (
   <div className="w-full relative">
-    {/* Image placeholder */}
     <div className="w-full h-52 rounded-2xl overflow-hidden relative">
       <img
-        src="/concert.jpg"
+        src={heroImage || '/concert.jpg'}
         alt={eventName}
         className="w-full h-full object-cover"
       />
@@ -385,6 +384,7 @@ export default function VenueLandingScreen({ parkingFull }) {
           subTitle={venue.subTitle}
           venueName={venue.venue}
           city={venue.city}
+          heroImage={venue.heroImage}
         />
 
         {/* Event date / time */}

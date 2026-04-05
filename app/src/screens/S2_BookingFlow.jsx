@@ -441,14 +441,15 @@ const PricingBreakdown = ({ event, groupSize, onGroupSizeChange }) => (
 );
 
 // Step 5 — UPI Payment
-const UPIPaymentButton = ({ consumerPrice, selectedBay, selectedWindow, contactPhoneValid, isLoading, onPay, onOpenBaySelection }) => {
-  const isDisabled = isLoading || (selectedBay && (!selectedWindow || !contactPhoneValid));
+const UPIPaymentButton = ({ consumerPrice, selectedBay, selectedWindow, contactPhoneValid, vehicleNoValid, isLoading, onPay, onOpenBaySelection }) => {
+  const isDisabled = isLoading || (selectedBay && (!selectedWindow || !contactPhoneValid || !vehicleNoValid));
 
   const getLabel = () => {
     if (isLoading) return 'Processing...';
     if (!selectedBay) return 'Select a bay to continue';
     if (!selectedWindow) return 'Select arrival time to continue';
     if (!contactPhoneValid) return 'Enter contact number to continue';
+    if (!vehicleNoValid) return 'Enter vehicle number to continue';
     return `Pay ₹${consumerPrice} via UPI`;
   };
 
@@ -535,6 +536,20 @@ export default function BookingFlowScreen({ userPhone, isLoggedIn }) {
   // Group split
   const [groupSize, setGroupSize] = useState(1);
   const [contactPhone, setContactPhone] = useState(userPhone || '');
+
+  // Vehicle number — autofilled from profile if previously saved
+  const [vehicleNo, setVehicleNo] = useState(() => {
+    try { return localStorage.getItem('parkease_vehicle_no') || ''; } catch { return ''; }
+  });
+  const [vehicleAutofilled] = useState(() => {
+    try { return !!localStorage.getItem('parkease_vehicle_no'); } catch { return false; }
+  });
+
+  const handleVehicleNoChange = (val) => {
+    const formatted = val.toUpperCase().replace(/[^A-Z0-9 ]/g, '');
+    setVehicleNo(formatted);
+    try { localStorage.setItem('parkease_vehicle_no', formatted); } catch {}
+  };
 
   // Payment
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -715,12 +730,46 @@ export default function BookingFlowScreen({ userPhone, isLoggedIn }) {
           </div>
         )}
 
+        {/* Step 4c — Vehicle number */}
+        {selectedWindow && (
+          <div className="w-full flex flex-col gap-2">
+            <span className="text-xs text-gray-500 uppercase tracking-widest font-semibold">
+              4c · Vehicle number
+            </span>
+            <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-4 py-3 flex flex-col gap-2">
+              <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-gray-400">
+                <input
+                  type="text"
+                  maxLength={13}
+                  value={vehicleNo}
+                  onChange={(e) => handleVehicleNoChange(e.target.value)}
+                  placeholder="e.g. DL 3C AB 1234"
+                  className="flex-1 px-3 py-3 outline-none text-sm text-gray-900 bg-white font-mono tracking-wider uppercase"
+                />
+                {vehicleNo.length >= 6 && (
+                  <div className="px-3 text-xs text-green-600 font-semibold shrink-0">✓</div>
+                )}
+              </div>
+              {vehicleAutofilled && vehicleNo.length >= 6 ? (
+                <p className="text-xs text-blue-600 font-medium flex items-center gap-1">
+                  <span>⚡</span> Autofilled from your profile
+                </p>
+              ) : (
+                <p className="text-xs text-gray-400">
+                  Used by the attendant to verify your car at the gate · saved to your profile
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Step 5 — UPI Payment (sticky) */}
         <UPIPaymentButton
           consumerPrice={event.consumerPrice}
           selectedBay={selectedBay}
           selectedWindow={selectedWindow}
           contactPhoneValid={contactPhone.length === 10}
+          vehicleNoValid={vehicleNo.length >= 6}
           isLoading={paymentLoading}
           onPay={handlePay}
           onOpenBaySelection={() => setCurrentStep(2)}
