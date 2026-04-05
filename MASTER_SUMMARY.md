@@ -24,6 +24,29 @@
 
 ---
 
+## Priority Task Backlog
+
+### 🔴 CRITICAL
+- **Fix fake redirect counter in S4** — `Math.random()` increment every 8–15s is fabricated metric. Fix: remove random increment, label as demo/simulated. Code character issue if interviewer reads source.
+
+### 🟠 HIGH
+- **PRD condensation → Notion push** *(in progress — paused mid-plan)*
+  - Full PRD read complete. 3 decisions needed before drafting:
+    1. North Star: reframe from fill rate → exit clearance time (strongest B2B story) or redirect completion rate (most honest). **Pending user decision.**
+    2. GTM path for Siddharth: cold email timed to documented failure / venue coordinator referral / compliance report as cold intro. **Pending user decision.**
+    3. User research gap: frame as "hypothesis vs. validated" inline — honest APM move, don't wait for research to finish condensation.
+  - Plan: decide 1+2 (5 min), condense to 12-page version, push as new Notion page alongside existing doc.
+  - Structure: Exec summary (1p) → Problem + market (2p) → Persona table (1p) → Features + MoSCoW (2p) → Metrics with methodology (1p) → Risks (1p) → Open questions / what we'd validate (1p)
+- **User research** — 5–8 concert/IPL attendees, 1–2 venue ops contacts. WhatsApp poll or Reddit (r/bangalore, r/mumbai). Output: 1-page "What we learned" artifact for PRD.
+
+### 🟡 MEDIUM (code fixes)
+- **Atomic bay booking** — `POST /api/bookings` race condition. Fix: `findOneAndUpdate({status: "available"})` one-liner in `backend/server.py`.
+- **`requirements.txt` bloat** — 70+ packages, trim to only what `server.py` imports.
+- **CORS wildcard** — restrict from `["*"]` to known frontend origins before any real deployment.
+- **Dashboard auth** — add API key or JWT check on `/api/events/*/stats`.
+
+---
+
 ## Session Log
 
 ### Template architecture migration (4 April 2026)
