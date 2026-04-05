@@ -27,7 +27,7 @@
 ## Priority Task Backlog
 
 ### 🔴 CRITICAL
-- **Fix fake redirect counter in S4** — `Math.random()` increment every 8–15s is fabricated metric. Fix: remove random increment, label as demo/simulated. Code character issue if interviewer reads source.
+- ~~Fix fake redirect counter in S4~~ ✅ DONE (5 Apr 2026) — removed `Math.random()` increment, replaced with "Redirect tracking live from Event 1 onwards"
 
 ### 🟠 HIGH
 - **PRD condensation → Notion push** *(in progress — paused mid-plan)*
@@ -48,6 +48,46 @@
 ---
 
 ## Session Log
+
+### S5 operator overrides + S4 fix + Google Maps + Profile (5 April 2026)
+
+**Commits:** `64a9d2c` (S4 fix) · `bcfb676` (Maps + Profile) · `bf46c88` (S5 overrides)
+
+**S4 — fake counter removed (CRITICAL fix)**
+- Removed `Math.random()` redirect counter increment from `RedirectFooter`
+- Replaced with honest label: "Redirect tracking live from Event 1 onwards"
+- No fabricated metrics remain in the codebase
+
+**S1 + S3 — Google Maps deep-link (PRD feature #18)**
+- GPS coordinates added for all 4 venues in `api.js`
+- S1: "Get directions to [Gate] · [Venue]" button below distance headline — Priya's research stage
+- S3: same button on confirmation screen — Arjun's day-of use
+- No API key — `google.com/maps/dir/?api=1&destination=LAT,LNG` opens Maps app on mobile
+
+**S3 + ProfileModal — user profile with booking history**
+- `app/src/components/ProfileModal.jsx` — new component
+- Navbar avatar tap (when logged in) → bottom sheet with upcoming + past bookings
+- Booking saved to `localStorage` (`parkease_bookings`) on S3 payment confirm
+- 2 seeded demo past bookings (Arijit Singh, Coldplay) make account feel lived-in
+- "View event →" navigates to that event's S1. Logout in footer.
+
+**S5 — operator manual overrides + pre-event checklist**
+
+*Pre-event mode:*
+- Interactive 6-item ops checklist (bay mapping, fallback lists, attendants briefed, drop zone, prohibited items, SLA signed)
+- "Go Live" button unlocks only when all 6 checked
+- Footer cites Karnataka Crowd Control Bill 2025 — compliance framing, not just ops hygiene
+
+*Live mode — 3 operator control buttons:*
+- **Show ends early** — time picker → "Send notification to 435 users" → toast simulates push: "Event ending at [time] — head to bay now"
+- **Lot blocked** — select lot → block + reassign → toast: "[Lot] closed, reassigned to [other lot]"
+- **Emergency override** — confirm screen → full-screen red overlay: "EMERGENCY EXIT IN EFFECT · All gates open" — logged in alert feed with timestamp
+
+*All overrides:* append timestamped entry to live alert feed = audit trail in compliance report
+
+**APM/LinkedIn narrative addition:** "RCB Chinnaswamy stampede (June 2025, 11 deaths) was caused by zero SOP and no documentation. Karnataka proposed the Crowd Control Bill 2025 in response. ParkEase's pre-event checklist + compliance report directly addresses this regulatory gap — the dashboard became a legal compliance tool, not just an ops dashboard."
+
+---
 
 ### Template architecture migration (4 April 2026)
 
