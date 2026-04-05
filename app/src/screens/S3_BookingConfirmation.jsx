@@ -113,8 +113,8 @@ const UPIPaymentSection = ({ amount, bookingId }) => {
 
   return (
     <div className="w-full flex flex-col gap-3">
-      <span className="text-xs text-red-400 uppercase tracking-widest font-semibold">Pay via UPI</span>
-      <div className="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-4 flex flex-col gap-4">
+      <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">Pay via UPI</span>
+      <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-4 py-4 flex flex-col gap-4">
         {/* Payment QR */}
         <div className="flex flex-col items-center gap-2">
           <div className="bg-white border border-gray-100 rounded-xl p-2 shadow-sm">
@@ -183,7 +183,7 @@ const ConfirmationHeader = ({ bookingId }) => (
     <div className="w-16 h-16 bg-green-50 border border-green-200 rounded-full flex items-center justify-center">
       <CheckCircleIcon />
     </div>
-    <h1 className="text-xl font-bold text-white">Booking Confirmed</h1>
+    <h1 className="text-xl font-bold text-gray-900">Booking Confirmed</h1>
     <p className="text-xs text-gray-400 font-mono">
       Booking ID · #{bookingId.slice(-8).toUpperCase()}
     </p>
@@ -192,11 +192,11 @@ const ConfirmationHeader = ({ bookingId }) => (
 
 // Clean summary card — must survive a WhatsApp screenshot (PRD: shareability requirement)
 const BookingSummaryCard = ({ booking }) => (
-  <div className="w-full bg-gray-900 border border-gray-800 rounded-2xl px-5 py-4 flex flex-col gap-3">
+  <div className="w-full bg-white border border-gray-200 shadow-md rounded-2xl px-5 py-4 flex flex-col gap-3">
     {/* Event */}
     <div className="flex flex-col gap-0.5 pb-3 border-b border-gray-200">
-      <span className="text-base font-bold text-white">{booking.eventName}</span>
-      <span className="text-xs text-gray-400">{booking.venue} · {booking.date}</span>
+      <span className="text-base font-bold text-gray-900">{booking.eventName}</span>
+      <span className="text-xs text-gray-500">{booking.venue} · {booking.date}</span>
     </div>
 
     {/* Bay */}
@@ -206,7 +206,7 @@ const BookingSummaryCard = ({ booking }) => (
       </div>
       <div className="flex flex-col">
         <span className="text-sm font-bold text-gray-900">Bay {booking.bayPillarCode}</span>
-        <span className="text-xs text-gray-400">{booking.lotName} · {booking.distanceToGateMetres}m to {booking.gateName}</span>
+        <span className="text-xs text-gray-500">{booking.lotName} · {booking.distanceToGateMetres}m to {booking.gateName}</span>
       </div>
     </div>
 
@@ -216,13 +216,13 @@ const BookingSummaryCard = ({ booking }) => (
         <ClockIcon />
       </div>
       <div className="flex flex-col">
-        <span className="text-sm font-semibold text-white">Arrive {booking.entryWindow}</span>
-        <span className="text-xs text-gray-400">Your bay is held within this window</span>
+        <span className="text-sm font-semibold text-gray-900">Arrive {booking.entryWindow}</span>
+        <span className="text-xs text-gray-500">Your bay is held within this window</span>
       </div>
     </div>
 
     {/* Price paid */}
-    <div className="flex items-center justify-between pt-2 border-t border-gray-800">
+    <div className="flex items-center justify-between pt-2 border-t border-gray-200">
       <span className="text-xs text-gray-400">Amount paid</span>
       <span className="text-sm font-bold text-gray-900">₹{booking.consumerPrice} via UPI</span>
     </div>
@@ -249,7 +249,7 @@ const WhatsAppShareBlock = ({ booking, groupSize, splitAmount }) => {
 
   return (
     <div className="w-full flex flex-col gap-3">
-      <span className="text-xs text-red-400 uppercase tracking-widest font-semibold">
+      <span className="text-xs text-gray-500 uppercase tracking-widest font-semibold">
         Share with your group
       </span>
       {/* Preview of the message — matches PRD's exact format */}
@@ -288,8 +288,8 @@ const UPISplitBlock = ({ consumerPrice, groupSize, onGroupSizeChange }) => {
       <div className="w-full bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center gap-3">
         <span className="text-green-600 text-lg">✓</span>
         <div className="flex flex-col">
-          <span className="text-sm font-semibold text-white">UPI requests sent</span>
-          <span className="text-xs text-gray-400">
+          <span className="text-sm font-semibold text-gray-900">UPI requests sent</span>
+          <span className="text-xs text-gray-500">
             ₹{splitAmount} collect request sent to {groupSize - 1} people
           </span>
         </div>
@@ -299,10 +299,10 @@ const UPISplitBlock = ({ consumerPrice, groupSize, onGroupSizeChange }) => {
 
   return (
     <div className="w-full flex flex-col gap-3">
-      <span className="text-xs text-red-400 uppercase tracking-widest font-semibold">
+      <span className="text-xs text-gray-500 uppercase tracking-widest font-semibold">
         Collect your share
       </span>
-      <div className="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 flex flex-col gap-3">
+      <div className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <span className="text-sm text-gray-700">Split ₹{consumerPrice} with</span>
           <div className="flex items-center gap-3">
@@ -311,7 +311,7 @@ const UPISplitBlock = ({ consumerPrice, groupSize, onGroupSizeChange }) => {
               disabled={groupSize <= 1}
               className="w-7 h-7 bg-gray-200 rounded-full flex items-center justify-center text-gray-900 font-bold disabled:opacity-30 hover:bg-gray-300 transition-colors"
             >−</button>
-            <span className="text-sm font-semibold text-white w-5 text-center">{groupSize}</span>
+            <span className="text-sm font-semibold text-gray-900 w-5 text-center">{groupSize}</span>
             <button
               onClick={() => groupSize < 6 && onGroupSizeChange(groupSize + 1)}
               disabled={groupSize >= 6}
@@ -346,7 +346,7 @@ const DepartureNudgeCard = ({ departureTime, bayPillarCode }) => (
       <BellIcon />
     </div>
     <div className="flex flex-col gap-0.5">
-      <span className="text-sm font-semibold text-white">We'll remind you to leave by {departureTime}</span>
+      <span className="text-sm font-semibold text-gray-900">We'll remind you to leave by {departureTime}</span>
       <span className="text-xs text-amber-600/70">
         "Bay {bayPillarCode} confirmed. Leave by {departureTime} for smooth arrival. Tap for directions."
       </span>
@@ -358,13 +358,13 @@ const DepartureNudgeCard = ({ departureTime, bayPillarCode }) => (
 // PRD: static section-based exit guidance — MVP
 // V2 = dynamic Google Maps routing once venue traffic patterns established
 const ExitGuidanceCard = ({ exitGate, exitSection, estimatedMinutes }) => (
-  <div className="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 flex items-start gap-3">
+  <div className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 flex items-start gap-3">
     <div className="mt-0.5">
       <ExitIcon />
     </div>
     <div className="flex flex-col gap-0.5">
-      <span className="text-sm font-semibold text-white">Post-event exit · {exitGate}</span>
-      <span className="text-xs text-gray-400">
+      <span className="text-sm font-semibold text-gray-900">Post-event exit · {exitGate}</span>
+      <span className="text-xs text-gray-500">
         From {exitSection} → follow signs to {exitGate} · est. {estimatedMinutes} mins to clear
       </span>
       <span className="text-xs text-gray-400 mt-1">
@@ -438,15 +438,15 @@ const PaymentScreen = ({ booking, onPaymentConfirmed }) => {
           <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1">
             <ShieldIcon />
           </div>
-          <h1 className="text-xl font-bold text-white">Complete Payment</h1>
+          <h1 className="text-xl font-bold text-gray-900">Complete Payment</h1>
           <p className="text-xs text-gray-400">Pay ₹{booking.consumerPrice} to confirm your bay</p>
         </div>
 
         {/* Booking context — compact */}
-        <div className="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 flex items-center justify-between">
+        <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-4 py-3 flex items-center justify-between">
           <div>
             <p className="text-sm font-bold text-gray-900">{booking.eventName} · Bay {booking.bayPillarCode}</p>
-            <p className="text-xs text-gray-400">{booking.venue}</p>
+            <p className="text-xs text-gray-500">{booking.venue}</p>
           </div>
           <span className="text-lg font-black text-gray-900">₹{booking.consumerPrice}</span>
         </div>
@@ -458,7 +458,7 @@ const PaymentScreen = ({ booking, onPaymentConfirmed }) => {
         <div className="w-full sticky bottom-4 mt-2 flex flex-col gap-2">
           <button
             onClick={handleSimulate}
-            className="w-full bg-red-600 hover:bg-red-500 text-white font-bold text-base rounded-2xl py-4 active:scale-95 transition-all shadow-lg shadow-black/40 tracking-wide uppercase"
+            className="w-full bg-[#1C1D2B] text-white font-bold text-base rounded-2xl py-4 active:scale-95 transition-all shadow-lg shadow-black/40 tracking-wide uppercase"
           >
             Simulate Payment ✓
           </button>
@@ -539,16 +539,16 @@ export default function BookingConfirmationScreen() {
 
   // Stage 2 — confirmed: entry QR + all post-payment content
   return (
-    <div className="min-h-[100dvh] bg-gray-950 font-sans">
-      <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-950 flex flex-col px-4 py-6 gap-5 pb-20 sm:shadow-2xl">
+    <div className="min-h-[100dvh] bg-gray-50 font-sans sm:bg-gray-50">
+      <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-50 flex flex-col px-4 py-6 gap-5 pb-20 sm:shadow-2xl">
 
         {/* Confirmation header */}
         <ConfirmationHeader bookingId={booking.bookingId} />
 
         {/* Booking entry QR */}
         <div className="w-full flex flex-col gap-3">
-          <span className="text-xs text-red-400 uppercase tracking-widest font-semibold">Your entry pass</span>
-          <div className="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-4 flex flex-col items-center">
+          <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">Your entry pass</span>
+          <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-4 py-4 flex flex-col items-center">
             <MockQRCode bookingId={booking.bookingId} />
           </div>
         </div>

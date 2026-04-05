@@ -113,21 +113,21 @@ const VenueHero = ({ eventName, subTitle, venueName, city, heroImage }) => (
 
 // PRD: distance to gate IS the headline — Priya reads this and sends screenshot to husband
 const DistanceHeadline = ({ distanceM, gateName, covered }) => (
-  <div className="w-full bg-gray-900 border border-gray-800 rounded-2xl px-5 py-4 flex items-center justify-between">
+  <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-5 py-4 flex items-center justify-between">
     <div className="flex flex-col gap-0.5">
       <div className="flex items-center gap-2">
         <WalkIcon />
-        <span className="text-2xl font-black text-white">{distanceM}m</span>
-        <span className="text-sm text-gray-400">to {gateName}</span>
+        <span className="text-2xl font-black text-gray-900">{distanceM}m</span>
+        <span className="text-sm text-gray-500">to {gateName}</span>
       </div>
-      <span className="text-xs text-gray-500 pl-6">
+      <span className="text-xs text-gray-400 pl-6">
         {covered ? 'Covered path · ' : ''}Pillar-mapped bays · QR entry
       </span>
     </div>
     <div className="flex flex-col items-end gap-1">
-      <span className="text-xs text-gray-500">from</span>
-      <span className="text-xl font-bold text-white">₹169</span>
-      <span className="text-xs text-gray-500">per vehicle</span>
+      <span className="text-xs text-gray-400">from</span>
+      <span className="text-xl font-bold text-gray-900">₹169</span>
+      <span className="text-xs text-gray-400">per vehicle</span>
     </div>
   </div>
 );
@@ -143,7 +143,7 @@ const ScarcityCounter = ({ spotsRemaining, totalSpots, bookingCount }) => {
     <div className={`w-full rounded-2xl px-5 py-4 flex flex-col gap-2 border ${
       isCritical ? 'bg-red-50 border-red-200' :
       isAlmostFull ? 'bg-amber-50 border-amber-200' :
-      'bg-gray-900 border border-gray-800'
+      'bg-white border border-gray-200 shadow-sm'
     }`}>
       <div className="flex items-center justify-between">
         <div className="flex items-baseline gap-1.5">
@@ -151,13 +151,13 @@ const ScarcityCounter = ({ spotsRemaining, totalSpots, bookingCount }) => {
             <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shrink-0" />
           )}
           <span className={`text-3xl font-black ${
-            isCritical ? 'text-red-600' : isAlmostFull ? 'text-amber-600' : 'text-white'
+            isCritical ? 'text-red-600' : isAlmostFull ? 'text-amber-600' : 'text-gray-900'
           }`}>{spotsRemaining}</span>
-          <span className="text-sm text-gray-400">spots left</span>
+          <span className="text-sm text-gray-500">spots left</span>
         </div>
-        <span className="text-xs text-gray-500">{bookingCount} already booked</span>
+        <span className="text-xs text-gray-400">{bookingCount} already booked</span>
       </div>
-      <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
         <div
           className="h-full rounded-full bg-gradient-to-r from-green-500 via-amber-500 to-red-500 transition-all duration-700"
           style={{ width: `${fillPercent}%` }}
@@ -183,30 +183,30 @@ const ScarcityCounter = ({ spotsRemaining, totalSpots, bookingCount }) => {
 const EventMetaRow = ({ date, doorsOpen, showTime }) => (
   <div className="w-full flex items-center gap-2 px-1">
     <CalendarIcon />
-    <span className="text-sm text-gray-200">{date}</span>
-    <span className="text-gray-700">·</span>
-    <span className="text-sm text-gray-400">Doors {doorsOpen}</span>
-    <span className="text-gray-700">·</span>
-    <span className="text-sm text-gray-400">Show {showTime}</span>
+    <span className="text-sm text-gray-700">{date}</span>
+    <span className="text-gray-300">·</span>
+    <span className="text-sm text-gray-500">Doors {doorsOpen}</span>
+    <span className="text-gray-300">·</span>
+    <span className="text-sm text-gray-500">Show {showTime}</span>
   </div>
 );
 
 // Lot breakdown — which lot, how far, how many spots
 const LotBreakdownList = ({ lots }) => (
   <div className="w-full flex flex-col gap-2">
-    <span className="text-xs text-red-400 uppercase tracking-widest font-semibold px-1">
+    <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold px-1">
       Available lots
     </span>
     {lots.map((lot, i) => (
-      <div key={i} className="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 flex items-center justify-between">
+      <div key={i} className="w-full bg-white border border-gray-200 shadow-sm rounded-xl px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <CarIcon />
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-white">{lot.name}</span>
-            <span className="text-xs text-gray-500">{lot.distanceM}m to gate</span>
+            <span className="text-sm font-semibold text-gray-900">{lot.name}</span>
+            <span className="text-xs text-gray-400">{lot.distanceM}m to gate</span>
           </div>
         </div>
-        <span className="text-xs text-gray-400 bg-gray-800 px-2 py-1 rounded-full">
+        <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
           {lot.spots} spots
         </span>
       </div>
@@ -217,14 +217,14 @@ const LotBreakdownList = ({ lots }) => (
 // Amenities checklist
 const AmenitiesList = ({ amenities }) => (
   <div className="w-full flex flex-col gap-2">
-    <span className="text-xs text-red-400 uppercase tracking-widest font-semibold px-1">
+    <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold px-1">
       What's included
     </span>
-    <div className="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 grid grid-cols-2 gap-2">
+    <div className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 grid grid-cols-2 gap-2">
       {amenities.map((item, i) => (
         <div key={i} className="flex items-center gap-2">
           <CheckIcon />
-          <span className="text-xs text-gray-300">{item}</span>
+          <span className="text-xs text-gray-700">{item}</span>
         </div>
       ))}
     </div>
@@ -235,19 +235,19 @@ const AmenitiesList = ({ amenities }) => (
 const ProhibitedItemsBanner = ({ items }) => {
   const [open, setOpen] = useState(false);
   return (
-    <div className="w-full bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+    <div className="w-full bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden">
       <button
         onClick={() => setOpen(v => !v)}
-        className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-gray-800 transition-colors"
+        className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-gray-50"
       >
-        <span className="text-xs text-gray-400">⚠️ Venue prohibited items</span>
+        <span className="text-xs text-gray-500">⚠️ Venue prohibited items</span>
         <ChevronDownIcon open={open} />
       </button>
       {open && (
-        <ul className="px-4 pb-3 flex flex-col gap-1.5 border-t border-gray-800">
+        <ul className="px-4 pb-3 flex flex-col gap-1.5 border-t border-gray-200">
           {items.map((item, i) => (
-            <li key={i} className="text-xs text-gray-500 flex items-start gap-1.5">
-              <span className="text-gray-600 mt-0.5">•</span>{item}
+            <li key={i} className="text-xs text-gray-400 flex items-start gap-1.5">
+              <span className="text-gray-400 mt-0.5">•</span>{item}
             </li>
           ))}
         </ul>
@@ -315,8 +315,8 @@ const BookCTA = ({ spotsRemaining, consumerPrice, onBook }) => {
           disabled={isFull}
           className={`flex-1 font-bold text-base rounded-2xl py-4 transition-all shadow-lg shadow-black/50 active:scale-95
             ${isFull
-              ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
-              : 'bg-red-600 text-white hover:bg-red-500 tracking-wide uppercase'
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              : 'bg-[#1C1D2B] text-white hover:bg-gray-800 tracking-wide uppercase'
             }`}
         >
           {isFull
@@ -327,10 +327,10 @@ const BookCTA = ({ spotsRemaining, consumerPrice, onBook }) => {
         {!isFull && (
           <button
             onClick={handleShare}
-            className="shrink-0 w-14 h-14 rounded-2xl bg-gray-800 border border-gray-700 shadow-lg flex items-center justify-center active:scale-95 transition-all"
+            className="shrink-0 w-14 h-14 rounded-2xl bg-white border border-gray-200 shadow-lg flex items-center justify-center active:scale-95 transition-all"
             aria-label="Share"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
           </button>
@@ -375,8 +375,8 @@ export default function VenueLandingScreen({ parkingFull }) {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-gray-950 font-sans">
-      <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-950 flex flex-col px-4 py-5 gap-4 sm:shadow-2xl">
+    <div className="min-h-[100dvh] bg-gray-50 font-sans sm:bg-gray-50">
+      <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-50 flex flex-col px-4 py-5 gap-4 sm:shadow-2xl">
 
         {/* Hero */}
         <VenueHero

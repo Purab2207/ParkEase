@@ -54,13 +54,13 @@ const BookingCard = ({ booking, onViewEvent }) => {
     <div
       className={`w-full rounded-2xl border px-4 py-4 flex flex-col gap-3 ${
         isUpcoming
-          ? 'bg-gray-800 border-gray-700'
-          : 'bg-gray-900 border-gray-800'
+          ? 'bg-white border-gray-200 shadow-sm'
+          : 'bg-gray-50 border-gray-200'
       }`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-col gap-0.5">
-          <span className="text-sm font-bold text-white">{booking.eventName}</span>
+          <span className="text-sm font-bold text-gray-900">{booking.eventName}</span>
           <div className="flex items-center gap-1.5 text-xs text-gray-500">
             <MapPinIcon />
             <span>{booking.venue}</span>
@@ -75,7 +75,7 @@ const BookingCard = ({ booking, onViewEvent }) => {
         </span>
       </div>
 
-      <div className="flex items-center gap-4 border-t border-gray-700 pt-3">
+      <div className="flex items-center gap-4 border-t border-gray-100 pt-3">
         <div className="flex items-center gap-1.5 text-xs text-gray-500">
           <CalendarIcon />
           <span>{booking.date}</span>
@@ -168,16 +168,16 @@ export default function ProfileModal({ userPhone, onClose, onLogout }) {
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       {/* Sheet */}
-      <div className="relative w-full max-w-md bg-gray-900 border border-gray-800 rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+      <div className="relative w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-800 shrink-0">
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-[#1C1D2B] text-white flex items-center justify-center font-bold text-base">
               {(userPhone || 'U')[0].toUpperCase()}
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-bold text-white">
+              <span className="text-sm font-bold text-gray-900">
                 +91 {userPhone || '—'}
               </span>
               <span className="text-xs text-gray-400">ParkEase member</span>
@@ -185,7 +185,7 @@ export default function ProfileModal({ userPhone, onClose, onLogout }) {
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-gray-800 text-gray-400 transition-colors"
+            className="p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors"
           >
             <CloseIcon />
           </button>
@@ -196,8 +196,8 @@ export default function ProfileModal({ userPhone, onClose, onLogout }) {
 
           {/* My vehicle */}
           <div className="flex flex-col gap-2">
-            <span className="text-xs text-red-400 uppercase tracking-widest font-semibold">My vehicle</span>
-            <div className="w-full bg-gray-800 border border-gray-700 rounded-2xl px-4 py-3 flex flex-col gap-2">
+            <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">My vehicle</span>
+            <div className="w-full bg-white border border-gray-200 rounded-2xl px-4 py-3 flex flex-col gap-2">
               {editingVehicle ? (
                 <div className="flex flex-col gap-2">
                   <input
@@ -207,19 +207,19 @@ export default function ProfileModal({ userPhone, onClose, onLogout }) {
                     onChange={e => setVehicleDraft(e.target.value.toUpperCase().replace(/[^A-Z0-9 ]/g, ''))}
                     placeholder="e.g. DL 3C AB 1234"
                     autoFocus
-                    className="w-full border border-gray-700 rounded-xl px-3 py-2.5 text-sm font-mono tracking-wider text-white bg-gray-900 outline-none focus:border-red-500"
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm font-mono tracking-wider text-gray-900 outline-none focus:border-gray-500"
                   />
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleSaveVehicle}
                       disabled={vehicleDraft.length < 6}
-                      className="flex-1 bg-red-600 hover:bg-red-500 disabled:opacity-40 text-white text-xs font-bold py-2 rounded-xl active:scale-95 transition-all"
+                      className="flex-1 bg-[#1C1D2B] disabled:opacity-40 text-white text-xs font-bold py-2 rounded-xl active:scale-95 transition-all"
                     >
                       Save
                     </button>
                     <button
                       onClick={() => setEditingVehicle(false)}
-                      className="flex-1 bg-gray-700 text-gray-300 text-xs font-semibold py-2 rounded-xl active:scale-95 transition-all"
+                      className="flex-1 bg-gray-100 text-gray-600 text-xs font-semibold py-2 rounded-xl active:scale-95 transition-all"
                     >
                       Cancel
                     </button>
@@ -253,7 +253,7 @@ export default function ProfileModal({ userPhone, onClose, onLogout }) {
           {/* Upcoming bookings */}
           {upcoming.length > 0 && (
             <div className="flex flex-col gap-3">
-              <span className="text-xs text-red-400 uppercase tracking-widest font-semibold">
+              <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">
                 Upcoming
               </span>
               {upcoming.map(b => (
@@ -263,7 +263,7 @@ export default function ProfileModal({ userPhone, onClose, onLogout }) {
           )}
 
           {upcoming.length === 0 && (
-            <div className="w-full bg-gray-900 border border-gray-700 border-dashed rounded-2xl px-4 py-6 flex flex-col items-center gap-2 text-center">
+            <div className="w-full bg-gray-50 border border-gray-200 border-dashed rounded-2xl px-4 py-6 flex flex-col items-center gap-2 text-center">
               <span className="text-2xl">🎫</span>
               <span className="text-sm font-semibold text-gray-700">No upcoming bookings</span>
               <span className="text-xs text-gray-400">Book parking for your next event to see it here</span>
@@ -273,7 +273,7 @@ export default function ProfileModal({ userPhone, onClose, onLogout }) {
           {/* Past bookings */}
           {past.length > 0 && (
             <div className="flex flex-col gap-3">
-              <span className="text-xs text-red-400 uppercase tracking-widest font-semibold">
+              <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">
                 Past bookings
               </span>
               {past.map(b => (
@@ -285,10 +285,10 @@ export default function ProfileModal({ userPhone, onClose, onLogout }) {
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-gray-800 shrink-0">
+        <div className="px-5 py-4 border-t border-gray-100 shrink-0">
           <button
             onClick={handleLogout}
-            className="w-full text-sm text-gray-500 hover:text-red-400 py-2 transition-colors font-medium"
+            className="w-full text-sm text-gray-400 hover:text-red-500 py-2 transition-colors font-medium"
           >
             Log out
           </button>

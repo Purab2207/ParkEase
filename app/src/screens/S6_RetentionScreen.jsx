@@ -105,7 +105,7 @@ const FlameIcon = () => (
 // ----------------------------------------------------------------------------
 
 const NotificationBanner = () => (
-  <div className="bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 flex items-start gap-3">
+  <div className="bg-white border border-gray-200 shadow-md rounded-2xl px-4 py-3 flex items-start gap-3">
     {/* App icon */}
     <div className="shrink-0 mt-0.5 w-10 h-10 bg-[#1C1D2B] rounded-xl flex items-center justify-center">
       <span className="text-white text-[10px] font-black tracking-tight leading-none">PE</span>
@@ -119,7 +119,7 @@ const NotificationBanner = () => (
           Just now
         </span>
       </div>
-      <p className="text-sm font-bold text-white leading-tight">{EVENT.shortTitle}</p>
+      <p className="text-sm font-bold text-gray-900 leading-tight">{EVENT.shortTitle}</p>
       <p className="text-xs text-gray-500 mt-0.5 leading-snug">
         Parking spots near Chinnaswamy already 60% booked. Secure yours before they&apos;re gone.
       </p>
@@ -181,7 +181,7 @@ const FillRateUrgencyBar = () => {
     'bg-red-500';
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-2xl px-4 py-4">
+    <div className="bg-white border border-gray-200 shadow-sm rounded-2xl px-4 py-4">
       <div className="flex items-center justify-between mb-1.5">
         <p className="text-xs font-semibold text-gray-700">
           {EVENT.bookedSpots} of {EVENT.totalSpots} spots booked
@@ -228,7 +228,7 @@ const TrustSignalRow = () => (
 );
 
 const LastTimeMemoryChip = () => (
-  <div className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3">
+  <div className="bg-gray-100 border border-gray-200 rounded-xl px-4 py-3">
     <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Last time you were here</p>
     <div className="flex items-center gap-2 flex-wrap">
       <span className="inline-flex items-center gap-1.5 bg-white border border-gray-200 shadow-sm rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-700">
@@ -249,7 +249,7 @@ const RepeatBookerBadge = () => (
   <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
     <div className="flex items-center gap-2 mb-1">
       <BadgeCheckIcon />
-      <p className="text-sm font-bold text-white">Welcome back, {PERSONA.name}</p>
+      <p className="text-sm font-bold text-gray-900">Welcome back, {PERSONA.name}</p>
     </div>
     <p className="text-xs text-blue-600 mb-1">
       {PERSONA.previousEvents} previous event · {PERSONA.lastEvent.name}, {PERSONA.lastEvent.month}
@@ -260,7 +260,7 @@ const RepeatBookerBadge = () => (
 
 const OneClickRebookCTA = ({ onBookParking }) => (
   <div className="sticky bottom-4 px-0">
-    <button onClick={onBookParking} className="w-full bg-red-600 hover:bg-red-500 text-white rounded-2xl px-6 py-4 shadow-xl active:scale-[0.98] transition-all">
+    <button onClick={onBookParking} className="w-full bg-[#1C1D2B] text-white rounded-2xl px-6 py-4 shadow-xl active:scale-[0.98] transition-transform">
       <p className="text-base font-black tracking-tight">Book Parking · ₹{EVENT.price}</p>
       <p className="text-[11px] text-gray-400 mt-0.5 font-normal">Your details are saved · select a bay in seconds</p>
     </button>
@@ -278,11 +278,11 @@ const SkipLink = () => (
 // ----------------------------------------------------------------------------
 export default function RetentionScreen({ onBookParking }) {
   return (
-    <div className="min-h-screen bg-gray-950 pb-32">
+    <div className="min-h-screen bg-gray-50 pb-32">
       <div className="max-w-md mx-auto px-4 pt-5 flex flex-col gap-4">
 
         {/* Section label */}
-        <p className="text-xs text-red-400 uppercase tracking-widest text-center">
+        <p className="text-xs text-gray-400 uppercase tracking-widest text-center">
           ParkEase · Re-engagement
         </p>
 
