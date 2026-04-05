@@ -158,15 +158,15 @@ const MODE_OPTIONS = [
 ];
 
 const ModeToggle = ({ activeMode, onModeChange }) => (
-  <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl p-1.5 flex gap-1">
+  <div className="w-full bg-gray-900 border border-gray-800 rounded-2xl p-1.5 flex gap-1">
     {MODE_OPTIONS.map(({ id, label }) => (
       <button
         key={id}
         onClick={() => onModeChange(id)}
         className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${
           activeMode === id
-            ? 'bg-[#1C1D2B] text-white shadow'
-            : 'text-gray-500 hover:text-gray-800'
+            ? 'bg-red-600 text-white shadow'
+            : 'text-gray-400 hover:text-white'
         }`}
       >
         {label}
@@ -190,17 +190,17 @@ const DashboardHeader = ({ event, status, lastUpdated, onRefresh }) => {
     <div className="w-full flex flex-col gap-1 pt-1">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-gray-900 tracking-tight">ParkEase</span>
+          <span className="text-sm font-bold text-white tracking-tight">ParkEase</span>
           <span className="text-gray-400">·</span>
           <span className="text-xs text-gray-500">Operator View</span>
         </div>
-        <button onClick={onRefresh} className="p-1.5 text-gray-400 hover:text-gray-900 transition-colors">
+        <button onClick={onRefresh} className="p-1.5 text-gray-400 hover:text-white transition-colors">
           <RefreshIcon />
         </button>
       </div>
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
-          <span className="text-base font-bold text-gray-900">{event.eventName}</span>
+          <span className="text-base font-bold text-white">{event.eventName}</span>
           <span className="text-xs text-gray-400">{event.venue} · {event.date}</span>
         </div>
         <div className={`text-xs font-bold px-2.5 py-1 rounded-full ${statusConfig.classes}`}>
@@ -216,14 +216,14 @@ const DashboardHeader = ({ event, status, lastUpdated, onRefresh }) => {
 const MetricCard = ({ label, value, sub, highlight, icon: Icon }) => (
   <div className={`flex flex-col gap-1.5 rounded-2xl px-4 py-3 border ${
     highlight
-      ? 'bg-red-50 border-red-200'
-      : 'bg-white border-gray-200 shadow-sm'
+      ? 'bg-red-950/40 border-red-800/60'
+      : 'bg-gray-900 border-gray-800'
   }`}>
     <div className="flex items-center gap-1.5 text-gray-500">
       {Icon && <Icon />}
       <span className="text-xs">{label}</span>
     </div>
-    <span className={`text-2xl font-black ${highlight ? 'text-red-600' : 'text-gray-900'}`}>
+    <span className={`text-2xl font-black ${highlight ? 'text-red-400' : 'text-white'}`}>
       {value}
     </span>
     {sub && <span className="text-xs text-gray-400">{sub}</span>}
@@ -266,8 +266,8 @@ const PrimaryMetricsGrid = ({ data }) => {
 const RedirectStatusBlock = ({ active, taps, threshold, total }) => (
   <div className={`w-full rounded-2xl px-4 py-3 border flex items-center justify-between ${
     active
-      ? 'bg-red-50 border-red-200'
-      : 'bg-white border-gray-200 shadow-sm'
+      ? 'bg-red-950/40 border-red-800/60'
+      : 'bg-gray-900 border-gray-800'
   }`}>
     <div className="flex flex-col gap-0.5">
       <div className="flex items-center gap-2">
@@ -928,7 +928,7 @@ export default function OperatorDashboardScreen() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-gray-50 font-sans sm:bg-gray-50">
+    <div className="min-h-[100dvh] bg-gray-950 font-sans">
 
       {/* Toast — simulates push notification to users */}
       {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
@@ -936,7 +936,7 @@ export default function OperatorDashboardScreen() {
       {/* Emergency overlay */}
       {showEmergency && <EmergencyOverlay onDismiss={() => setShowEmergency(false)} />}
 
-      <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-50 flex flex-col px-4 py-5 gap-5 sm:shadow-2xl">
+      <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-950 flex flex-col px-4 py-5 gap-5 sm:shadow-2xl">
 
         {/* Mode toggle */}
         <ModeToggle activeMode={mode} onModeChange={handleModeChange} />

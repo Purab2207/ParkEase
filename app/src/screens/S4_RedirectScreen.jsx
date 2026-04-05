@@ -72,11 +72,11 @@ const SurgePricingWarning = ({ surgeMultiplier }) => (
 );
 
 const EstimatedFareDisplay = ({ fareRangeLow, fareRangeHigh, isSurgeActive }) => (
-  <div className="w-full bg-white border border-gray-200 shadow-sm rounded-xl px-5 py-4 flex flex-col gap-1">
-    <div className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-1">
+  <div className="w-full bg-gray-900 border border-gray-800 rounded-xl px-5 py-4 flex flex-col gap-1">
+    <div className="text-xs text-red-400 uppercase tracking-widest font-semibold mb-1">
       Estimated fare to venue
     </div>
-    <div className="text-3xl font-bold text-gray-900">
+    <div className="text-3xl font-bold text-white">
       ₹{fareRangeLow} – ₹{fareRangeHigh}
     </div>
     {isSurgeActive && (
@@ -180,7 +180,7 @@ const CabProviderCard = ({ provider, availability, dropZoneLat, dropZoneLng, dro
   };
 
   return (
-    <div className={`flex flex-col items-center justify-between bg-white hover:bg-gray-50 active:scale-95 rounded-2xl p-4 gap-4 transition-all border border-gray-200 shadow-sm ${isUnavailable ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}`} onClick={!showWebFallback ? handleBooking : undefined}>
+    <div className={`flex flex-col items-center justify-between bg-gray-900 hover:bg-gray-800 active:scale-95 rounded-2xl p-4 gap-4 transition-all border border-gray-800 ${isUnavailable ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}`} onClick={!showWebFallback ? handleBooking : undefined}>
       <div className="flex flex-col items-center gap-2">
         <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shadow-sm border ${brandInfo.color}`}>
           {brandInfo.name.charAt(0)}
@@ -200,7 +200,7 @@ const CabProviderCard = ({ provider, availability, dropZoneLat, dropZoneLng, dro
       ) : (
         <button
           disabled={isUnavailable || isLoading}
-          className="w-full bg-[#1C1D2B] text-white text-sm font-bold rounded-xl py-2.5 transition-opacity disabled:opacity-50"
+          className="w-full bg-red-600 hover:bg-red-500 text-white text-sm font-bold rounded-xl py-2.5 transition-opacity disabled:opacity-50"
         >
           {isLoading ? '...' : `Book ${brandInfo.name}`}
         </button>
@@ -256,7 +256,7 @@ const AvailabilityFallbackNotice = () => (
 const RedirectFooter = () => {
   return (
     <div className="w-full flex flex-col items-center gap-4 py-4 pb-8">
-      <div className="text-xs text-gray-400 bg-white border border-gray-200 px-3 py-1.5 rounded-full">
+      <div className="text-xs text-gray-400 bg-gray-900 border border-gray-800 px-3 py-1.5 rounded-full">
         Redirect tracking live from Event 1 onwards
       </div>
 
@@ -264,7 +264,7 @@ const RedirectFooter = () => {
         <summary className="flex items-center justify-center cursor-pointer text-xs text-gray-500 hover:text-gray-700 transition-colors">
           How is this faster?
         </summary>
-        <div className="mt-3 text-xs text-gray-400 text-center bg-gray-50 p-3 rounded-lg border border-gray-200">
+        <div className="mt-3 text-xs text-gray-400 text-center bg-gray-900 p-3 rounded-lg border border-gray-800">
           Street parking near the venue is completely full. Factoring in gridlock and walking time, a cab drop-off right at the gate saves you roughly 25-40 minutes based on real-time data.
         </div>
       </details>
@@ -351,7 +351,7 @@ export default function RedirectScreen() {
 
   if (data.loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-500">
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center text-gray-400">
         <div className="animate-pulse flex flex-col items-center gap-3">
           <div className="w-8 h-8 rounded-full border-2 border-t-red-500 animate-spin"></div>
           Checking availability...
@@ -361,9 +361,9 @@ export default function RedirectScreen() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-gray-50 font-sans sm:bg-gray-50">
+    <div className="min-h-[100dvh] bg-gray-950 font-sans">
       {/* Container to restrict max width on desktop, full width on mobile */}
-      <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-50 flex flex-col items-center px-4 py-6 sm:py-8 gap-5 relative sm:shadow-2xl">
+      <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-950 flex flex-col items-center px-4 py-6 sm:py-8 gap-5 relative sm:shadow-2xl">
 
         <RedirectHeader />
 

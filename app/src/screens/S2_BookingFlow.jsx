@@ -137,7 +137,7 @@ const LOTS = [
 
 const BookingHeader = ({ currentStep, onBack }) => (
   <div className="w-full flex items-center justify-between py-2">
-    <button onClick={onBack} className="p-1.5 rounded-full hover:bg-gray-50 transition-colors text-gray-500 hover:text-gray-900">
+    <button onClick={onBack} className="p-1.5 rounded-full hover:bg-gray-800 transition-colors text-gray-400 hover:text-white">
       <ArrowLeftIcon />
     </button>
     <span className="text-base font-semibold text-gray-900">Book Parking</span>
@@ -148,9 +148,9 @@ const BookingHeader = ({ currentStep, onBack }) => (
 );
 
 const EventSummaryBar = ({ event }) => (
-  <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-4 py-3 flex flex-col gap-0.5">
-    <div className="text-base font-bold text-gray-900">{event.name}</div>
-    <div className="text-xs text-gray-500">{event.venue} · {event.date}</div>
+  <div className="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 flex flex-col gap-0.5">
+    <div className="text-base font-bold text-white">{event.name}</div>
+    <div className="text-xs text-gray-400">{event.venue} · {event.date}</div>
   </div>
 );
 
@@ -176,11 +176,11 @@ const InventoryScarcityBanner = ({ spotsRemaining, totalSpots }) => {
       <div className="flex items-end justify-between">
         <div>
           <span className={`text-2xl font-bold ${countClass}`}>{spotsRemaining}</span>
-          <span className="text-sm text-gray-500 ml-1.5">spots left</span>
+          <span className="text-sm text-gray-400 ml-1.5">spots left</span>
         </div>
         <span className="text-xs text-gray-400">of {totalSpots} total · live</span>
       </div>
-      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
         <div
           className="h-full rounded-full bg-gradient-to-r from-green-500 via-amber-500 to-red-500 transition-all duration-700"
           style={{ width: `${fillPercent}%` }}
@@ -198,12 +198,12 @@ const InventoryScarcityBanner = ({ spotsRemaining, totalSpots }) => {
 const ProhibitedItemsBanner = ({ items, venueName }) => {
   const [open, setOpen] = useState(false);
   return (
-    <div className="w-full bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden">
+    <div className="w-full bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
       <button
         onClick={() => setOpen(v => !v)}
         className="w-full px-4 py-2.5 flex items-center justify-between text-left"
       >
-        <span className="text-xs text-gray-500">⚠️ Venue entry rules — {venueName}</span>
+        <span className="text-xs text-gray-400">⚠️ Venue entry rules — {venueName}</span>
         <ChevronDownIcon open={open} />
       </button>
       {open && (
@@ -253,7 +253,7 @@ const BayGrid = ({ bays, selectedBayId, onSelectBay }) => (
               ? 'bg-white border border-gray-200 shadow-sm text-gray-400 line-through cursor-not-allowed'
               : isSelected
               ? 'bg-green-700 border border-green-500 text-white font-bold scale-105'
-              : 'bg-gray-100 border border-gray-200 text-gray-700 hover:bg-green-50 hover:border-green-200 hover:text-gray-900 cursor-pointer active:scale-95'
+              : 'bg-gray-800 border border-gray-700 text-gray-700 hover:bg-green-50 hover:border-green-200 hover:text-gray-900 cursor-pointer active:scale-95'
             }`}
         >
           {bay.pillarCode}
@@ -268,7 +268,7 @@ const SelectedBayCard = ({ bay, lot, onChangeBay }) => (
     <CheckIcon />
     <div className="flex flex-col min-w-0">
       <div className="flex items-center gap-2">
-        <span className="text-base font-bold text-gray-900">Bay {bay.pillarCode}</span>
+        <span className="text-base font-bold text-white">Bay {bay.pillarCode}</span>
         <span className="text-xs text-green-600 bg-green-900/50 px-2 py-0.5 rounded-full border border-green-200">
           Reserved
         </span>
@@ -277,7 +277,7 @@ const SelectedBayCard = ({ bay, lot, onChangeBay }) => (
         {lot.label} · {lot.distanceToGateMetres}m to {lot.gateName}
       </div>
     </div>
-    <button onClick={onChangeBay} className="ml-auto text-xs text-gray-500 underline underline-offset-2 shrink-0 hover:text-gray-900 transition-colors">
+    <button onClick={onChangeBay} className="ml-auto text-xs text-gray-400 underline underline-offset-2 shrink-0 hover:text-gray-900 transition-colors">
       Change
     </button>
   </div>
@@ -289,7 +289,7 @@ const BaySelectionPanel = ({ lots, selectedLotId, selectedBay, onSelectLot, onSe
   return (
     <div className="w-full flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs text-gray-500 uppercase tracking-widest font-semibold">Select your bay</span>
+        <span className="text-xs text-red-400 uppercase tracking-widest font-semibold">Select your bay</span>
         <div className="flex items-center gap-1 text-xs text-gray-400">
           <MapPinIcon />
           <span>{activeLot.distanceToGateMetres}m to gate</span>
@@ -322,7 +322,7 @@ const EntryTimeWindowPicker = ({ windows, selectedWindow, onSelect }) => (
   <div className="w-full flex flex-col gap-2">
     <div className="flex items-center gap-2">
       <ClockIcon />
-      <span className="text-xs text-gray-500 uppercase tracking-widest font-semibold">Choose arrival window</span>
+      <span className="text-xs text-red-400 uppercase tracking-widest font-semibold">Choose arrival window</span>
     </div>
     {windows.map(window => {
       const isSelected = selectedWindow === window;
@@ -337,7 +337,7 @@ const EntryTimeWindowPicker = ({ windows, selectedWindow, onSelect }) => (
             }`}
         >
           <div className="flex flex-col items-start gap-0.5">
-            <span className="text-sm font-semibold text-gray-900">{window}</span>
+            <span className="text-sm font-semibold text-white">{window}</span>
             <span className="text-xs text-gray-400">Your spot is held until the window ends</span>
           </div>
           <div className={`w-4 h-4 rounded-full border-2 transition-all shrink-0 ${
@@ -355,16 +355,16 @@ const PriceTierDisplay = ({ venueBaseRate, parkEaseFee, consumerPrice, eventTier
     <span className="text-xs text-gray-400 uppercase tracking-widest">{eventTier}</span>
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-500">Venue parking base</span>
-        <span className="text-sm text-gray-500">₹{venueBaseRate}</span>
+        <span className="text-sm text-gray-400">Venue parking base</span>
+        <span className="text-sm text-gray-400">₹{venueBaseRate}</span>
       </div>
       <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-500">ParkEase service fee</span>
-        <span className="text-sm text-gray-500">₹{parkEaseFee}</span>
+        <span className="text-sm text-gray-400">ParkEase service fee</span>
+        <span className="text-sm text-gray-400">₹{parkEaseFee}</span>
       </div>
       <div className="w-full h-px bg-gray-200 my-1" />
       <div className="flex items-center justify-between">
-        <span className="text-base font-bold text-gray-900">Total</span>
+        <span className="text-base font-bold text-white">Total</span>
         <span className="text-lg font-bold text-gray-900">₹{consumerPrice}</span>
       </div>
     </div>
@@ -379,7 +379,7 @@ const GroupSplitCalculator = ({ consumerPrice, groupSize, onGroupSizeChange }) =
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <UsersIcon />
-          <span className="text-xs text-gray-500">Splitting with a group?</span>
+          <span className="text-xs text-gray-400">Splitting with a group?</span>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -423,7 +423,7 @@ const CancellationPolicyNotice = () => (
 );
 
 const PricingBreakdown = ({ event, groupSize, onGroupSizeChange }) => (
-  <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-5 py-4 flex flex-col gap-4">
+  <div className="w-full bg-gray-900 border border-gray-800 rounded-2xl px-5 py-4 flex flex-col gap-4">
     <PriceTierDisplay
       venueBaseRate={event.venueBaseRate}
       parkEaseFee={event.parkEaseFee}
@@ -466,7 +466,7 @@ const UPIPaymentButton = ({ consumerPrice, selectedBay, selectedWindow, contactP
         className={`w-full font-bold text-base rounded-2xl py-4 transition-all shadow-lg shadow-black/40
           ${isDisabled
             ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            : 'bg-[#1C1D2B] text-white hover:bg-gray-800 tracking-wide uppercase active:scale-95 cursor-pointer'
+            : 'bg-red-600 text-white hover:bg-red-500 tracking-wide uppercase active:scale-95 cursor-pointer'
           }`}
       >
         {isLoading ? (
@@ -496,11 +496,11 @@ const BookingFooter = () => (
 const StepCompletedChip = ({ label, value, onClick }) => (
   <button
     onClick={onClick}
-    className="w-full bg-white border border-gray-200 shadow-sm rounded-xl px-4 py-2.5 flex items-center justify-between hover:border-gray-400 transition-colors"
+    className="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5 flex items-center justify-between hover:border-gray-400 transition-colors"
   >
     <span className="text-xs text-gray-400">{label}</span>
     <div className="flex items-center gap-2">
-      <span className="text-sm font-semibold text-gray-900">{value}</span>
+      <span className="text-sm font-semibold text-white">{value}</span>
       <CheckIcon />
     </div>
   </button>
@@ -597,12 +597,12 @@ export default function BookingFlowScreen({ userPhone, isLoggedIn }) {
 
   if (paymentSuccess) {
     return (
-      <div className="min-h-[100dvh] bg-gray-50 flex flex-col items-center justify-center px-4 gap-4">
+      <div className="min-h-[100dvh] bg-gray-950 flex flex-col items-center justify-center px-4 gap-4">
         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
           <CheckIcon />
         </div>
         <div className="text-xl font-bold text-gray-900">Booking confirmed!</div>
-        <div className="text-sm text-gray-500 text-center">
+        <div className="text-sm text-gray-400 text-center">
           Bay {selectedBay?.pillarCode} · {selectedLot?.label}
         </div>
         <div className="text-xs text-gray-400 text-center max-w-xs">
@@ -614,8 +614,8 @@ export default function BookingFlowScreen({ userPhone, isLoggedIn }) {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-gray-50 font-sans sm:bg-gray-50">
-      <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-50 flex flex-col px-4 py-5 gap-4 pb-20 sm:shadow-2xl">
+    <div className="min-h-[100dvh] bg-gray-950 font-sans">
+      <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-950 flex flex-col px-4 py-5 gap-4 pb-20 sm:shadow-2xl">
 
         {/* Header */}
         <BookingHeader currentStep={currentStep} onBack={() => navigate(`/events/${eventId}`)} />
@@ -638,7 +638,7 @@ export default function BookingFlowScreen({ userPhone, isLoggedIn }) {
         {/* Step 2 — Bay selection */}
         {currentStep >= 2 ? (
           <div className="w-full flex flex-col gap-3">
-            <span className="text-xs text-gray-500 uppercase tracking-widest font-semibold">
+            <span className="text-xs text-red-400 uppercase tracking-widest font-semibold">
               2 · Select your bay
             </span>
             {currentStep === 2 ? (
@@ -664,7 +664,7 @@ export default function BookingFlowScreen({ userPhone, isLoggedIn }) {
           <div className="w-full flex flex-col gap-3">
             <button
               onClick={() => setCurrentStep(3)}
-              className="text-xs text-gray-500 uppercase tracking-widest font-semibold text-left"
+              className="text-xs text-red-400 uppercase tracking-widest font-semibold text-left"
             >
               3 · Choose arrival window
             </button>
@@ -687,7 +687,7 @@ export default function BookingFlowScreen({ userPhone, isLoggedIn }) {
         {/* Step 4 — Pricing (visible once window selected) */}
         {selectedWindow && (
           <div className="w-full flex flex-col gap-3">
-            <span className="text-xs text-gray-500 uppercase tracking-widest font-semibold">
+            <span className="text-xs text-red-400 uppercase tracking-widest font-semibold">
               4 · Review & pricing
             </span>
             <PricingBreakdown
@@ -701,12 +701,12 @@ export default function BookingFlowScreen({ userPhone, isLoggedIn }) {
         {/* Step 4b — Contact number for QR delivery */}
         {selectedWindow && (
           <div className="w-full flex flex-col gap-2">
-            <span className="text-xs text-gray-500 uppercase tracking-widest font-semibold">
+            <span className="text-xs text-red-400 uppercase tracking-widest font-semibold">
               4b · Contact number for QR delivery
             </span>
-            <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-4 py-3 flex flex-col gap-2">
-              <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-gray-400">
-                <div className="px-3 py-3 bg-gray-50 border-r border-gray-200 text-sm text-gray-500 shrink-0">
+            <div className="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 flex flex-col gap-2">
+              <div className="flex items-center border border-gray-700 rounded-xl overflow-hidden focus-within:border-red-500">
+                <div className="px-3 py-3 bg-gray-800 border-r border-gray-700 text-sm text-gray-400 shrink-0">
                   🇮🇳 +91
                 </div>
                 <input
@@ -715,7 +715,7 @@ export default function BookingFlowScreen({ userPhone, isLoggedIn }) {
                   value={contactPhone}
                   onChange={(e) => setContactPhone(e.target.value.replace(/\D/g, ''))}
                   placeholder="10-digit mobile number"
-                  className="flex-1 px-3 py-3 outline-none text-sm text-gray-900 bg-white"
+                  className="flex-1 px-3 py-3 outline-none text-sm text-white bg-gray-900"
                 />
                 {isLoggedIn && userPhone && contactPhone === userPhone && (
                   <div className="px-3 py-1 text-xs text-green-600 font-medium shrink-0">
@@ -733,18 +733,18 @@ export default function BookingFlowScreen({ userPhone, isLoggedIn }) {
         {/* Step 4c — Vehicle number */}
         {selectedWindow && (
           <div className="w-full flex flex-col gap-2">
-            <span className="text-xs text-gray-500 uppercase tracking-widest font-semibold">
+            <span className="text-xs text-red-400 uppercase tracking-widest font-semibold">
               4c · Vehicle number
             </span>
-            <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-4 py-3 flex flex-col gap-2">
-              <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-gray-400">
+            <div className="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 flex flex-col gap-2">
+              <div className="flex items-center border border-gray-700 rounded-xl overflow-hidden focus-within:border-red-500">
                 <input
                   type="text"
                   maxLength={13}
                   value={vehicleNo}
                   onChange={(e) => handleVehicleNoChange(e.target.value)}
                   placeholder="e.g. DL 3C AB 1234"
-                  className="flex-1 px-3 py-3 outline-none text-sm text-gray-900 bg-white font-mono tracking-wider uppercase"
+                  className="flex-1 px-3 py-3 outline-none text-sm text-white bg-gray-900 font-mono tracking-wider uppercase"
                 />
                 {vehicleNo.length >= 6 && (
                   <div className="px-3 text-xs text-green-600 font-semibold shrink-0">✓</div>
