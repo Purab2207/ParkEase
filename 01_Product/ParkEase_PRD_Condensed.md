@@ -1,63 +1,56 @@
 # ParkEase — Condensed PRD
-**Version:** 1.0 · **Date:** April 2026 · **Author:** Purab
-**Status:** Prototype live, 9 screens, deployed on Vercel. First live event not yet secured.
+**Version:** 2.0 · **Date:** April 2026 · **Author:** Purab
+**Status:** Solution Review — Prototype live (9 screens, Vercel). First live event not yet secured.
+**Resources:** [Prototype](../app/) · [Financials](../02_Financials/) · [Handover](../04_Handover/ParkEase_Handover_2026-03-31.md)
 
 ---
 
 ## 1. Executive Summary
 
-ParkEase pre-sells named parking bays to Indian event attendees and gives operators a live dashboard and auto-generated compliance report. When parking fills, it redirects users to Ola/Uber/Rapido via deep-link.
+ParkEase is a software layer that pre-sells named parking bays to event attendees, gives operators a live dashboard and auto-generated compliance report, and redirects overflow traffic to Ola/Uber/Rapido when the lot fills.
 
-**The core problem** is a coordination failure, not a parking shortage. Post-event exit surge is predictable, recurring, and entirely unsolved. Lots that could function under distributed demand collapse under a concentrated spike. No product exists to shape that demand before it arrives.
+**The problem:** Post-event exit surge at India's large-scale live events is a predictable, recurring coordination failure — not a parking shortage — and no product exists to shape attendee demand before it collapses the infrastructure.
 
-**The two-sided model:** consumer pre-booking (₹99–₹249/bay) funds operations; the B2B platform fee (₹15,000–₹25,000/event) is 60% of per-event contribution margin. The B2B buyer funds the distribution channel — every organiser who signs a contract brings ParkEase to every attendee at every event they run.
+**The market:** India's live events market is ₹20,861 crore (2024), growing 15% YoY. ~110–130 structured-venue events/year in Tier 1 cities are addressable at MVP.
 
-**North Star:** Parking fill rate per event — % of inventory sold before event day. MVP target: 35%. Year 1: 65%.
+**Current state:** 9-screen Vercel prototype is live and demoable. No live event secured yet. All persona motivations are hypothesis-based — Event 1 is the validation checkpoint.
 
-When fill rate rises, redirect triggers, behaviour change is tested, and the operator compliance report gains its most credible data point. Every downstream metric depends on fill rate being high.
-
-**The core hypothesis — not yet validated:** When shown a parking full screen, Indian event-goers will book a cab instead of finding informal alternatives. Event 1 answers this.
+**MVP targets:** 35% parking fill rate · 25–30% redirect CTA tap rate · <45% checkout drop-off
 
 ---
 
-## 2. Problem and Market
+## 2. Problem Alignment
 
-### The Coordination Failure
+**The problem in one sentence:** Post-event exit surge at India's large-scale live events is a predictable, recurring coordination failure — not a parking shortage — and no product exists to shape attendee demand before it collapses the infrastructure.
 
-India's live events market now regularly draws 20,000–60,000 attendees per event in Tier 1 cities. The infrastructure around these venues is completely unmanaged.
+**Why it matters to customers:** Indian event-goers regularly spend 1–3 hours trapped in post-event gridlock that is entirely avoidable. Priya skips events over parking uncertainty. Arjun sits in his car for 90 minutes after an IPL match. Rahul's group blames each other for arriving late to find no parking.
 
-Indian attendees rationally delay departure hoping crowds will thin — but when everyone does this simultaneously, it creates a concentrated exit surge that overwhelms parking capacity in minutes. The result: 1–3 hours of post-event gridlock that is entirely predictable, deeply recurring, and completely unsolved.
+**Why it matters to the business:** Event organisers carry reputational and compliance risk with zero tools to manage it. A fatal stampede at Chinnaswamy, documented chaos at Diljit Delhi, highway gridlock after Coldplay Mumbai — these are not freak incidents. They are the natural outcome of zero pre-sold parking, zero demand shaping, and no structured alternative when the lot fills.
 
-Three documented failures establish the B2B urgency:
-
+**Evidence:**
 - **RCB Chinnaswamy, June 2025** — post-match gridlock caused a fatal stampede. Police FIR filed against the organiser. Karnataka government fast-tracked the Crowd Control Bill 2025.
-- **Diljit Dosanjh, Delhi, January 2025** — overcrowding, wristband theft, organisers fleeing the venue. Business Standard documented the chaos.
-- **Coldplay, Mumbai, January 2025** — highway gridlock persisted 30+ minutes post-show. Free Press Journal documented the congestion.
+- **Diljit Dosanjh, Delhi, January 2025** — overcrowding, wristband theft, organisers fleeing the venue. *Business Standard* documented the chaos.
+- **Coldplay, Mumbai, January 2025** — highway gridlock 30+ minutes post-show. *Free Press Journal* documented the congestion.
+- **Karnataka Crowd Control Bill 2025** — creates a formal compliance obligation around crowd and parking management that did not formally exist before. The ParkEase compliance report is the document that satisfies it.
 
-These are not freak incidents. They are the natural outcome of a zero-baseline industry: no pre-sold parking, no demand shaping, no structured alternative when the lot fills. Event organisers carry reputational and compliance risk with no product to manage it.
+---
 
-**The Karnataka Crowd Control Bill 2025** is a regulatory tailwind: it creates a compliance obligation around crowd and parking management that did not formally exist before. The ParkEase compliance report is the document that satisfies this obligation.
+## 3. Market Context
 
-### Market and Scope
-
-**Total India live events market:** ₹20,861 crore (2024), growing 15% YoY. India live music specifically: ~₹11,600 crore (2025), CAGR 17.5% through 2034. India is increasingly a top-tier destination for international tours — 2025 saw Coldplay, Travis Scott, Bruno Mars, Ed Sheeran, and Rolling Loud all run India legs.
+India's live events market: ₹20,861 crore (2024), growing 15% YoY. Live music specifically: ~₹11,600 crore (2025), CAGR 17.5% through 2034.
 
 **ParkEase's addressable slice — bottom-up:**
 
 | Category | Events/year (Tier 1) | Structured parking? |
 |---|---|---|
-| IPL home games (5 Tier 1 franchises × ~8 games) | ~40 matches/season | ✅ All stadiums have numbered pillar parking |
-| Major international concerts (Coldplay, Travis Scott scale) | ~15–20/year | ~50% — stadium/mall venues only |
-| Domestic tours (Arijit, Diljit, Karan Aujla scale) | ~30–40/year | ~50% — stadium/mall venues only |
-| Large comedy, festivals, other | ~20–30/year | ~40% |
-| **Total addressable (structured venues, Tier 1)** | **~110–130 events/year** | |
+| IPL home games (5 Tier 1 franchises × ~8 games) | ~40 | ✅ All stadiums have numbered pillar parking |
+| Major international concerts (Coldplay, Travis Scott scale) | ~15–20 | ~50% — stadium/mall venues only |
+| Domestic tours (Arijit, Diljit, Karan Aujla scale) | ~30–40 | ~50% |
+| Large comedy, festivals, other | ~20–30 | ~40% |
+| **Total addressable (structured venues, Tier 1)** | **~110–130/year** | |
 
-**Revenue per event (avg):** 600 bays × ₹175 avg price × 75% fill + ₹20,000 B2B platform fee = **~₹1 lakh per event**
-
-**Year 1 realistic target** (20–25 events, first organiser relationships): **₹20–25 lakh**
-**Full Tier 1 penetration** (120 events): **~₹1.2 crore/year**
-
-As a % of total India live events market: ~0.006% — ParkEase is a new ancillary revenue layer that does not exist today, growing alongside the market at 15%+ YoY. The opportunity is not to take share from existing parking — it is to monetise a layer that is currently free, unmanaged, and causing the problem.
+**Revenue per event (avg):** 600 bays × ₹175 avg price × 75% fill + ₹20,000 B2B platform fee = **~₹1 lakh/event**
+**Year 1 realistic target** (20–25 events): **₹20–25 lakh** · **Full Tier 1 penetration**: **~₹1.2 crore/year**
 
 **Competitive positioning:**
 
@@ -65,92 +58,45 @@ As a % of total India live events market: ~0.006% — ParkEase is a new ancillar
 |---|---|---|
 | ShowMyParking | Aggregates existing parking supply | No pre-booking, no demand shaping, no compliance report |
 | ValetEZ | Physical valet management at venues | Operations-only, no consumer app, no redirect |
-| BookMyShow | Ticketing with informal parking links | Add-on link only, no named bay, no operator dashboard |
+| BookMyShow | Ticketing with informal parking links | Add-on link only — no named bay, no operator dashboard |
 | Google Maps | Navigation | Post-arrival only, no pre-booking |
 
 ParkEase's differentiator is what happens *after the lot fills*. No competitor addresses this.
 
-**Venue constraint — acknowledged honestly:** The bay allocation model requires structured, numbered parking with pillar bay systems. Open grounds without numbered infrastructure are out of scope. MVP venue list: stadium complexes, mall-adjacent venues, purpose-built grounds with pillar parking. A venue audit checklist is part of the sales process before any partnership is signed.
+---
+
+## 4. Personas
+
+*All persona journeys are hypothesis-based — built from documented event failures, behavioural analogues, and founder inference. No primary interview data exists yet. Treat as directional until validated by Event 1 (see OQ7).*
+
+| Persona | Snapshot | Core Pain | Core Objection | Key Product Decision |
+|---|---|---|---|---|
+| **Arjun Rao** | 28, software engineer, Bangalore. 4–6 events/year. Plans ahead, pays for convenience. | 90 mins stuck leaving Chinnaswamy after IPL. | "Is this actually guaranteed or will I show up and the spot is gone?" | Named pillar bay (not zone allocation) is the primary trust signal. Bay mapping is the enabling ops step. |
+| **Priya Sharma** | 35, drives from Thane with two children. Low risk appetite. Has skipped events over parking uncertainty. | Arrived at confirmed parking 20 mins from entry gate with no signage and children. | "Will the parking actually be close to the venue entry gate?" | Distance to entry gate is the headline conversion metric — above price, above availability. |
+| **Rahul Kumar** | 21, college student, Delhi. Events in groups of 4–6. Price-sensitive, last-minute planner. | Group arrived late, missed the opening act, got blamed. | "Can we split the parking payment between 4 people?" | Scarcity converts, price does not. ₹75 split 4 ways is invisible. One Rahul = 4–6 people redirected. |
+| **Siddharth Mehta** | 38, ops head at a large live events company. 15–30 events/year. Risk-averse, KPI-obsessed. | Fears viral gridlock video linked to his event, compliance notices, zero data. | "If your app fails on event night, you become my liability." | Manual fallback (printed list at every gate) closes the sale. Compliance report is the B2B acquisition channel. |
+
+**Persona stories — today, without ParkEase:**
+
+**Arjun:** Drives to Chinnaswamy for an IPL match. There is no pre-booking option. He arrives 30 minutes before the match to find the lot full. He parks informally 1.5km away. After the match, he sits in his car for 90 minutes waiting for the crowds to thin. He does the same thing at the next match.
+
+**Siddharth:** His company organised the Diljit Delhi concert. A viral video of the exit gridlock has 400,000 views. A municipal authority has sent a compliance notice. He has no data, no report, and no product that could have prevented it. His MD asks what they will do differently next time. He has no answer.
 
 ---
 
-## 3. Personas
+## 5. Goals & Metrics
 
-*Note: All persona journeys are hypothesis-based — built from documented event failures, behavioural analogues (BookMyShow, Zomato, Waze), and founder inference. No primary interview data exists yet. These should be treated as directional until validated.*
+### Measurable Goals
+1. **35% parking fill rate** at first live event (MVP) — the minimum that triggers the redirect mechanism and generates a credible compliance report
+2. **25–30% redirect CTA tap rate** when parking is full — validates the core demand-shifting hypothesis
+3. **<45% checkout drop-off rate** — honest floor given UPI first-authorisation friction on unfamiliar apps
 
-| Persona | Snapshot | Core Pain | Core Objection | Primary Touchpoint | Key Product Decision |
-|---|---|---|---|---|---|
-| **Arjun Rao** | 28, software engineer, Bangalore. 4–6 events/year. Plans ahead, pays for convenience. | 90 mins stuck leaving Chinnaswamy after IPL. | "Is this actually guaranteed or will I show up and the spot is gone?" | S1 venue landing page, event email / QR code | Named pillar bay (not zone allocation) is the primary trust signal. Bay mapping exercise is the enabling ops step. |
-| **Priya Sharma** | 35, drives from Thane with two children. Low risk appetite. Has skipped events over parking uncertainty. | Arrived at confirmed parking 20 minutes from the entry gate with no signage and children. | "Will the parking actually be close to the venue entry gate?" | Google search before buying tickets — she researches logistics before committing. | Distance to entry gate is the headline conversion metric — above price, above availability. A prohibited items banner at the lot entry is the detail that earns her trust. |
-| **Rahul Kumar** | 21, college student, Delhi. Goes to events in groups of 4–6. Price-sensitive, FOMO-driven, last-minute planner. | Group arrived late, missed the opening act, got blamed. | "Can we split the parking payment between 4 people on the app?" | Ticket confirmation link embedded by B2B organiser — he does not find ParkEase independently. | Scarcity converts, price does not. ₹75 split 4 ways is invisible. UPI collect request post-booking removes the social friction of chasing friends. One Rahul conversion = 4–6 people redirected. |
-| **Siddharth Mehta** | 38, ops head at a large live events company. Manages 15–30 events/year. Risk-averse, KPI-obsessed. | Fears viral gridlock video linked to his event, compliance notices from municipal bodies, zero data today. | "What if your app fails on event night and 40,000 people have nowhere to go? You become my liability." | Targeted outreach from ParkEase timed to a documented industry failure — not a cold pitch. | Manual fallback (printed booking list at every gate) closes the sale. The compliance report is the B2B acquisition channel. Platform fee conversation happens *after* the report lands on his MD's desk — never before. |
+### Immeasurable Goals
+1. **Arjun should feel certain** — not optimistic, *certain* — that his named bay will exist when he arrives. Certainty, not convenience, is what this product sells.
+2. **Priya should feel prepared** — every logistical unknown (distance to gate, prohibited items, signage) resolved before she leaves home. She should not have to think on arrival.
+3. **Siddharth should feel protected** — that if an official asks about crowd management the morning after the event, he has a credible document to hand over.
 
----
-
-## 4. Features and Build Sequence
-
-### MoSCoW
-
-**Must Have — ship before Event 1**
-
-1. Ola/Uber/Rapido deep-link redirect with venue drop zone pre-filled
-2. Manual inventory seeding + bay pillar mapping exercise (ops)
-3. Parking full → redirect screen (S4)
-4. Real-time inventory counter — live spots remaining
-5. Named bay allocation with pillar map display (S1, S2)
-6. QR booking confirmation with offline caching (S3)
-7. Operator dashboard — live fill rate, spots remaining, redirect count, per-lot status, alert feed (S5)
-8. Auto-generated PDF compliance report
-9. Manual fallback printed booking list — physical ops, gate attendants
-10. SLA and liability contract template (legal — ParkEase is the **booking software agent**, not the physical lot operator. Physical ops liability stays with the organiser/venue. ParkEase's SLA covers: booking system uptime, correct bay assignment, QR validation accuracy, and refund processing for errors caused by ParkEase. ParkEase's total liability per event is capped at the refund value of bookings processed that night — not the organiser's broader event liability.)
-11. Emergency override in dashboard (S5 operator controls)
-12. S9 Attendant Scanner — QR scan, plate verification, bay reassignment for blocked bays
-13. WhatsApp forward CTA on confirmation (S3) ✅ **already built** — one tap, pre-formatted booking summary with per-person split amount
-
-**Should Have — ship if time allows before Event 1**
-
-14. Pre-event push notification with departure nudge timed to user home location
-15. Post-booking UPI split calculator — per-person amount, UPI collect request to contacts
-16. Distance to entry gate as headline on venue page (Priya's primary conversion metric)
-17. Prohibited items banner — physical sign at lot entry (ops deliverable, not a tech feature)
-
-**Could Have — V2**
-
-- Ola/Uber API callback for confirmed ride booking (hard conversion measurement)
-- Dynamic exit routing via Google Maps API
-- Operator self-service inventory input (reduces manual seeding bottleneck)
-- True escrow group booking (each person authorises their share independently)
-
-**Won't Have**
-
-- IoT per-bay occupancy sensors
-- Shuttle/fleet operations
-- Open-ground venue support without numbered parking infrastructure
-
----
-
-### Sprint Sequence
-
-**Sprint 1 — Consumer booking core (S1, S2, S3)**
-Named bay selection, UPI payment, QR confirmation. Group split calculator. WhatsApp forward CTA. Establishes the consumer trust arc (Arjun, Priya). Target: checkout drop-off rate <45%.
-
-**Sprint 2 — Demand shifting (S4)**
-Parking full detection, redirect screen with Ola/Uber/Rapido deep-links, cab fare estimate. This is the hypothesis being tested. Redirect screen is a conversion asset, not an information page.
-
-**Sprint 3 — Operator dashboard (S5)**
-Live fill rate, spots remaining, redirect trigger count, per-lot status, colour-coded alert feed, post-event exit clearance comparison vs. industry baseline. Manually seeded data at MVP. PDF compliance report download. This is Siddharth's entire product interaction.
-
-**Sprint 4 — Retention and edge cases (S6–S8)**
-Re-engagement flow, RCB-style retention screen, operator override controls. Pre-event notification nudge system.
-
-**Sprint 5 — Attendant scanner (S9)**
-Ground-staff PWA for QR scan at gate, plate verification, blocked bay reassignment. Closes the loop between "booking confirmed" and "bay actually occupied". Feeds verified occupancy data to compliance report.
-
-*Note on RICE vs strategic sequencing:* The operator dashboard (S5) scores low on RICE Reach (serves 1 persona). Strategic reasoning overrides RICE here — without Siddharth saying yes, there is no consumer product at all. The dashboard is built in Sprint 3 despite its low Reach score.
-
----
-
-## 5. Metrics
+### Metrics Tree
 
 ```
 NORTH STAR
@@ -203,71 +149,224 @@ NORTH STAR
                    Domestic festivals: 6 months.
 ```
 
+*Note: Fill rate (current North Star) is a lagging output metric and is contribution-negative at MVP fill on a new venue. Replacement candidates: redirect CTA completion rate, repeat booking rate, exit clearance time reduction. Decision deferred to post-Event 1 data — the correct North Star depends on what Event 1 proves.*
+
 ---
 
-## 6. Risks
+## 6. Non-Goals
+
+These define where ParkEase's responsibility begins and ends. As important as the goals.
+
+1. **ParkEase does not operate shuttle or cab fleets.** We redirect to Ola/Uber/Rapido — we do not procure or schedule vehicles. Running a fleet is a different business, permanently out of scope.
+
+2. **ParkEase does not handle in-venue navigation.** Our product boundary ends at the parking entry gate. Seat-finding, food stalls, stage navigation — the venue's responsibility.
+
+3. **ParkEase does not serve venues without structured, numbered parking.** Open grounds and informal lots are incompatible with named bay allocation. This is a deliberate market constraint, not a temporary limitation.
+
+4. **ParkEase does not replace ticketing platforms.** We are a parking and transit layer on top of BookMyShow and similar infrastructure. We do not sell tickets or manage event access.
+
+5. **ParkEase does not manage in-venue crowd management.** Security queues, entry gate management, and in-venue congestion are entirely the organiser's responsibility. Our compliance report covers parking performance only.
+
+6. **ParkEase does not guarantee cab availability after redirect.** We facilitate access to three platforms simultaneously — we take no responsibility for driver cancellations or surge pricing. Three-platform deep-links and honest fare estimates mitigate but do not eliminate this risk.
+
+---
+
+## 7. High Level Approach
+
+ParkEase is a software layer that pre-sells named parking bays to event attendees, gives operators a live dashboard and auto-generated compliance report, and redirects overflow traffic to Ola/Uber/Rapido when the lot fills.
+
+We do not own or operate parking infrastructure, run shuttle fleets, or compete with event ticketing platforms. We add a pre-booking and demand-shifting layer on top of venue infrastructure that currently exists but is entirely unmanaged.
+
+---
+
+## 8. Key Features — MoSCoW
+
+**Must Have — ship before Event 1**
+
+1. Named bay allocation with pillar map display (S1, S2)
+2. Real-time inventory counter — live spots remaining
+3. QR booking confirmation with **offline caching** — generated and stored on device at confirmation, works with zero connectivity on event night
+4. Parking full → redirect screen (S4) with Ola/Uber/Rapido deep-links and pre-filled venue drop zone
+5. Operator dashboard — live fill rate, spots remaining, redirect count, per-lot status, alert feed (S5)
+6. Auto-generated PDF compliance report
+7. Manual fallback printed booking list — physical ops, gate attendants
+8. SLA and liability contract template — ParkEase is the booking software agent only; physical ops liability stays with organiser; ParkEase liability capped at refund value of bookings processed that night
+9. Emergency override in dashboard (S5 operator controls)
+10. S9 Attendant Scanner — QR scan, plate verification, bay reassignment for blocked bays
+11. Manual inventory seeding + bay pillar mapping (ops task, not tech feature)
+12. WhatsApp forward CTA on confirmation (S3) ✅ built — pre-formatted booking summary with per-person split amount
+
+**Should Have — ship if time allows before Event 1**
+
+13. Pre-event push notification with departure nudge timed to user home location
+14. UPI split calculator — per-person amount, UPI collect request to contacts
+15. Distance to entry gate as headline on venue page (Priya's primary conversion metric)
+16. Prohibited items banner — physical sign at lot entry (ops deliverable, not a tech feature)
+
+**Could Have — V2**
+
+- Ola/Uber API callback for confirmed ride booking (hard conversion measurement)
+- Dynamic exit routing via Google Maps API
+- Operator self-service inventory input (removes manual seeding bottleneck at scale)
+- True escrow group booking (each person authorises their share independently)
+
+*Note on RICE vs strategic sequencing:* The operator dashboard (S5) scores low on RICE Reach (serves 1 persona). Strategic reasoning overrides RICE — without Siddharth saying yes, there is no consumer product at all.
+
+---
+
+## 9. Key Flows
+
+### Consumer Flow — Arjun
+
+| Stage | Touchpoint | User Action | Emotional State | Friction | Product Response |
+|---|---|---|---|---|---|
+| Trigger | BookMyShow checkout | Taps parking add-on | Excited, cautious | Price + trust doubt | Real-time scarcity counter + price anchoring vs. informal parking |
+| Booking | ParkEase screen | Reviews spot details, pays | Cautiously hopeful | "Is it actually guaranteed?" | Named pillar bay + lot map + cancellation policy |
+| Day of event | Push notification | Taps for directions | Organised | Tendency to leave late | Timed departure nudge 30 mins before recommended leave time |
+| Arrival | Physical gate | Shows QR, parks | Moment of truth | Spot taken or mislabelled | Offline QR enforcement + pre-mapped pillar bay; attendant has reassignment authority |
+| Post-event exit | Push notification | Follows exit guidance | Relieved | Exit congestion anxiety | Static section-based exit routing (MVP) |
+| Retention | Re-engagement notification | Books next event | Confident, no hesitation | None — trust established | Scarcity nudge tied to next event announcement |
+
+### Operator Flow — Siddharth
+
+| Stage | Touchpoint | Action | Emotional State | Friction | Product Response |
+|---|---|---|---|---|---|
+| Outreach | Targeted email + one-pager | Reads email, takes the call | Cautious | Generic pitches are ignored | Email references a documented failure by name; includes manual fallback detail upfront |
+| Sales call | 30-min call | Asks 3 liability questions; agrees to pilot | Objection-heavy | "Who is liable if it fails?" | Contractual SLA scoping ParkEase liability; pilot event waives B2B platform fee |
+| Pre-event setup | Operator dashboard | Configures event, reviews pre-event fill data | Methodical | Dashboard must work before event night, not just on it | Full functional dashboard from day of configuration |
+| Event night | Dashboard — live | Monitors in real time, no manual intervention needed | Alert | Must trust data accuracy under pressure | Live fill rate, redirect count, per-lot status, automated alert feed |
+| Post-event | Dashboard PDF download | Downloads report, shares with MD and authorities | Relieved | Report must hold up to municipal scrutiny | Auto-generated PDF: honest methodology notes, industry baseline comparison (Business Standard + FPJ), raw CTA tap count + discounted estimate |
+| Retention | Internal review → contract negotiation | MD asks to scale; Siddharth negotiates annual contract | Confident, then evaluating | Fee must be justified, not discounted | ₹15k–₹25k/event presented as risk insurance; the pilot compliance report is the justification — fee conversation happens *after* the report, never before |
+
+### Booking Flow Architecture
+
+S2 implements a 5-step progressive disclosure model. Each step unlocks the next only when complete; completed steps collapse to summary chips.
+
+1. **Inventory Signal** (always visible) — real-time scarcity banner, fill progress bar, urgency copy
+2. **Bay Selection** — lot tabs + bay grid per pillar code; selection advances to Step 3 automatically
+3. **Arrival Time Window** — entry window picker (5:30–7:00 PM / 7:00–8:30 PM); informs ops of expected arrival distribution
+4. **Pricing Breakdown** — venue base rate + ParkEase service fee + group split calculator (1–6 people) with per-person amount in real time
+5. **UPI Payment** — single sticky CTA, disabled until bay and window are both selected
+
+*Guardrail dependency: the <45% checkout drop-off guardrail depends directly on this progressive disclosure pattern. Any regression to a flat all-at-once form must be evaluated against this guardrail before shipping.*
+
+---
+
+## 10. Key Logic — Rules and Edge Cases
+
+These are the rules design and engineering work to. Edge cases are grounded in documented Indian event failures.
+
+**Rule 1 — Inventory buffer (always enforce)**
+Never pre-sell more than 80% of allocated inventory at any event. The 20% buffer absorbs VIP commandeering, authority vehicle override, and last-minute venue changes — all documented at Indian stadium events. Pre-selling 90% to maximise revenue is the wrong trade-off at MVP.
+
+**Rule 2 — Bay reassignment protocol**
+If a pre-booked bay is physically blocked or damaged on event day: attendant reassigns user to nearest available unbooked bay in the same lot. User is never turned away. Blocked bay logged in operator dashboard. WhatsApp notification sent to affected user within 5 minutes of reassignment.
+
+**Rule 3 — Venue exclusivity is non-negotiable in the SLA**
+If the venue's own parking team sells physical tokens or cash entry at the same lot ParkEase has pre-sold inventory in, the entire product promise collapses simultaneously for all users. The partnership agreement must include an exclusivity clause: ParkEase has sole authority to admit vehicles to designated lots during the event window. This is a contract failure — not a tech failure — and only the SLA prevents it.
+
+**Rule 4 — App down is a planned state, not an emergency**
+Network congestion inside a 35,000-person venue is the highest-probability tech failure ParkEase faces — and has nothing to do with our infrastructure. The product must work without connectivity. Mitigation sequence: (a) QR code cached offline at booking confirmation — works with zero signal. (b) Manual fallback printed list at every gate — attendant cross-checks name and vehicle plate. (c) Pre-event notification embeds QR as a screenshot-able image for additional redundancy.
+
+**Rule 5 — Honest redirect copy, always**
+When parking is full and surge pricing is active, the redirect screen acknowledges it: *"Cab prices may be higher than usual right now — this is still faster than finding parking."* Hiding surge information to improve tap rate trades short-term conversion for long-term trust. Three-platform deep-links (Ola + Uber + Rapido) shown simultaneously — if one platform has no cabs or a driver cancels, user has instant fallback without returning to ParkEase.
+
+---
+
+## 11. Launch Plan
+
+| Stage | Timeline | Description | Exit Criteria |
+|---|---|---|---|
+| **Prototype Validation** | M1–M2 | Demo Vercel prototype to 3–5 event organiser contacts in Bangalore. No backend, no real bookings. Consumer story (S1→S3) and operator story (S5) both demoable in 60 seconds. | At least one organiser expresses genuine pilot intent |
+| **Event 1 — First Live Pilot** | M3–M4 | Single venue, Bangalore, 15,000–25,000 attendees, structured parking. Conservative inventory: 50–60% of lot capacity pre-sold. Manual ops throughout. B2B platform fee waived. | Redirect CTA rate measured. First compliance report generated. Zero catastrophic failures (app down, lot oversold, QR enforcement collapse). |
+| **Events 2–8 — Annual Contract** | M5–M7 | Apply Event 1 learnings. Same city, possibly same venue. B2B platform fee introduced from Event 2. WhatsApp CTA and UPI split tested at scale. | Organiser signs 8-event annual contract at ₹15k–₹25k/event. Repeat booking rate measurable. |
+| **Second City Expansion** | M8–M12 | Mumbai or Delhi — where B2B relationship is strongest. Same playbook: single venue, conservative inventory, manual ops. | Two Tier 1 cities operational. One annual contract signed in second city. |
+
+*What determines pace: not a calendar — the B2B sales relationship. Each stage unlocks when Siddharth says yes, not when a sprint ends.*
+
+**B2B acquisition chain:**
+```
+Siddharth signs B2B contract
+    → Arjun discovers ParkEase at BMS checkout
+        → Arjun's group chat → Rahul activates via ticket link
+            → Varun sees redirect → word of mouth
+                → Priya finds via Google / parent WhatsApp group
+                    → Compliance report travels → next Siddharth
+```
+
+---
+
+## 12. Risks
 
 **R1 — Core hypothesis may be wrong** *(most existential)*
 The entire product rests on one behavioural bet: Indian event-goers shown a parking full screen will book a cab instead of finding informal parking. If redirect compliance at MVP falls below 20%, the demand-shifting mechanism has failed.
-Mitigation: Redirect screen designed as a conversion asset — fare estimate, three platform options, honest surge pricing copy. Event 1 data becomes the new compliance baseline. Never present 55% as confirmed.
+*Mitigation:* Redirect screen designed as a conversion asset — fare estimate, three platform options, honest surge copy. Event 1 data becomes the new compliance baseline. Never present 55% as confirmed.
 
 **R6 — Single failure creates disproportionate brand damage** *(most urgent for Event 1 sequencing)*
-ParkEase is a trust product. One visible failure — app down at an IPL match, lot oversold, QR enforcement collapse — is visible to 35,000 people simultaneously. Indian social media amplifies event failures rapidly (JLN, Diljit Delhi, Coldplay all demonstrated this). Existential at MVP stage with no brand equity to absorb the damage.
-Mitigation: First MVP event must be deliberately under-promised. Mid-sized event, structured venue, conservative inventory limit (50–60% of total lot capacity pre-sold, not 90%). Build trust before volume. **R1 and R6 are connected** — a bad first event is simultaneously a product failure (R1) and a reputational failure (R6). This is why Event 1 must be small and safe.
+ParkEase is a trust product. One visible failure — app down at an IPL match, lot oversold, QR enforcement collapse — is visible to 35,000 people simultaneously. Indian social media amplifies event failures rapidly.
+*Mitigation:* First event deliberately under-promised. Mid-sized event, structured venue, conservative inventory limit. R1 and R6 are connected — a bad first event is simultaneously a product failure and a reputational failure. This is why Event 1 must be small and safe.
 
 **R2 — B2B sales cycle is slower than expected** *(most likely to delay timeline)*
-No consumer product without Siddharth saying yes. India's events industry sales cycle is relationship-driven and slow — 2–3 months per deal. Protects existing informal parking revenue, resistant to new tech vendors.
-Mitigation: Primary channel — warm intro through college event/fest contacts (lower barrier, faster trust, college fests are ideal for Event 1: smaller scale, forgiving if something goes wrong). Secondary channel — cold email to stadium-scale organisers timed to a documented failure, referencing the Event 1 compliance report.
-
-**R5 — Venue infrastructure limits addressable market**
-Bay allocation model requires structured, numbered parking. Many Indian concert venues (open grounds, MMRDA, NICE Grounds) have no numbered infrastructure. Addressable market is smaller than the headline live events number implies.
-Mitigation: Venue audit checklist in sales process. Stadium complexes and mall-adjacent venues are MVP target. Open grounds are explicitly out of scope.
-
-**R3 — V2 Ola/Uber API access is uncertain**
-MVP deep-links work without a partnership. V2 conversion tracking needs a referral callback API. Both platforms have selective partner programmes with revenue share requirements.
-Mitigation: Rapido is a more accessible early-stage partner and already integrated in Indian event ticketing flows. Primary V2 API partner.
-
-**R4 — Manual inventory becomes a bottleneck at scale**
-Bay mapping and manual seeding is manageable for one event. Five events across three cities simultaneously requires a team that does not exist yet.
-Mitigation: Operator self-service inventory input (V2) reduces ParkEase ops dependency. Prioritise early in V2 to prevent a growth ceiling.
+No consumer product without Siddharth saying yes. India's events industry sales cycle is relationship-driven — 2–3 months per deal.
+*Mitigation:* Primary channel: warm intro through college event/fest contacts (faster trust, smaller scale, more forgiving if something goes wrong). Secondary: cold email timed to a documented failure, referencing the Event 1 compliance report.
 
 **R7 — Venue authority overrides inventory on event day** *(high probability, under-planned)*
-At Indian stadium events, police, municipal officials, VIP security detail, and organiser guests routinely commandeer 10–20% of parking bays with zero notice — often within 90 minutes of doors opening. If ParkEase has pre-sold those bays, users arrive to find their confirmed spot physically occupied by authority vehicles. This is not a tech failure but it is a ParkEase product failure in the user's eyes.
-Mitigation: (1) **Never pre-sell more than 80% of allocated inventory** — hold a 20% buffer as unassigned reserve at every event. (2) Add a force majeure clause to every organiser contract: organiser is contractually required to notify ParkEase of any bay loss ≥30 minutes before doors open. (3) Bay reassignment protocol: attendant scanner (S9) triggers WhatsApp notification to affected user with new bay number within 5 minutes of reassignment. (4) If no alternate bay is available, instant refund + Ola/Uber/Rapido redirect — same S4 flow. This scenario must be a named state in the S9 attendant scanner, not an unhandled edge case.
+Police, municipal officials, and VIP security routinely commandeer 10–20% of parking bays with zero notice at Indian stadium events.
+*Mitigation:* (1) Never pre-sell >80% of inventory — 20% buffer held as unassigned reserve at every event. (2) Force majeure clause in organiser contract: notify ParkEase of any bay loss ≥30 minutes before doors open. (3) Attendant scanner triggers WhatsApp notification to affected user with new bay within 5 minutes. (4) If no alternate bay available: instant refund + Ola/Uber/Rapido redirect — same S4 flow.
+
+**R5 — Venue infrastructure limits addressable market**
+Bay allocation requires structured, numbered parking. Many Indian concert venues (open grounds, MMRDA, NICE Grounds) have no numbered infrastructure.
+*Mitigation:* Venue audit checklist in sales process. Stadium complexes and mall-adjacent venues are MVP target. Open grounds explicitly out of scope.
+
+**R3 — V2 Ola/Uber API access is uncertain**
+MVP deep-links work without a partnership. V2 conversion tracking needs a referral callback API. Both platforms have selective partner programmes.
+*Mitigation:* Rapido is the more accessible early-stage partner. Primary V2 API target.
+
+**R4 — Manual inventory is a bottleneck at scale**
+Bay mapping and manual seeding is manageable for one event. Five events across three cities simultaneously requires a team that does not exist yet.
+*Mitigation:* Operator self-service inventory input (V2) reduces ops dependency. Prioritise early in V2 to prevent a growth ceiling.
 
 ---
 
-## 7. Open Questions — What Event 1 Must Answer
-
-*These are the questions the MVP is specifically designed to validate. The personas, journeys, and metrics above are hypotheses. The questions below define what validation looks like.*
+## 13. Open Questions — What Event 1 Must Answer
 
 **OQ1 — What is the actual redirect compliance rate in India?** *(most important unknown)*
-Western benchmarks (Waze/Google Maps) suggest 35–40%. India's driving culture, informal parking availability, and cab trust levels are different. The real number is unknown until Event 1. If it falls below 20%, the product's core differentiation does not exist. Everything downstream depends on this answer.
-*How we answer it:* Event 1 generates the number. Redirect screen designed for maximum conversion. Measured: tap rate (confirmed), estimated diversion (tap count × compliance rate). Result determines whether V2 investment is justified.
+Western benchmarks (Waze/Google Maps) suggest 35–40%. India's driving culture, informal parking availability, and cab trust levels are different. Below 20% means the product's core differentiation does not exist.
+*How we answer it:* Event 1 generates the number. Redirect screen designed for maximum conversion. Measured: tap rate (confirmed) + estimated diversion (tap count × compliance rate). Result determines whether V2 investment is justified.
 
 **OQ4 — Which city and venue for Event 1?**
 Criteria: structured numbered parking, 15,000–25,000 attendees, cooperative ops team, strong cab supply, organiser motivated by compliance protection.
-Recommendation: Bangalore (Chinnaswamy or similar) — structured infrastructure, strong Ola/Uber/Rapido supply, tech-savvy audience, RCB stampede June 2025 creates active B2B urgency.
-*How we answer it:* Warm intro through college/fest contacts as first path. Smaller college fest may be the safer Event 0 — even more forgiving, faster decision cycle.
+*Recommendation:* Bangalore (Chinnaswamy or similar) — structured infrastructure, strong Ola/Uber/Rapido supply, tech-savvy audience, RCB stampede June 2025 creates active B2B urgency. Smaller college fest may be the safer Event 0.
 
 **OQ3 — Will organisers accept the liability boundary as written?**
-ParkEase's SLA covers the booking software layer only — bay assignment accuracy, system uptime, QR validation, refunds for ParkEase-caused errors. Physical ops liability (crowd management, gate security, lot access) stays with the organiser. The liability cap is the refund value of bookings that night. The question is whether organisers accept this boundary or push for ParkEase to absorb broader event liability (which it must not).
-*How we answer it:* Legal review of liability cap structures used by comparable Indian event-tech vendors (BookMyShow, insider.in). Frame the SLA as "software warranty" not "operations guarantee" in all sales conversations from day one.
+ParkEase's SLA covers the booking software layer only — bay assignment accuracy, system uptime, QR validation, refunds for ParkEase-caused errors. Physical ops liability stays with the organiser.
+*How we answer it:* Legal review of liability cap structures used by comparable Indian event-tech vendors. Frame as "software warranty" not "operations guarantee" in all sales conversations from day one.
 
 **OQ2 — What is the right consumer pricing?**
-Proposed: ₹99–₹249 based on event scale. Key question: is demand price-elastic (lower price = higher attach rate) or price-inelastic (certainty value is the driver, price doesn't matter in the relevant range)?
-*How we answer it:* Event 1 establishes the attach rate at one price point. A/B pricing test at V2 if attach rate data is inconclusive.
+₹99–₹249 proposed based on event scale. Is demand price-elastic (lower price = higher attach rate) or price-inelastic (certainty value is the driver)?
+*How we answer it:* Event 1 establishes attach rate at one price point. A/B pricing test at V2 if attach rate data is inconclusive.
 
 **OQ5 — Manual to automated inventory: build, buy, or partner?**
-Manual seeding works for MVP. V2 options: build own sensor network, develop operator self-service input, or partner with ValetEZ (already has ANPR cameras at Hyderabad and Bangalore venues). ValetEZ partnership is the most efficient path — bypass sensor investment, share occupancy data, ParkEase provides the demand-shifting and booking layer.
-*How we answer it:* ValetEZ partnership conversation after Event 1. Self-service input form in dashboard as interim V2 step regardless of partnership outcome.
+Manual seeding works for MVP. V2 options: build own sensor network, operator self-service input, or partner with ValetEZ (already has ANPR cameras at Hyderabad and Bangalore venues).
+*Recommendation:* ValetEZ partnership conversation after Event 1. Self-service input form in dashboard as interim V2 step regardless of partnership outcome.
 
-**OQ6 — Multi-zone architecture: native support or rearchitecture in V2?**
-Some events span multiple stages and parking zones. The data model either supports multi-zone natively or requires significant rearchitecture. This decision has compounding implications for the dashboard design, bay mapping ops process, and compliance report structure. Does not block MVP (single lot). Must be resolved before V2 feature development begins.
+**OQ6 — Multi-zone architecture: native or V2 rearchitecture?**
+Some events span multiple stages and parking zones. Does not block MVP (single lot). Must be resolved before V2 feature development begins — the decision has compounding implications for dashboard design, bay mapping ops, and compliance report structure.
 
 **OQ7 — User research gap**
-All persona journeys above are based on documented event failures, behavioural analogues, and founder inference. No primary interview data exists yet. 5–8 concert/IPL attendee interviews and 1–2 venue ops conversations are planned before Event 1. Until then, all persona motivations and friction points should be treated as directional, not validated. This is the honest framing — not a gap to hide but a hypothesis to test.
+All persona journeys are based on documented failures, behavioural analogues, and founder inference. No primary interview data exists yet. 5–8 concert/IPL attendee interviews and 1–2 venue ops conversations are planned before Event 1. Until then, all persona motivations should be treated as directional, not validated.
 
 ---
 
-*Full PRD (1,700 lines): `01_Product/ParkEase_PRD.md` — full RICE table, edge case catalogue (15 scenarios), per-persona flow tables, booking flow architecture spec.*
+## Appendix
+
+### Changelog
+
+| Date | Decision | Detail |
+|---|---|---|
+| Mar 2026 | Financial model corrected v1 → v2 | v1 collected full consumer price and remitted 30% to venue — wrong. v2 models ParkEase fee on top of venue base rate (₹49 on ₹100–₹300 base). Net per spot corrected: ₹104 → ₹47. MVP new-venue contribution margin flipped from +₹9,085 to −₹275. B2B platform fee share corrected from ~35% to 60% of per-event economics. Annual contracts required for break-even revised from 10 to 15. |
+| Apr 2026 | North Star metric flagged for review | Fill rate (current NS) is a lagging output metric and is contribution-negative at MVP fill on a new venue. Replacement candidates: redirect CTA completion rate, repeat booking rate, exit clearance time reduction. Decision deferred to post-Event 1 data — the correct NS depends on what Event 1 proves. |
+
+---
+
+*Full PRD (1,762 lines): `01_Product/ParkEase_PRD.md` — complete RICE scoring table, full edge case catalogue (15 scenarios across 5 categories), per-persona detailed journey stages with structured flow tables, operator dashboard build specification.*

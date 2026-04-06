@@ -30,7 +30,8 @@
 - ~~Fix fake redirect counter in S4~~ ✅ DONE (5 Apr 2026) — removed `Math.random()` increment, replaced with "Redirect tracking live from Event 1 onwards"
 
 ### 🟠 HIGH
-- ~~**PRD condensation → Notion push**~~ ✅ DONE (5 Apr 2026) — condensed to 7 sections, pushed to Notion as "ParkEase — Condensed PRD". Decisions: fill rate stays as North Star (not exit clearance time), GTM via warm college contacts as primary. Market size bottom-up added: ~110–130 addressable events/year in Tier 1, ₹20–25L Year 1 target. Prototype screenshots section added as placeholder — needs screenshots from live site.
+- ~~**PRD condensation → Notion push**~~ ✅ DONE (5 Apr 2026) — condensed to 7 sections, pushed to Notion as "ParkEase — Condensed PRD". Decisions: fill rate stays as North Star (not exit clearance time), GTM via warm college contacts as primary. Market size bottom-up added: ~110–130 addressable events/year in Tier 1, ₹20–25L Year 1 target.
+- ~~**PRD v2.0 — template gaps closed → Notion sync**~~ ✅ DONE (6 Apr 2026) — condensed PRD upgraded to v2.0 (364 lines, ~12 pages). New sections: Problem Alignment, High Level Approach, Narrative, Goals (measurable + immeasurable), Non-Goals (6 explicit), Key Flows (Arjun + Siddharth flow tables + booking architecture), Key Logic (5 critical rules), Launch Plan (4-stage milestone table with exit criteria), Changelog. Removed: Sprint Sequence, Won't Have bullets. Notion page updated — prototype section untouched.
 - **User research** — 5–8 concert/IPL attendees, 1–2 venue ops contacts. WhatsApp poll or Reddit (r/bangalore, r/mumbai). Output: 1-page "What we learned" artifact for PRD.
 
 ### 🟡 MEDIUM (code fixes)
@@ -44,9 +45,99 @@
 ## Session Log
 
 
-### Backend hardening + PRD liability rewrite + R7 (6 April 2026)
+### APM portfolio evaluation + PRD v2.0 + Notion sync (6 April 2026)
 
-**Files changed:** `backend/server.py` · `backend/requirements.txt` · `backend/.env` (new) · `backend/.gitignore` (new) · `app/src/api.js` · `app/.env.local` (new) · `01_Product/ParkEase_PRD_Condensed.md` · Notion page updated
+**What happened:**
+
+**1. APM/PA portfolio evaluation — acting as Senior PM, Indian tech/startup context**
+
+Full evaluation of ParkEase as an APM/PA portfolio project. Scraped evaluation criteria from Razorpay, Flipkart APM program, The Product Folks, and APM career resources.
+
+**Score: 7.9/10 (top 10–12% of APM portfolios reviewed)**
+
+| Dimension | Score | Max |
+|---|---|---|
+| Problem Framing & Market Insight | 17 | 20 |
+| Product Thinking & Prioritization | 16 | 20 |
+| Metrics & Analytical Rigor | 17 | 20 |
+| Execution Evidence | 10 | 15 |
+| Technical Fluency | 7 | 10 |
+| Communication & Storytelling | 12 | 15 |
+
+**Interview likelihood:**
+- Top tier (Swiggy, Zomato, CRED, Razorpay APM): **35–40%**
+- Mid tier (Meesho, Cashfree, Groww, ShareChat): **55–60%**
+- Series B startup / PA role: **70–75%**
+
+**3 interview questions an evaluator would ask:**
+1. Walk me through the v1→v2 financial model correction — what did you find and how?
+2. Your North Star (fill rate) is contribution-negative at MVP. What would you replace it with?
+3. The redirect counter in S4 increments by a random number. Why is it there?
+
+**Strengths identified:** Coordination failure framing, RICE override reasoning (operator dashboard despite low Reach), v1→v2 self-correction published openly, honest methodology notes on compliance rate, India-specific risk register (R7 — authority vehicle override).
+
+**Weaknesses identified:** No user research (months overdue), no live event, fake counter (now fixed), full PRD is 25k lines of unedited AI output, no portfolio page or slide deck.
+
+---
+
+**2. PRD evaluated against "PRD the right way" template (PDF in 01_Product/)**
+
+Template has 17 sections. Evaluated which apply to a solo APM portfolio vs. a corporate cross-functional product.
+
+**Applicable sections: 13/17** (sign-off gates, full operational checklist, globalization = not applicable solo)
+
+**Against applicable sections only: ~70% complete** before this session.
+
+**Real gaps identified:**
+- Key Flows (missing — persona journeys don't trace end-to-end in one place)
+- Key Logic (buried in risk register — not in a rules-for-engineering format)
+- Immeasurable goals (entirely absent — only measurable metrics existed)
+- Launch milestones with exit criteria (scattered across 3 docs)
+- Changelog (existed in financials doc, not in PRD)
+
+---
+
+**3. PRD v2.0 — condensed PRD enhanced and synced**
+
+**File changed:** `01_Product/ParkEase_PRD_Condensed.md` — v1.0 (274 lines) → v2.0 (364 lines)
+
+**Added from main PRD (01_Product/ParkEase_PRD.md — 1,762 lines):**
+- Key Flows: Arjun structured flow table (6 stages), Siddharth structured flow table (6 stages), booking flow architecture (5-step progressive disclosure model)
+- Key Logic: 5 critical rules (inventory buffer, bay reassignment protocol, venue exclusivity SLA, offline QR caching, honest redirect copy)
+- Non-Goals: upgraded from 3 "Won't Have" bullets → 6 explicit non-goals with reasoning (from main PRD §7.1)
+- Launch Plan: 4-stage milestone table with target timelines and exit criteria (from main PRD §7.2)
+
+**Written fresh:**
+- Immeasurable goals: Arjun = certainty, Priya = preparedness, Siddharth = protection
+- Narrative: "today without ParkEase" for Arjun + Siddharth (2 paras each)
+- High Level Approach: standalone 2-sentence section
+- Changelog: 3 rows (v1→v2 financials, PRD v2.0 additions, North Star review)
+
+**Removed:** Sprint Sequence standalone section (moved to build notes in handover), Won't Have bullets (replaced by Non-Goals section).
+
+---
+
+**4. Notion sync**
+
+Notion page "ParkEase — Condensed PRD" updated with 9 targeted search-and-replace operations:
+- Version bump: 1.0 → 2.0, status line updated
+- Section 1 (Executive Summary) → replaced with new Sections 1–3 (Problem Alignment, High Level Approach, Narrative)
+- Sections 4–5 inserted after Prototype block: Goals (measurable + immeasurable) + Non-Goals
+- Section 6: Market Context (renumbered from old §2)
+- Section 7: Personas (renumbered from old §3)
+- Section 8: Key Features (updated MoSCoW, Sprint Sequence removed)
+- Sections 9–10: Key Flows + Key Logic (new)
+- Section 11: Metrics (renumbered from old §5)
+- Section 12: Launch Plan (new, inserted before Risks)
+- Sections 13–14: Risks + Open Questions (renumbered)
+- Appendix: Changelog (new, appended)
+- **Prototype section: zero changes** — callout blocks, screenshots, S3 image URLs all preserved
+
+---
+
+### Backend hardening + PRD liability rewrite + R7 + S9 offline + mobile frame + Notion (6 April 2026)
+
+**Files changed:** `backend/server.py` · `backend/requirements.txt` · `backend/.env` (new) · `backend/.gitignore` (new) · `app/src/api.js` · `app/.env.local` (new) · `app/src/screens/S9_AttendantScanner.jsx` · `app/src/App.jsx` · `app/src/components/Navbar.jsx` · `app/src/components/SearchOverlay.jsx` · `01_Product/ParkEase_PRD_Condensed.md` · Notion page updated
 
 **4 medium code fixes — all done:**
 
@@ -67,12 +158,39 @@ Gemini reviewed the condensed PRD, scored 7.2/10. Key analysis:
 - **Liability rewrite** — MoSCoW item 10: ParkEase = booking software agent. Physical ops liability stays with organiser. Cap = refund value of bookings that night only. OQ3 reframed from "liability transfer" to "liability boundary".
 - **R7 added** — "Venue authority overrides inventory on event day" (🟠 HIGH). 4 mitigations: 80% pre-sell cap (20% buffer), force majeure clause in contract, S9 WhatsApp notification within 5 min of reassignment, instant refund + S4 redirect if no alternate.
 
-**Confirmed via Notion search:** Condensed PRD was already in Notion (pushed 5 Apr 2026 14:39). Both changes pushed to same page today.
+**S9 offline mode (PWA-ready for stadium network congestion):**
+- `navigator.onLine` + `window.addEventListener('online'/'offline')` for real-time detection
+- Manifest caching: on attendant login, downloads booking manifest from API and stores in `localStorage` (`parkease_manifest` key). Staff can validate QRs with zero connectivity.
+- Sync queue: when offline, scan results written to `localStorage` (`parkease_sync_queue`). On reconnect, queue auto-flushes to backend.
+- All 3 scan handlers updated: each scan entry carries `synced: isOnline`; unsynced entries show `⏳ queued` badge in scan log.
+- Header status bar: 🟢 Live (online) / 🟡 Offline + "cached manifest" label + "X scans queued" count (offline).
 
-**Outstanding from Gemini review (not yet actioned):**
-- S9 offline mode — cache booking manifest at shift-start, local QR validation, sync on reconnect. Needed before Event 1.
-- S4 copy — add "surge may apply" honest copy to redirect screen.
-- Squatter reassignment — WhatsApp/in-app push to user when bay is reassigned (S9 currently has no notification path).
+**Mobile phone frame — all pages (390px):**
+- Root issue: screens like S9 (Attendant) and SearchOverlay were rendering full-width on desktop.
+- Fix: `App.jsx` — outer div `min-h-screen bg-neutral-500 flex justify-center`, inner div `w-full max-w-[390px]`.
+- `Navbar.jsx` — `fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[390px]`, removed `max-w-screen-xl mx-auto`.
+- `DemoNav` in `App.jsx` — `fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px]`.
+- Result: all 9 screens now render inside a 390px phone column on any viewport. Demo on desktop looks like a phone.
+
+**SearchOverlay hero images:**
+- Added `heroImage: e.hero_image || null` mapping from `FALLBACK_EVENTS_LIST`.
+- `EventCard` renders `<img>` if `heroImage` present, falls back to large letter initial on dark background.
+- Cards now show concert imagery (same Unsplash CDN URLs as S1 hero).
+
+**Pushed to GitHub → Vercel auto-deployed.**
+
+**Notion condensed PRD — prototype section heading rewrites:**
+- All 9 screen headings rewritten with descriptive H3 titles (original headings were just "Screen X"):
+  - S1 Consumer Landing · S2 Booking Flow · S3 Booking Confirmation · S4 Redirect to Cab · S5 Operator Dashboard · S6 Retention Offer · S7 Retention Booking · S8 Retention Confirmation · S9 Staff Scanner
+- Image captions: Notion image blocks are not editable via MCP `update_content` (only text blocks are matchable). 18 captions prepared and handed to user for manual entry in Notion.
+
+**Temp files in repo root (to clean up):** `caption_updates.json` · `batch1.json` · `batch2.json` · `caption_updates_full.txt`
+
+**Still outstanding:**
+- Image captions in Notion prototype section — user to add manually (18 captions provided in session)
+- S4 copy — add "surge pricing may apply" honest copy to redirect screen
+- Squatter reassignment — WhatsApp/in-app push to user when S9 reassigns a bay
+- User research — 5–8 concert/IPL attendees + 1–2 venue ops contacts, 1-page "What we learned"
 
 ---
 
