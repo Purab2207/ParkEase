@@ -13,8 +13,8 @@ export default function Navbar({
   onCityChange,
 }) {
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50 shadow-sm">
-      <div className="max-w-screen-xl mx-auto px-4 h-16 flex items-center gap-4">
+    <nav className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] bg-white border-b border-gray-200 z-50 shadow-sm">
+      <div className="px-4 h-16 flex items-center gap-4">
         {/* Logo */}
         <a href="/" className="flex items-center gap-1.5 shrink-0">
           <span className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-[#1C1D2B] text-white text-sm font-bold">

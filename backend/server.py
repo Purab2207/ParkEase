@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
@@ -16,6 +16,7 @@ from pymongo import MongoClient
 
 MONGO_URL = os.environ.get("MONGO_URL")
 DB_NAME = os.environ.get("DB_NAME")
+DASHBOARD_API_KEY = os.environ.get("DASHBOARD_API_KEY", "demo-key-change-before-prod")
 
 # ---------------------------------------------------------------------------
 # Database helpers
@@ -280,9 +281,15 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+ALLOWED_ORIGINS = [
+    "https://park-ease-rho.vercel.app",
+    "http://localhost:5173",  # Vite dev
+    "http://localhost:3000",  # CRA dev (deprecated but kept for local testing)
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -347,8 +354,10 @@ def get_bays(event_id: str, lot_id: Optional[str] = None):
 
 
 @app.get("/api/events/{event_id}/stats")
-def get_event_stats(event_id: str):
-    """Operator dashboard stats"""
+def get_event_stats(event_id: str, x_api_key: Optional[str] = Header(default=None)):
+    """Operator dashboard stats — requires X-Api-Key header"""
+    if x_api_key != DASHBOARD_API_KEY:
+        raise HTTPException(401, "Invalid or missing API key")
     doc = events_col.find_one({"event_id": event_id}, {"_id": 0})
     if not doc:
         raise HTTPException(404, "Event not found")
@@ -403,16 +412,21 @@ async def create_booking(data: BookingCreate):
     if not event:
         raise HTTPException(404, "Event not found")
 
-    # Check bay is available
-    bay = bays_col.find_one({"event_id": data.event_id, "pillar_code": data.bay_id}, {"_id": 0})
-    if not bay:
-        raise HTTPException(404, "Bay not found")
-    if bay["status"] == "taken":
-        raise HTTPException(409, "Bay already taken")
-
     # Check phone length
     if len(data.phone) != 10:
         raise HTTPException(400, "Phone must be 10 digits")
+
+    # Atomically claim the bay — prevents double-booking under concurrent requests
+    claimed = bays_col.find_one_and_update(
+        {"event_id": data.event_id, "pillar_code": data.bay_id, "status": "available"},
+        {"$set": {"status": "taken"}},
+    )
+    if claimed is None:
+        # Bay either doesn't exist or was already taken
+        bay_exists = bays_col.find_one({"event_id": data.event_id, "pillar_code": data.bay_id})
+        if not bay_exists:
+            raise HTTPException(404, "Bay not found")
+        raise HTTPException(409, "Bay already taken")
 
     # Create booking
     booking_id = f"PE-{datetime.now(timezone.utc).strftime('%Y')}-{uuid.uuid4().hex[:8].upper()}"
@@ -429,12 +443,6 @@ async def create_booking(data: BookingCreate):
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     bookings_col.insert_one(booking_doc)
-
-    # Mark bay as taken
-    bays_col.update_one(
-        {"event_id": data.event_id, "pillar_code": data.bay_id},
-        {"$set": {"status": "taken"}}
-    )
 
     # Broadcast live count to all connected WebSocket clients
     await live_manager.broadcast(data.event_id)

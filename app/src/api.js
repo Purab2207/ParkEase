@@ -4,9 +4,10 @@
 // and local dev with backend running gets live data automatically.
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
+const DASHBOARD_API_KEY = import.meta.env.VITE_DASHBOARD_API_KEY || 'parkease-dashboard-2026';
 
-async function apiFetch(path) {
-  const res = await fetch(`${BACKEND_URL}${path}`);
+async function apiFetch(path, options = {}) {
+  const res = await fetch(`${BACKEND_URL}${path}`, options);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
@@ -171,6 +172,16 @@ export async function fetchBays(eventId) {
 export async function fetchBooking(bookingId) {
   try {
     return await apiFetch(`/api/bookings/${bookingId}`);
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchStats(eventId) {
+  try {
+    return await apiFetch(`/api/events/${eventId}/stats`, {
+      headers: { 'X-Api-Key': DASHBOARD_API_KEY },
+    });
   } catch {
     return null;
   }

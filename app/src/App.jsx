@@ -39,8 +39,8 @@ const DemoNav = ({ onStartDemo, demoRunning, parkingFull, onToggleParkingFull })
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[100] flex flex-col items-center pb-2 px-4 pointer-events-none">
-      <div className="bg-gray-950/95 border border-gray-700 rounded-2xl px-2 py-2 flex items-center gap-0.5 shadow-2xl pointer-events-auto w-full overflow-x-auto max-w-md">
+    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] z-[100] flex flex-col items-center pb-2 px-4 pointer-events-none">
+      <div className="bg-gray-950/95 border border-gray-700 rounded-2xl px-2 py-2 flex items-center gap-0.5 shadow-2xl pointer-events-auto w-full overflow-x-auto">
         {SCREENS.map(({ label, path }) => (
           <button
             key={path}
@@ -141,7 +141,8 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-neutral-500 flex justify-center">
+    <div className="w-full max-w-[390px] min-h-screen bg-gray-50 relative shadow-2xl overflow-x-hidden">
       {showNavbar && (
         <Navbar
           activeNav={activeNav}
@@ -253,6 +254,7 @@ export default function App() {
           onLogout={() => { setIsLoggedIn(false); setUserPhone(''); }}
         />
       )}
+    </div>
     </div>
   );
 }

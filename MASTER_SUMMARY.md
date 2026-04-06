@@ -34,15 +34,47 @@
 - **User research** — 5–8 concert/IPL attendees, 1–2 venue ops contacts. WhatsApp poll or Reddit (r/bangalore, r/mumbai). Output: 1-page "What we learned" artifact for PRD.
 
 ### 🟡 MEDIUM (code fixes)
-- **Atomic bay booking** — `POST /api/bookings` race condition. Fix: `findOneAndUpdate({status: "available"})` one-liner in `backend/server.py`.
-- **`requirements.txt` bloat** — 70+ packages, trim to only what `server.py` imports.
-- **CORS wildcard** — restrict from `["*"]` to known frontend origins before any real deployment.
-- **Dashboard auth** — add API key or JWT check on `/api/events/*/stats`.
+- ~~**Atomic bay booking**~~ ✅ DONE (6 Apr 2026) — `findOneAndUpdate({status: "available"})` atomic op in `backend/server.py`. No double-booking possible.
+- ~~**`requirements.txt` bloat**~~ ✅ DONE (6 Apr 2026) — trimmed from 123 packages → 6 (`fastapi`, `uvicorn`, `pymongo`, `python-dotenv`, `pydantic`, `websockets`).
+- ~~**CORS wildcard**~~ ✅ DONE (6 Apr 2026) — restricted to `park-ease-rho.vercel.app`, `localhost:5173`, `localhost:3000`.
+- ~~**Dashboard auth**~~ ✅ DONE (6 Apr 2026) — `X-Api-Key` header on `/api/events/*/stats`. Key in `backend/.env` (`DASHBOARD_API_KEY`). `fetchStats()` added to `api.js` with header. `app/.env.local` + `backend/.gitignore` created. Key: `parkease-dashboard-2026` (change before real deployment).
 
 ---
 
 ## Session Log
 
+
+### Backend hardening + PRD liability rewrite + R7 (6 April 2026)
+
+**Files changed:** `backend/server.py` · `backend/requirements.txt` · `backend/.env` (new) · `backend/.gitignore` (new) · `app/src/api.js` · `app/.env.local` (new) · `01_Product/ParkEase_PRD_Condensed.md` · Notion page updated
+
+**4 medium code fixes — all done:**
+
+1. **Atomic bay booking** — replaced find-then-update with `bays_col.find_one_and_update({status: "available"})`. Single atomic op, no race condition possible.
+2. **requirements.txt** — trimmed 123 packages → 6. Removed boto3, openai, google-genai, pandas, numpy, stripe, litellm, etc.
+3. **CORS wildcard** — `allow_origins=["*"]` → explicit list: `park-ease-rho.vercel.app`, `localhost:5173`, `localhost:3000`.
+4. **Dashboard auth** — `GET /api/events/{event_id}/stats` now requires `X-Api-Key: parkease-dashboard-2026` header. `DASHBOARD_API_KEY` env var in `backend/.env`. `fetchStats(eventId)` added to `app/src/api.js` with header. `app/.env.local` created for Vite. `backend/.gitignore` created — `.env` will never be committed.
+
+**Gemini PRD review analysis + 2 PRD fixes:**
+
+Gemini reviewed the condensed PRD, scored 7.2/10. Key analysis:
+- Strongest catch: liability clause ("ParkEase takes liability for the parking product") was existential risk
+- Good catch: S9 offline mode gap for stadium network congestion
+- Overstated: 5/10 Technical score — conflated PRD clarity with implementation gaps
+- Missed: no real payment stack, no user research penalisation, thin GTM
+
+**PRD changes (local + Notion synced):**
+- **Liability rewrite** — MoSCoW item 10: ParkEase = booking software agent. Physical ops liability stays with organiser. Cap = refund value of bookings that night only. OQ3 reframed from "liability transfer" to "liability boundary".
+- **R7 added** — "Venue authority overrides inventory on event day" (🟠 HIGH). 4 mitigations: 80% pre-sell cap (20% buffer), force majeure clause in contract, S9 WhatsApp notification within 5 min of reassignment, instant refund + S4 redirect if no alternate.
+
+**Confirmed via Notion search:** Condensed PRD was already in Notion (pushed 5 Apr 2026 14:39). Both changes pushed to same page today.
+
+**Outstanding from Gemini review (not yet actioned):**
+- S9 offline mode — cache booking manifest at shift-start, local QR validation, sync on reconnect. Needed before Event 1.
+- S4 copy — add "surge may apply" honest copy to redirect screen.
+- Squatter reassignment — WhatsApp/in-app push to user when bay is reassigned (S9 currently has no notification path).
+
+---
 
 ### S9 + Vehicle number + Per-concert images (5 April 2026)
 

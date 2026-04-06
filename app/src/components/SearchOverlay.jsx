@@ -12,6 +12,7 @@ const EVENTS = FALLBACK_EVENTS_LIST.map(e => ({
   price: e.consumer_price,
   spotsRemaining: e.spots_remaining,
   totalSpots: e.total_spots,
+  heroImage: e.hero_image || null,
 }));
 
 const EventCard = ({ event, onSelect }) => {
@@ -24,9 +25,11 @@ const EventCard = ({ event, onSelect }) => {
       onClick={onSelect}
       className="text-left bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow active:scale-95"
     >
-      {/* Image placeholder */}
-      <div className="h-24 bg-gradient-to-br from-gray-800 to-gray-900 relative flex items-center justify-center">
-        <span className="text-4xl font-black text-white/20">{event.name.charAt(0)}</span>
+      <div className="h-24 relative overflow-hidden bg-gray-900">
+        {event.heroImage
+          ? <img src={event.heroImage} alt={event.name} className="w-full h-full object-cover" />
+          : <span className="absolute inset-0 flex items-center justify-center text-4xl font-black text-white/20">{event.name.charAt(0)}</span>
+        }
         <div className="absolute inset-0 flex flex-col justify-between p-2">
           <span className="self-start bg-[#1C1D2B] text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">
             Events

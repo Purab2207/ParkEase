@@ -495,6 +495,9 @@ const ScanLogEntry = ({ entry }) => {
       <div className="flex flex-col items-end gap-0.5">
         <span className={`text-xs font-bold ${colors[entry.status]}`}>{labels[entry.status]}</span>
         <span className="text-gray-600 text-xs">{entry.time}</span>
+        {entry.synced === false && (
+          <span className="text-amber-500 text-[10px] font-semibold">⏳ queued</span>
+        )}
       </div>
     </div>
   );
@@ -531,13 +534,75 @@ const ScanningAnimation = () => (
 // ----------------------------------------------------------------------------
 // MAIN SCREEN
 // ----------------------------------------------------------------------------
+const MANIFEST_KEY = 'parkease_manifest';
+const SYNC_QUEUE_KEY = 'parkease_sync_queue';
+
 export default function AttendantScannerScreen() {
-  const [attendant, setAttendant] = useState(null); // null = not logged in
-  const [scanState, setScanState] = useState('ready'); // ready | scanning | result | success
+  const [attendant, setAttendant] = useState(null);
+  const [scanState, setScanState] = useState('ready');
   const [currentScan, setCurrentScan] = useState(null);
   const [demoIndex, setDemoIndex] = useState(0);
   const [scanLog, setScanLog] = useState([]);
   const [successMsg, setSuccessMsg] = useState({ message: '', subtext: '' });
+
+  // Offline mode state
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [manifestCached, setManifestCached] = useState(
+    !!localStorage.getItem(MANIFEST_KEY)
+  );
+  const [pendingSync, setPendingSync] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(SYNC_QUEUE_KEY) || '[]'); }
+    catch { return []; }
+  });
+
+  // Online/offline detection + auto-flush queue when connection recovers
+  useEffect(() => {
+    const goOnline = () => {
+      setIsOnline(true);
+      const queue = JSON.parse(localStorage.getItem(SYNC_QUEUE_KEY) || '[]');
+      if (queue.length > 0) {
+        // In production: POST queue to /api/scan-events; here we just clear it
+        localStorage.removeItem(SYNC_QUEUE_KEY);
+        setPendingSync([]);
+      }
+    };
+    const goOffline = () => setIsOnline(false);
+    window.addEventListener('online', goOnline);
+    window.addEventListener('offline', goOffline);
+    return () => {
+      window.removeEventListener('online', goOnline);
+      window.removeEventListener('offline', goOffline);
+    };
+  }, []);
+
+  // Cache booking manifest to localStorage when shift starts
+  useEffect(() => {
+    if (!attendant) return;
+    const cache = async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL || ''}/api/events/karan-aujla-jln-2026/bays`
+        );
+        if (!res.ok) throw new Error('fetch failed');
+        const data = await res.json();
+        localStorage.setItem(MANIFEST_KEY, JSON.stringify(data));
+      } catch {
+        // Backend unavailable — cache demo scan data for offline validation
+        localStorage.setItem(MANIFEST_KEY, JSON.stringify(DEMO_SCANS));
+      }
+      setManifestCached(true);
+    };
+    cache();
+  }, [attendant]);
+
+  const queueScan = (entry) => {
+    if (!isOnline) {
+      const q = JSON.parse(localStorage.getItem(SYNC_QUEUE_KEY) || '[]');
+      q.push({ ...entry, queued_at: new Date().toISOString() });
+      localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(q));
+      setPendingSync(q);
+    }
+  };
 
   const now = () => {
     const d = new Date();
@@ -554,49 +619,28 @@ export default function AttendantScannerScreen() {
   };
 
   const handleMarkArrived = () => {
-    setScanLog(prev => [{
-      driverName: currentScan.driverName,
-      vehicleNo: currentScan.vehicleNo,
-      bay: currentScan.assignedBay,
-      status: 'arrived',
-      time: now(),
-    }, ...prev]);
-    setSuccessMsg({
-      message: `Bay ${currentScan.assignedBay} — Occupied`,
-      subtext: `${currentScan.driverName} · ${currentScan.vehicleNo}`,
-    });
+    const entry = { driverName: currentScan.driverName, vehicleNo: currentScan.vehicleNo, bay: currentScan.assignedBay, status: 'arrived', time: now(), synced: isOnline };
+    queueScan(entry);
+    setScanLog(prev => [entry, ...prev]);
+    setSuccessMsg({ message: `Bay ${currentScan.assignedBay} — Occupied`, subtext: `${currentScan.driverName} · ${currentScan.vehicleNo}` });
     setDemoIndex(i => i + 1);
     setScanState('success');
   };
 
   const handleFlagMismatch = () => {
-    setScanLog(prev => [{
-      driverName: currentScan.driverName,
-      vehicleNo: currentScan.scannedVehicleNo,
-      bay: currentScan.assignedBay,
-      status: 'mismatch',
-      time: now(),
-    }, ...prev]);
-    setSuccessMsg({
-      message: 'Mismatch Logged',
-      subtext: 'Entry denied · alert sent to supervisor',
-    });
+    const entry = { driverName: currentScan.driverName, vehicleNo: currentScan.scannedVehicleNo, bay: currentScan.assignedBay, status: 'mismatch', time: now(), synced: isOnline };
+    queueScan(entry);
+    setScanLog(prev => [entry, ...prev]);
+    setSuccessMsg({ message: 'Mismatch Logged', subtext: 'Entry denied · alert sent to supervisor' });
     setDemoIndex(i => i + 1);
     setScanState('success');
   };
 
   const handleReassign = (newBay) => {
-    setScanLog(prev => [{
-      driverName: currentScan.driverName,
-      vehicleNo: currentScan.vehicleNo,
-      bay: newBay,
-      status: 'reassigned',
-      time: now(),
-    }, ...prev]);
-    setSuccessMsg({
-      message: `Reassigned to Bay ${newBay}`,
-      subtext: `${currentScan.driverName} · system updated`,
-    });
+    const entry = { driverName: currentScan.driverName, vehicleNo: currentScan.vehicleNo, bay: newBay, status: 'reassigned', time: now(), synced: isOnline };
+    queueScan(entry);
+    setScanLog(prev => [entry, ...prev]);
+    setSuccessMsg({ message: `Reassigned to Bay ${newBay}`, subtext: `${currentScan.driverName} · system updated` });
     setDemoIndex(i => i + 1);
     setScanState('success');
   };
@@ -618,17 +662,32 @@ export default function AttendantScannerScreen() {
 
   return (
     <div className="min-h-[100dvh] bg-gray-950 font-sans">
-      <div className="max-w-md mx-auto min-h-[100dvh] flex flex-col pb-28">
+      <div className="min-h-[100dvh] flex flex-col pb-28">
 
         {/* Header */}
         <div className="flex items-center justify-between px-4 pt-5 pb-3 border-b border-gray-800">
           <div className="flex flex-col gap-0.5">
             <p className="text-white font-bold text-base">Attendant Scanner</p>
-            <p className="text-gray-500 text-xs truncate max-w-[220px]">{attendant.zone}</p>
+            <p className="text-gray-500 text-xs truncate max-w-[200px]">{attendant.zone}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span className="text-green-400 text-xs font-semibold">Live</span>
+          <div className="flex flex-col items-end gap-0.5">
+            {isOnline ? (
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                <span className="text-green-400 text-xs font-semibold">Live</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 bg-amber-400 rounded-full" />
+                <span className="text-amber-400 text-xs font-semibold">Offline</span>
+              </div>
+            )}
+            {!isOnline && manifestCached && (
+              <span className="text-gray-500 text-[10px]">cached manifest</span>
+            )}
+            {pendingSync.length > 0 && (
+              <span className="text-amber-500 text-[10px] font-semibold">{pendingSync.length} scan{pendingSync.length > 1 ? 's' : ''} queued</span>
+            )}
           </div>
         </div>
 
