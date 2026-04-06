@@ -32,6 +32,7 @@
 ### 🟠 HIGH
 - ~~**PRD condensation → Notion push**~~ ✅ DONE (5 Apr 2026) — condensed to 7 sections, pushed to Notion as "ParkEase — Condensed PRD". Decisions: fill rate stays as North Star (not exit clearance time), GTM via warm college contacts as primary. Market size bottom-up added: ~110–130 addressable events/year in Tier 1, ₹20–25L Year 1 target.
 - ~~**PRD v2.0 — template gaps closed → Notion sync**~~ ✅ DONE (6 Apr 2026) — condensed PRD upgraded to v2.0 (364 lines, ~12 pages). New sections: Problem Alignment, High Level Approach, Narrative, Goals (measurable + immeasurable), Non-Goals (6 explicit), Key Flows (Arjun + Siddharth flow tables + booking architecture), Key Logic (5 critical rules), Launch Plan (4-stage milestone table with exit criteria), Changelog. Removed: Sprint Sequence, Won't Have bullets. Notion page updated — prototype section untouched.
+- ~~**PRD restructured to standard workflow order**~~ ✅ DONE (6 Apr 2026) — sections reordered to standard PRD sequence: Exec Summary (new) → Problem → Market → Personas → Goals+Metrics (merged) → Non-Goals → Approach → Prototype (§9, new) → Flows → Logic → Launch → Risks → Open Questions. North Star flag removed — fill rate confirmed as correct NS with reasoning. Notion + GitHub both updated.
 - **User research** — 5–8 concert/IPL attendees, 1–2 venue ops contacts. WhatsApp poll or Reddit (r/bangalore, r/mumbai). Output: 1-page "What we learned" artifact for PRD.
 
 ### 🟡 MEDIUM (code fixes)
@@ -39,11 +40,39 @@
 - ~~**`requirements.txt` bloat**~~ ✅ DONE (6 Apr 2026) — trimmed from 123 packages → 6 (`fastapi`, `uvicorn`, `pymongo`, `python-dotenv`, `pydantic`, `websockets`).
 - ~~**CORS wildcard**~~ ✅ DONE (6 Apr 2026) — restricted to `park-ease-rho.vercel.app`, `localhost:5173`, `localhost:3000`.
 - ~~**Dashboard auth**~~ ✅ DONE (6 Apr 2026) — `X-Api-Key` header on `/api/events/*/stats`. Key in `backend/.env` (`DASHBOARD_API_KEY`). `fetchStats()` added to `api.js` with header. `app/.env.local` + `backend/.gitignore` created. Key: `parkease-dashboard-2026` (change before real deployment).
+- ~~**simulate-booking endpoint gated**~~ ✅ DONE (6 Apr 2026) — `DEMO_MODE=true` env var required to access `/api/events/{event_id}/simulate-booking`. Returns 404 in production. Local `.env` keeps `DEMO_MODE=true` so `backend_test.py` still passes.
+- ~~**README rewritten**~~ ✅ DONE (6 Apr 2026) — previous README had `frontend/` and `app/` reversed. Rewritten with problem statement, persona value props, all 9 screens with routes, correct stack, run instructions, key design decisions.
 
 ---
 
 ## Session Log
 
+
+### PRD restructure + portfolio hardening (6 April 2026)
+
+**Files changed:** `01_Product/ParkEase_PRD_Condensed.md` · `backend/server.py` · `backend/.env` · `README.md` · Notion page updated
+
+**What happened:**
+
+**1. Condensed PRD restructured to standard workflow order**
+Sections reordered from founder-driven to insight-driven sequence. Executive Summary added (new). Narrative section folded into Personas. Goals and Metrics merged into one section. Market Context and Personas moved before Solution. Prototype section (§9) inserted after Key Features with all 9 screens documented. Sections renumbered §1–§14. North Star flag removed — fill rate confirmed as correct NS: it is the gate condition for all downstream metrics; contribution-negative economics at MVP is a pricing decision, not a NS argument.
+
+**2. simulate-booking endpoint gated behind DEMO_MODE**
+`/api/events/{event_id}/simulate-booking` was accessible in production with no auth. Now returns 404 unless `DEMO_MODE=true` in environment. Local `.env` keeps `DEMO_MODE=true` so test suite passes. Production Vercel/Render never has this set.
+
+**3. README rewritten**
+Previous README had `frontend/` marked as active and `app/` as archived — opposite of reality. Rewritten with: problem statement, what each persona gets, all 9 screens with routes, correct stack, local run instructions, 6 key design decisions, current project status.
+
+**4. Prototype section added to condensed PRD**
+User had saved prototype section content in Notion. Inserted as §9 after Key Features. Sub-flow headings (Consumer/Operator/Retention/Ground Staff) fixed from `##` to `###`. All downstream sections renumbered. Notion and GitHub synced.
+
+**Commits this session:**
+- `34bc832` — PRD restructure + reference PDF + vercel.json
+- `f2730a4` — gate simulate-booking behind DEMO_MODE
+- `b068e14` — README rewritten
+- `d140e4c` — prototype section added, §10–§14 renumbered
+
+---
 
 ### APM portfolio evaluation + PRD v2.0 + Notion sync (6 April 2026)
 
