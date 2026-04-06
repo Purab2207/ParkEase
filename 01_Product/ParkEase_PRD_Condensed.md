@@ -149,7 +149,7 @@ NORTH STAR
                    Domestic festivals: 6 months.
 ```
 
-*Note: Fill rate (current North Star) is a lagging output metric and is contribution-negative at MVP fill on a new venue. Replacement candidates: redirect CTA completion rate, repeat booking rate, exit clearance time reduction. Decision deferred to post-Event 1 data — the correct North Star depends on what Event 1 proves.*
+*Note: Fill rate is the gate condition for all downstream metrics — no fill means no redirect trigger, no compliance report data, and no B2B retention story. Redirect CTA tap rate is the closest alternative but cannot be measured without fill rate being high first. Fill rate stays as North Star.*
 
 ---
 
@@ -214,7 +214,59 @@ We do not own or operate parking infrastructure, run shuttle fleets, or compete 
 
 ---
 
-## 9. Key Flows
+## 9. Prototype — Live Screens
+
+**Live site:** https://park-ease-rho.vercel.app
+**Stack:** React 19 · Tailwind CSS v4 · React Router v7 · Vite
+**Status:** 9 screens, data-driven, auto-deploys on push to `main`.
+
+### Consumer Flow
+
+**S1 — Venue Landing** · `/events/:eventId`
+*Attendee's first touchpoint — live scarcity + named bay selection*
+Hero image, live scarcity bar (spots remaining), lot selector, Google Maps directions to gate, OTP auth trigger.
+
+**S2 — Booking Flow** · `/events/:eventId/book`
+*5-step checkout — designed to complete in under 2 minutes*
+Bay grid → arrival window → pricing breakdown → vehicle number → UPI pay.
+
+**S3 — Booking Confirmation** · `/confirmation/:bookingId`
+*The screen Arjun screenshots and WhatsApps to his group*
+UPI payment QR → entry pass QR → bay details → WhatsApp forward + Google Maps to gate. Entry QR cached offline at confirmation — works with zero signal on event night.
+
+**S4 — Parking Full → Redirect** · `/redirect`
+*The hypothesis screen — do Indian attendees book a cab when parking is full?*
+Sold-out state, Ola/Uber/Rapido deep-links with venue drop zone pre-filled, redirect tracking label. Event 1 measures this tap rate.
+
+### Operator Flow
+
+**S5 — Operator Dashboard** · `/dashboard`
+*Siddharth's entire product interaction — the B2B acquisition screen*
+Live fill rate gauge, per-lot occupancy bars, redirect CTA count, colour-coded alert feed, manual override controls (show ends early / lot blocked / emergency), PDF compliance report download.
+
+### Retention Flow
+
+**S6 — Retention / Re-engagement** · `/retain`
+*Converts one-time bookers into repeat users*
+Past booking recap, upcoming event recommendations, one-tap re-book CTA.
+
+**S7 — RCB Booking** · `/retain/book`
+*Partner-branded variant — demonstrates white-label capability to B2B buyers*
+RCB dark theme booking flow: bay grid in brand colours, group size + pricing + vehicle number.
+
+**S8 — RCB Confirmation** · `/retain/confirm`
+*Same QR mechanics as S3 — partner colour scheme applied throughout*
+Named bay entry QR, gate directions, booking ID — all in RCB dark theme.
+
+### Ground Staff Flow
+
+**S9 — Attendant Scanner** · `/attendant`
+*Closes the loop between "booking confirmed" and "bay actually occupied" — feeds compliance report*
+Ground-staff PWA with offline manifest caching. Shift login + OTP + zone selection, ready-to-scan state with live/offline indicator, match (green) / mismatch (red) result with plate comparison, bay reassignment flow + session audit log.
+
+---
+
+## 10. Key Flows
 
 ### Consumer Flow — Arjun
 
@@ -252,7 +304,7 @@ S2 implements a 5-step progressive disclosure model. Each step unlocks the next 
 
 ---
 
-## 10. Key Logic — Rules and Edge Cases
+## 11. Key Logic — Rules and Edge Cases
 
 These are the rules design and engineering work to. Edge cases are grounded in documented Indian event failures.
 
@@ -273,7 +325,7 @@ When parking is full and surge pricing is active, the redirect screen acknowledg
 
 ---
 
-## 11. Launch Plan
+## 12. Launch Plan
 
 | Stage | Timeline | Description | Exit Criteria |
 |---|---|---|---|
@@ -296,7 +348,7 @@ Siddharth signs B2B contract
 
 ---
 
-## 12. Risks
+## 13. Risks
 
 **R1 — Core hypothesis may be wrong** *(most existential)*
 The entire product rests on one behavioural bet: Indian event-goers shown a parking full screen will book a cab instead of finding informal parking. If redirect compliance at MVP falls below 20%, the demand-shifting mechanism has failed.
@@ -328,7 +380,7 @@ Bay mapping and manual seeding is manageable for one event. Five events across t
 
 ---
 
-## 13. Open Questions — What Event 1 Must Answer
+## 14. Open Questions — What Event 1 Must Answer
 
 **OQ1 — What is the actual redirect compliance rate in India?** *(most important unknown)*
 Western benchmarks (Waze/Google Maps) suggest 35–40%. India's driving culture, informal parking availability, and cab trust levels are different. Below 20% means the product's core differentiation does not exist.
@@ -365,7 +417,7 @@ All persona journeys are based on documented failures, behavioural analogues, an
 | Date | Decision | Detail |
 |---|---|---|
 | Mar 2026 | Financial model corrected v1 → v2 | v1 collected full consumer price and remitted 30% to venue — wrong. v2 models ParkEase fee on top of venue base rate (₹49 on ₹100–₹300 base). Net per spot corrected: ₹104 → ₹47. MVP new-venue contribution margin flipped from +₹9,085 to −₹275. B2B platform fee share corrected from ~35% to 60% of per-event economics. Annual contracts required for break-even revised from 10 to 15. |
-| Apr 2026 | North Star metric flagged for review | Fill rate (current NS) is a lagging output metric and is contribution-negative at MVP fill on a new venue. Replacement candidates: redirect CTA completion rate, repeat booking rate, exit clearance time reduction. Decision deferred to post-Event 1 data — the correct NS depends on what Event 1 proves. |
+| Apr 2026 | North Star confirmed: Fill Rate | Fill rate is the gate condition for all downstream metrics. Contribution-negative at MVP economics on a new venue (waived B2B fee) — that is a pricing decision, not a North Star argument. Redirect CTA tap rate is the closest alternative but cannot be measured without fill rate being high first. Decision: fill rate stays. |
 
 ---
 
