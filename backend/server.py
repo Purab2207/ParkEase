@@ -17,6 +17,7 @@ from pymongo import MongoClient
 MONGO_URL = os.environ.get("MONGO_URL")
 DB_NAME = os.environ.get("DB_NAME")
 DASHBOARD_API_KEY = os.environ.get("DASHBOARD_API_KEY", "demo-key-change-before-prod")
+DEMO_MODE = os.environ.get("DEMO_MODE", "false").lower() == "true"
 
 # ---------------------------------------------------------------------------
 # Database helpers
@@ -504,10 +505,13 @@ async def websocket_live_counter(websocket: WebSocket, event_id: str):
 
 # ---------------------------------------------------------------------------
 # Demo simulation: fake bookings to show live counter in action
+# Only active when DEMO_MODE=true in environment — never in production.
 # ---------------------------------------------------------------------------
 @app.post("/api/events/{event_id}/simulate-booking")
 async def simulate_booking(event_id: str):
-    """Create a fake booking to demonstrate live counter updates."""
+    """Create a fake booking to demonstrate live counter updates. DEMO_MODE only."""
+    if not DEMO_MODE:
+        raise HTTPException(404, "Not found")
     event = events_col.find_one({"event_id": event_id}, {"_id": 0})
     if not event:
         raise HTTPException(404, "Event not found")
