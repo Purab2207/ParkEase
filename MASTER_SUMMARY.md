@@ -33,7 +33,10 @@
 - ~~**PRD condensation → Notion push**~~ ✅ DONE (5 Apr 2026) — condensed to 7 sections, pushed to Notion as "ParkEase — Condensed PRD". Decisions: fill rate stays as North Star (not exit clearance time), GTM via warm college contacts as primary. Market size bottom-up added: ~110–130 addressable events/year in Tier 1, ₹20–25L Year 1 target.
 - ~~**PRD v2.0 — template gaps closed → Notion sync**~~ ✅ DONE (6 Apr 2026) — condensed PRD upgraded to v2.0 (364 lines, ~12 pages). New sections: Problem Alignment, High Level Approach, Narrative, Goals (measurable + immeasurable), Non-Goals (6 explicit), Key Flows (Arjun + Siddharth flow tables + booking architecture), Key Logic (5 critical rules), Launch Plan (4-stage milestone table with exit criteria), Changelog. Removed: Sprint Sequence, Won't Have bullets. Notion page updated — prototype section untouched.
 - ~~**PRD restructured to standard workflow order**~~ ✅ DONE (6 Apr 2026) — sections reordered to standard PRD sequence: Exec Summary (new) → Problem → Market → Personas → Goals+Metrics (merged) → Non-Goals → Approach → Prototype (§9, new) → Flows → Logic → Launch → Risks → Open Questions. North Star flag removed — fill rate confirmed as correct NS with reasoning. Notion + GitHub both updated.
-- **User research** — 5–8 concert/IPL attendees, 1–2 venue ops contacts. WhatsApp poll or Reddit (r/bangalore, r/mumbai). Output: 1-page "What we learned" artifact for PRD.
+- ~~**User research conducted**~~ ✅ DONE (Apr 2026) — campus research completed. Documentation pending.
+- **User research artifact** — structure campus research findings into 1-page "What We Learned" doc. Insert into PRD §4 (Personas) and §14 (Open Questions). Push to Notion + GitHub. **Blocker for PM outreach.**
+- **One-pager** — single shareable page: problem (2 lines) · solution (2 lines) · prototype link · key metrics · current status. For PM text review and Siddharth sales conversation.
+- **B2B outreach email template** — cold email referencing a documented failure by name, manual fallback detail upfront, compliance report as hook. Needed for Siddharth GTM motion.
 
 ### 🟡 MEDIUM (code fixes)
 - ~~**Atomic bay booking**~~ ✅ DONE (6 Apr 2026) — `findOneAndUpdate({status: "available"})` atomic op in `backend/server.py`. No double-booking possible.
