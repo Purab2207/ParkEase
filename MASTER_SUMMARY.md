@@ -43,7 +43,7 @@
 - ~~**Atomic bay booking**~~ ✅ DONE (6 Apr 2026) — `findOneAndUpdate({status: "available"})` atomic op in `backend/server.py`. No double-booking possible.
 - ~~**`requirements.txt` bloat**~~ ✅ DONE (6 Apr 2026) — trimmed from 123 packages → 6 (`fastapi`, `uvicorn`, `pymongo`, `python-dotenv`, `pydantic`, `websockets`).
 - ~~**CORS wildcard**~~ ✅ DONE (6 Apr 2026) — restricted to `park-ease-rho.vercel.app`, `localhost:5173`, `localhost:3000`.
-- ~~**Dashboard auth**~~ ✅ DONE (6 Apr 2026) — `X-Api-Key` header on `/api/events/*/stats`. Key in `backend/.env` (`DASHBOARD_API_KEY`). `fetchStats()` added to `api.js` with header. `app/.env.local` + `backend/.gitignore` created. Key: `parkease-dashboard-2026` (change before real deployment).
+- ~~**Dashboard auth**~~ ✅ DONE (6 Apr 2026) — `X-Api-Key` header on `/api/events/*/stats`. Key in `backend/.env` (`DASHBOARD_API_KEY`). `fetchStats()` added to `api.js` with header. `app/.env.local` + `backend/.gitignore` created. Key value in `.env` only — not in source.
 - ~~**simulate-booking endpoint gated**~~ ✅ DONE (6 Apr 2026) — `DEMO_MODE=true` env var required to access `/api/events/{event_id}/simulate-booking`. Returns 404 in production. Local `.env` keeps `DEMO_MODE=true` so `backend_test.py` still passes.
 - ~~**README rewritten**~~ ✅ DONE (6 Apr 2026) — previous README had `frontend/` and `app/` reversed. Rewritten with problem statement, persona value props, all 9 screens with routes, correct stack, run instructions, key design decisions.
 
@@ -220,7 +220,7 @@ Notion page "ParkEase — Condensed PRD" updated with 9 targeted search-and-repl
 1. **Atomic bay booking** — replaced find-then-update with `bays_col.find_one_and_update({status: "available"})`. Single atomic op, no race condition possible.
 2. **requirements.txt** — trimmed 123 packages → 6. Removed boto3, openai, google-genai, pandas, numpy, stripe, litellm, etc.
 3. **CORS wildcard** — `allow_origins=["*"]` → explicit list: `park-ease-rho.vercel.app`, `localhost:5173`, `localhost:3000`.
-4. **Dashboard auth** — `GET /api/events/{event_id}/stats` now requires `X-Api-Key: parkease-dashboard-2026` header. `DASHBOARD_API_KEY` env var in `backend/.env`. `fetchStats(eventId)` added to `app/src/api.js` with header. `app/.env.local` created for Vite. `backend/.gitignore` created — `.env` will never be committed.
+4. **Dashboard auth** — `GET /api/events/{event_id}/stats` now requires `X-Api-Key` header. `DASHBOARD_API_KEY` env var in `backend/.env`. `fetchStats(eventId)` added to `app/src/api.js` with header. `app/.env.local` created for Vite. `backend/.gitignore` created — `.env` will never be committed.
 
 **Gemini PRD review analysis + 2 PRD fixes:**
 
