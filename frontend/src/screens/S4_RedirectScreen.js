@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 const MapPin = () => (
   <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -24,6 +24,14 @@ const getFareRange = (lat, lng, surgeMultiplier = 1) => {
   else if (km <= 15) { low = 150; high = 280; }
   else { low = 290; high = 450; }
   return { low: Math.round(low * surgeMultiplier), high: Math.round(high * surgeMultiplier) };
+};
+
+const VENUE_DATA = {
+  venueDisplayName: "Chinnaswamy Stadium, Bangalore",
+  dropZoneName: "Drop Zone A, near Gate 4",
+  dropZoneLat: 12.9793, dropZoneLng: 77.5996,
+  isSurgeActive: true, surgeMultiplier: 1.8,
+  cabAvailability: { ola: 'available', uber: 'low', rapido: 'available' }
 };
 
 const CabProviderCard = ({ provider, availability, dropZoneLat, dropZoneLng, dropZoneName }) => {
@@ -62,25 +70,8 @@ const CabProviderCard = ({ provider, availability, dropZoneLat, dropZoneLng, dro
 };
 
 export default function RedirectScreen() {
-  const DATA = {
-    venueDisplayName: "Chinnaswamy Stadium, Bangalore",
-    dropZoneName: "Drop Zone A, near Gate 4",
-    dropZoneLat: 12.9793, dropZoneLng: 77.5996,
-    isSurgeActive: true, surgeMultiplier: 1.8,
-    cabAvailability: { ola: 'available', uber: 'low', rapido: 'available' }
-  };
-  const fareRange = getFareRange(DATA.dropZoneLat, DATA.dropZoneLng, DATA.surgeMultiplier);
-  const [redirectCount, setRedirectCount] = useState(156);
-  const allLow = Object.values(DATA.cabAvailability).every(s => s === 'low' || s === 'unavailable');
-
-  useEffect(() => {
-    const tick = () => {
-      setRedirectCount(prev => prev + Math.floor(Math.random() * 3) + 1);
-      timer = setTimeout(tick, 8000 + Math.random() * 7000);
-    };
-    let timer = setTimeout(tick, 8000 + Math.random() * 7000);
-    return () => clearTimeout(timer);
-  }, []);
+  const fareRange = getFareRange(VENUE_VENUE_DATA.dropZoneLat, VENUE_VENUE_DATA.dropZoneLng, VENUE_VENUE_DATA.surgeMultiplier);
+  const allLow = Object.values(VENUE_VENUE_DATA.cabAvailability).every(s => s === 'low' || s === 'unavailable');
 
   return (
     <div className="min-h-[100dvh] bg-gray-50 font-sans" data-testid="redirect-screen">
@@ -90,15 +81,15 @@ export default function RedirectScreen() {
           <div className="text-sm font-semibold bg-red-700/50 px-3 py-1 rounded-full border border-red-500/30">PARKING FULL</div>
         </div>
         <div className="w-full bg-red-50 border border-red-200 rounded-2xl p-6 text-center flex flex-col gap-3">
-          <h1 className="text-2xl font-bold text-gray-900">Parking at {DATA.venueDisplayName} is full</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Parking at {VENUE_DATA.venueDisplayName} is full</h1>
           <p className="text-sm text-red-500">Book a cab -- it's faster than finding street parking</p>
         </div>
-        {DATA.isSurgeActive && (
+        {VENUE_DATA.isSurgeActive ? (
           <div className="w-full bg-amber-50 border border-amber-300 rounded-xl px-4 py-3 flex items-start gap-3">
             <div className="mt-0.5 shrink-0"><AlertTriangle /></div>
-            <p className="text-sm text-amber-700">Cab prices may be higher than usual ({DATA.surgeMultiplier}x surge) -- still faster than finding parking</p>
+            <p className="text-sm text-amber-700">Cab prices may be higher than usual ({VENUE_DATA.surgeMultiplier}x surge) -- still faster than finding parking</p>
           </div>
-        )}
+        ) : null}
         <div className="w-full bg-white border border-gray-200 shadow-sm rounded-xl px-5 py-4">
           <div className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-1">Estimated fare to venue</div>
           <div className="text-3xl font-bold text-gray-900">{'\u20B9'}{fareRange.low} - {'\u20B9'}{fareRange.high}</div>
@@ -106,25 +97,25 @@ export default function RedirectScreen() {
         </div>
         <div className="w-full grid grid-cols-3 gap-3">
           {['ola', 'uber', 'rapido'].map(p => (
-            <CabProviderCard key={p} provider={p} availability={DATA.cabAvailability[p]} dropZoneLat={DATA.dropZoneLat} dropZoneLng={DATA.dropZoneLng} dropZoneName={DATA.dropZoneName} />
+            <CabProviderCard key={p} provider={p} availability={VENUE_DATA.cabAvailability[p]} dropZoneLat={VENUE_DATA.dropZoneLat} dropZoneLng={VENUE_DATA.dropZoneLng} dropZoneName={VENUE_DATA.dropZoneName} />
           ))}
         </div>
         <div className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 flex items-center gap-3">
           <div className="shrink-0 bg-gray-100 p-2 rounded-full"><MapPin /></div>
           <div className="flex flex-col min-w-0">
             <div className="text-xs text-gray-500 font-medium">Drop-off point</div>
-            <div className="text-sm font-semibold text-gray-900 truncate">{DATA.dropZoneName}</div>
+            <div className="text-sm font-semibold text-gray-900 truncate">{VENUE_DATA.dropZoneName}</div>
           </div>
         </div>
-        {allLow && (
+        {allLow ? (
           <div className="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 flex flex-col gap-2">
             <h3 className="text-sm font-semibold text-gray-900">Cabs are busy right now</h3>
             <p className="text-xs text-gray-500">Try again in 5 minutes or book from a nearby pickup point.</p>
           </div>
-        )}
+        ) : null}
         <div className="flex-1" />
         <div className="text-xs text-gray-400 bg-white border border-gray-200 px-3 py-1.5 rounded-full">
-          {redirectCount} people redirected to cabs tonight
+          Redirect tracking live in Phase 2
         </div>
       </div>
     </div>

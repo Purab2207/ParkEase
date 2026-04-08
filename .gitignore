@@ -20,3 +20,13 @@ build/
 __pycache__/
 *.pyc
 *.pyo
+
+# Claude Code local files
+.claude/settings.local.json
+.claude/worktrees/
+
+# Temp batch/output files
+*.out.txt
+b*_out.txt
+batch*.json
+caption_updates*
