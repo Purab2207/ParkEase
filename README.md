@@ -86,7 +86,7 @@ The frontend proxies `/api/*` to `localhost:8001` via `vite.config.js`.
 
 ## Project status
 
-**Stage:** Prototype complete (9 screens, Vercel). Backend hardened — atomic booking, CORS restricted, dashboard API key auth. First live event not yet secured.
+**Stage:** Prototype complete (9 screens, Vercel). Backend hardened — atomic booking, CORS restricted, dashboard API key auth, simulate-booking gated behind `DEMO_MODE`. Frontend hardened — booking ID as URL param (`/confirmation/:bookingId`), fake redirect counter removed. First live event not yet secured.
 
 **Next milestone:** Demo to 3–5 event organiser contacts in Bangalore.
 

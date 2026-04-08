@@ -46,11 +46,41 @@
 - ~~**Dashboard auth**~~ ✅ DONE (6 Apr 2026) — `X-Api-Key` header on `/api/events/*/stats`. Key in `backend/.env` (`DASHBOARD_API_KEY`). `fetchStats()` added to `api.js` with header. `app/.env.local` + `backend/.gitignore` created. Key value in `.env` only — not in source.
 - ~~**simulate-booking endpoint gated**~~ ✅ DONE (6 Apr 2026) — `DEMO_MODE=true` env var required to access `/api/events/{event_id}/simulate-booking`. Returns 404 in production. Local `.env` keeps `DEMO_MODE=true` so `backend_test.py` still passes.
 - ~~**README rewritten**~~ ✅ DONE (6 Apr 2026) — previous README had `frontend/` and `app/` reversed. Rewritten with problem statement, persona value props, all 9 screens with routes, correct stack, run instructions, key design decisions.
+- ~~**Booking ID lost on refresh**~~ ✅ DONE (8 Apr 2026) — `/confirmation` was reading `bookingId` from `location.state` (lost on refresh). Changed to `/confirmation/:bookingId` URL param. `ConfirmationRoute` now uses `useParams()`. Demo nav + `startDemo` flow updated to use `/confirmation/PE-2026-DEMO1234`.
+- ~~**S4 fake redirect counter**~~ ✅ DONE (8 Apr 2026) — removed `Math.random()` increment + `useEffect`. Replaced with static "Redirect tracking live in Phase 2". `VENUE_DATA` hoisted to module level. `useEffect` import removed.
+- ~~**North Star confirmed: Fill Rate**~~ ✅ DONE (8 Apr 2026) — condensed PRD metrics tree reverted to fill rate as North Star. Redirect CTA tap rate demoted to leading indicator with explicit rationale: tap ≠ confirmed behaviour change, redirect screen not shown at purchase time. Notion already correct (fill rate). All files aligned.
 
 ---
 
 ## Session Log
 
+### Technical hardening + portfolio fixes (8 April 2026)
+
+**Files changed:** `frontend/src/App.js` · `frontend/src/screens/S4_RedirectScreen.js` · `01_Product/ParkEase_PRD_Condensed.md` · `.gitignore` · `MASTER_SUMMARY.md` · `README.md`
+
+**What happened:**
+
+**1. Booking ID URL param fix (`frontend/src/App.js`)**
+`/confirmation` was passing `bookingId` via `location.state` — lost on page refresh, fell back to demo data silently. Fixed by changing route to `/confirmation/:bookingId`, updating `ConfirmationRoute` to use `useParams()`, updating `onPaymentSuccess` navigation, and updating demo nav + `startDemo` flow to use `/confirmation/PE-2026-DEMO1234`.
+
+**2. S4 fake redirect counter removed (`frontend/src/screens/S4_RedirectScreen.js`)**
+`Math.random()` counter incrementing "156 people redirected tonight" removed entirely. Replaced with "Redirect tracking live in Phase 2". `VENUE_DATA` hoisted to module level (was recreated on every render). `useEffect` import removed. `&&` conditionals fixed to ternary.
+
+**3. North Star confirmed as fill rate across all files**
+`ParkEase_PRD_Condensed.md` metrics tree reverted — redirect CTA tap rate had been incorrectly promoted to North Star. Reverted with documented rationale: tap ≠ confirmed behaviour change; redirect screen only shown on event day when lot is full, not at purchase time. Notion was already correct. All files now aligned.
+
+**4. Technical audit — backend already hardened**
+Audit confirmed all other backlog items were already done in prior sessions: atomic booking (`findOneAndUpdate`), CORS restricted, dashboard `X-Api-Key` auth, `simulate-booking` gated behind `DEMO_MODE`. No backend changes needed.
+
+**5. `.gitignore` updated**
+Added `.claude/settings.local.json`, `.claude/worktrees/`, and batch/output file patterns.
+
+**Commits this session:**
+- `9b06685` — fix: remove fake redirect counter, redefine North Star to CTA tap rate
+- `1b48663` — fix: revert North Star to parking fill rate in condensed PRD
+- `b59dc35` — fix: move confirmation bookingId from location.state to URL param
+
+---
 
 ### User research documentation + Notion push (8 April 2026)
 
