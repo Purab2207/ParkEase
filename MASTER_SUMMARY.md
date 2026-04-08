@@ -34,7 +34,8 @@
 - ~~**PRD v2.0 — template gaps closed → Notion sync**~~ ✅ DONE (6 Apr 2026) — condensed PRD upgraded to v2.0 (364 lines, ~12 pages). New sections: Problem Alignment, High Level Approach, Narrative, Goals (measurable + immeasurable), Non-Goals (6 explicit), Key Flows (Arjun + Siddharth flow tables + booking architecture), Key Logic (5 critical rules), Launch Plan (4-stage milestone table with exit criteria), Changelog. Removed: Sprint Sequence, Won't Have bullets. Notion page updated — prototype section untouched.
 - ~~**PRD restructured to standard workflow order**~~ ✅ DONE (6 Apr 2026) — sections reordered to standard PRD sequence: Exec Summary (new) → Problem → Market → Personas → Goals+Metrics (merged) → Non-Goals → Approach → Prototype (§9, new) → Flows → Logic → Launch → Risks → Open Questions. North Star flag removed — fill rate confirmed as correct NS with reasoning. Notion + GitHub both updated.
 - ~~**User research conducted**~~ ✅ DONE (Apr 2026) — campus research completed. Documentation pending.
-- **User research artifact** — structure campus research findings into 1-page "What We Learned" doc. Insert into PRD §4 (Personas) and §14 (Open Questions). Push to Notion + GitHub. **Blocker for PM outreach.**
+- ~~**User research artifact**~~ ✅ DONE (8 Apr 2026) — full research doc built and pushed to Notion as "ParkEase — User Research" (Discovery type, ParkEase — Docs). 3-layer structure: verbal conversations (5 named attendees) → own research posts → multi-city evidence (8 cities, 12+ events). 20 screenshot images embedded. Reddit stats stripped. Akshat testimony flagged as headline product insight: "I would have left it in the car — but only if the parking was secure." WTP range confirmed: ₹200–400. PRD §4 + §14 insert still pending.
+- **PRD §4 + §14 insert** — add research findings to Arjun persona (§4) and open questions (§14). Push to Notion + GitHub.
 - **One-pager** — single shareable page: problem (2 lines) · solution (2 lines) · prototype link · key metrics · current status. For PM text review and Siddharth sales conversation.
 - **B2B outreach email template** — cold email referencing a documented failure by name, manual fallback detail upfront, compliance report as hook. Needed for Siddharth GTM motion.
 
@@ -50,6 +51,49 @@
 
 ## Session Log
 
+
+### User research documentation + Notion push (8 April 2026)
+
+**Files changed:** `MASTER_SUMMARY.md` · Notion "ParkEase — User Research" page (new, created under ParkEase — Docs)
+
+**What happened:**
+
+**1. Full user research PDF analysed**
+14-page research report (`user research/ParkEase_Consumer_Research_Report.pdf`) reviewed in full. Coverage: 8 cities, 12+ events, 2023–2026. Platforms: Reddit, Medium, Twitter/X, journalism. All 22 screenshot images read and analysed individually.
+
+**2. Research quality evaluated**
+Honest assessment: strong secondary research (problem validation at scale), weak on direct WTP confirmation and zero operator-side data. Primary research = two own Reddit posts (r/mumbai 1.9K views, r/AskBangalore removed by mods but one reply captured). Not framed as primary/secondary in the artifact — presented as unified user research.
+
+**3. Notion page created: "ParkEase — User Research"**
+- Type: Discovery · Icon: 🔍
+- Structure: Conversations (verbal) → What We Asked (own posts) → Five Ground Truths → Multi-City Evidence → What We Didn't Find
+- 20 screenshot images auto-embedded by Notion
+- Reddit engagement stats stripped (no "40+ comments", "38 upvotes" etc.)
+- All Notion callout types used per testimony severity: TIP (green) / NOTE (blue) / IMPORTANT (red) / WARNING (orange)
+
+**4. Five verbal testimonies added as "Conversations" section**
+All converted to first-person active voice:
+- **Sakshi** (21, Ahmedabad) — 2.5km walk in sunlight, WTP ₹200–300
+- **Abhishek** (23, Chandigarh) — group of 15, internet jammers, 1hr to regroup, no cabs in 2km
+- **Akshat** (Chandigarh) — camera damaged at checkpoint, security-conditional WTP: *"I would have left it in the car — but only if the parking was secure."* ~20% of ticket price
+- **Digviijay** (28, Delhi) — cascading failure: car stopped → walk → metro shut → phone stolen → police station → home at 3am
+- **Yuvraj** (22, Mohali) — IPL, side mirrors broken in unmanaged lot, zero accountability
+
+**Key new insights from this session:**
+- Akshat's testimony is the strongest product insight across all research — security of bay changes attendee behaviour, not just convenience
+- WTP range now confirmed: ₹200–400 (Sakshi ₹200–300, Akshat ~20% of ticket)
+- Internet jammers at venues = direct justification for S9 offline QR mode
+- Group coordination failure (group of 15) is an unscoped feature gap
+- Vehicle vandalism (Yuvraj) closes the loop with IPL theft screenshot evidence
+- Pre-event communication gap (Akshat's camera ban) = potential value-add on S3 confirmation screen
+
+**Still pending:**
+- PRD §4 (Personas) insert — research findings into Arjun's section
+- PRD §14 (Open Questions) insert
+- One-pager
+- B2B outreach email template
+
+---
 
 ### PRD restructure + portfolio hardening (6 April 2026)
 

@@ -67,7 +67,7 @@ ParkEase's differentiator is what happens *after the lot fills*. No competitor a
 
 ## 4. Personas
 
-*All persona journeys are hypothesis-based — built from documented event failures, behavioural analogues, and founder inference. No primary interview data exists yet. Treat as directional until validated by Event 1 (see OQ7).*
+*Persona journeys built from documented event failures, behavioural analogues, and founder inference — now corroborated by user research across 8 cities, 12+ events, and 5 direct attendee conversations (April 2026). Consumer-side validated. Operator-side (Siddharth) remains hypothesis until Event 1 (see OQ7).*
 
 | Persona | Snapshot | Core Pain | Core Objection | Key Product Decision |
 |---|---|---|---|---|
@@ -81,6 +81,17 @@ ParkEase's differentiator is what happens *after the lot fills*. No competitor a
 **Arjun:** Drives to Chinnaswamy for an IPL match. There is no pre-booking option. He arrives 30 minutes before the match to find the lot full. He parks informally 1.5km away. After the match, he sits in his car for 90 minutes waiting for the crowds to thin. He does the same thing at the next match.
 
 **Siddharth:** His company organised the Diljit Delhi concert. A viral video of the exit gridlock has 400,000 views. A municipal authority has sent a compliance notice. He has no data, no report, and no product that could have prevented it. His MD asks what they will do differently next time. He has no answer.
+
+**What user research confirmed (April 2026):**
+
+Five direct attendee conversations + multi-city evidence across 8 cities and 12+ events corroborated the Arjun persona and surfaced findings the hypothesis did not anticipate:
+
+1. **The exit problem starts before arrival.** Sakshi (21, Ahmedabad) walked 2.5km in sunlight just to reach the venue gate. Experience degraded before the show began.
+2. **Named bay is a security product, not just a convenience product.** Akshat (Chandigarh): *"I would have left my camera in the car — but only if I knew the car was in a safe, designated spot."* Unmanaged parking means attendees cannot leave valuables in vehicles. Named bay + attendant check-in changes that behaviour.
+3. **Group coordination failure at scale.** Abhishek (23, Chandigarh) — group of 15, internet jammers at venue, 1 hour to regroup, walked 1 hour to find a cab. A pre-assigned bay with a known gate location is the offline meeting point that jammers cannot disrupt.
+4. **Vehicle vandalism, not just theft.** Yuvraj (22, Mohali) — IPL match, parked in unmanaged lot, side mirrors broken, zero accountability. Named bay + QR check-in creates a chain of custody that generic directed parking cannot.
+
+**WTP confirmed:** ₹200–400 range (Sakshi: ₹200–300 · Akshat: ~20% of ticket price). Consistent with the ₹99–₹249 pricing hypothesis.
 
 ---
 
@@ -405,8 +416,10 @@ Manual seeding works for MVP. V2 options: build own sensor network, operator sel
 **OQ6 — Multi-zone architecture: native or V2 rearchitecture?**
 Some events span multiple stages and parking zones. Does not block MVP (single lot). Must be resolved before V2 feature development begins — the decision has compounding implications for dashboard design, bay mapping ops, and compliance report structure.
 
-**OQ7 — User research gap**
-All persona journeys are based on documented failures, behavioural analogues, and founder inference. No primary interview data exists yet. 5–8 concert/IPL attendee interviews and 1–2 venue ops conversations are planned before Event 1. Until then, all persona motivations should be treated as directional, not validated.
+**OQ7 — User research gap** *(consumer-side partially closed — April 2026)*
+Consumer-side research completed: 5 direct attendee conversations (Ahmedabad, Chandigarh ×2, Delhi, Mohali) + multi-city evidence across 8 cities, 12+ events, 2023–2026. Key findings inserted into §4. WTP range confirmed: ₹200–400. Consumer persona motivations are now corroborated, not purely inferred.
+
+**Still open:** Operator-side (Siddharth) remains unvalidated. 1–2 venue ops conversations needed before Event 1. Core question: will operators accept the liability boundary as written, and does the compliance report argument actually close the sale?
 
 ---
 
