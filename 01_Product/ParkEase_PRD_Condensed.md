@@ -15,7 +15,7 @@ ParkEase is a software layer that pre-sells named parking bays to event attendee
 
 **Current state:** 9-screen Vercel prototype is live and demoable. No live event secured yet. All persona motivations are hypothesis-based — Event 1 is the validation checkpoint.
 
-**MVP targets:** 25–30% redirect CTA tap rate · 35% parking fill rate (gate) · <45% checkout drop-off
+**MVP targets:** 35% parking fill rate · 25–30% redirect CTA tap rate · <45% checkout drop-off
 
 ---
 
@@ -98,8 +98,8 @@ Five direct attendee conversations + multi-city evidence across 8 cities and 12+
 ## 5. Goals & Metrics
 
 ### Measurable Goals
-1. **25–30% redirect CTA tap rate** when parking is full — the North Star; directly measures whether the product achieves its core hypothesis (behaviour change, not just booking volume)
-2. **35% parking fill rate** at first live event (MVP) — gate metric; redirect cannot trigger unless lot is at least this full
+1. **35% parking fill rate** at first live event (MVP) — North Star; the single number that determines whether everything else works. If parking fills, redirect triggers. If redirect triggers, behaviour change is tested. If behaviour change works, the compliance report has its strongest data point.
+2. **25–30% redirect CTA tap rate** when parking is full — leading indicator of demand-shifting intent (tap rate measures intent only; hard conversion confirmation requires V2 Ola/Uber API callback)
 3. **<45% checkout drop-off rate** — honest floor given UPI first-authorisation friction on unfamiliar apps
 
 ### Immeasurable Goals
@@ -111,22 +111,22 @@ Five direct attendee conversations + multi-city evidence across 8 cities and 12+
 
 ```
 NORTH STAR
-└── Redirect CTA Tap Rate (when lot is full)
-    ├── Definition:   % of users shown the "parking full" screen who tap a cab CTA
-    ├── MVP Target:   25–30%
-    └── Year 1:       38–42%
+└── Parking Fill Rate per Event
+    ├── Definition:   % of pre-booked inventory sold before event day
+    ├── MVP Target:   35%
+    └── Year 1:       65%
 
-    Why this is the North Star: ParkEase's core claim is that it shifts
-    attendee behaviour from car to cab. Fill rate is a prerequisite (lot must
-    fill before redirect triggers) but it does not measure the behaviour change.
-    Redirect CTA tap rate does. A high fill rate with low redirect engagement
-    proves booking mechanics work but disproves the demand-shaping hypothesis.
+    Why this is the North Star: If fill rate is high, the redirect triggers.
+    If the redirect triggers, behaviour change is tested. If behaviour change
+    works, the compliance report has its strongest data point. Every downstream
+    metric depends on fill rate being high.
 
-    GATE METRIC
-    └── Parking Fill Rate per Event
-        ├── Definition: % of pre-booked inventory sold before event day
-        ├── MVP floor:  35% (required for redirect to trigger meaningfully)
-        └── Year 1:     65%
+    Why redirect CTA tap rate is NOT the North Star: tap rate measures intent,
+    not confirmed behaviour change. A user can tap the cab link and not book.
+    At time of purchase (weeks before the event) users won't see the redirect
+    screen at all — it only appears when the lot is full on event day. Fill
+    rate is observable, actionable, and directly controllable. Tap rate is a
+    V2 metric once Ola/Uber API callback confirms hard conversion.
 
     ├── LEADING:   Parking attach rate at checkout
     │              % of ticket buyers who add parking at checkout
@@ -166,8 +166,6 @@ NORTH STAR
                    IPL/leagues: 30–45 days. Annual concerts: 6–12 months.
                    Domestic festivals: 6 months.
 ```
-
-*Note: Fill rate is the gate condition for all downstream metrics — no fill means no redirect trigger, no compliance report data, and no B2B retention story. Redirect CTA tap rate is the closest alternative but cannot be measured without fill rate being high first. Fill rate stays as North Star.*
 
 ---
 
