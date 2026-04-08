@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation, useParams } from 'react-router-dom';
 import './App.css';
 import Navbar from './components/Navbar';
 import AuthModal from './components/AuthModal';
@@ -14,7 +14,7 @@ import RetentionScreen from './screens/S6_RetentionScreen';
 const PATHS = {
   VENUE:        '/',
   BOOKING:      '/booking',
-  CONFIRMATION: '/confirmation',
+  CONFIRMATION: '/confirmation/:bookingId',
   REDIRECT:     '/redirect',
   DASHBOARD:    '/dashboard',
   RETENTION:    '/retain',
@@ -22,13 +22,13 @@ const PATHS = {
 
 const NAVBAR_PATHS = new Set([PATHS.VENUE, PATHS.BOOKING, PATHS.CONFIRMATION, PATHS.REDIRECT, PATHS.RETENTION]);
 
-// Reads bookingId from navigation state so App doesn't need to hold it.
+// Reads bookingId from URL param — survives page refresh.
 const ConfirmationRoute = () => {
   const navigate = useNavigate();
-  const { state } = useLocation();
+  const { bookingId } = useParams();
   return (
     <BookingConfirmationScreen
-      bookingId={state?.bookingId || 'PE-2026-DEMO1234'}
+      bookingId={bookingId || 'PE-2026-DEMO1234'}
       onNavigateToRetention={() => navigate(PATHS.RETENTION)}
     />
   );
@@ -44,7 +44,7 @@ const DemoNav = ({ parkingFull, onToggleParkingFull, onStartDemo, demoRunning })
         {[
           { path: PATHS.VENUE,        label: 'S1 Landing', id: 'venue' },
           { path: PATHS.BOOKING,      label: 'S2 Booking', id: 'booking' },
-          { path: PATHS.CONFIRMATION, label: 'S3 Confirm', id: 'confirmation' },
+          { path: '/confirmation/PE-2026-DEMO1234', label: 'S3 Confirm', id: 'confirmation' },
           { path: PATHS.REDIRECT,     label: 'S4 Redirect', id: 'redirect' },
           { path: PATHS.DASHBOARD,    label: 'S5 Ops',     id: 'dashboard' },
           { path: PATHS.RETENTION,    label: 'S6 Retain',  id: 'retention' },
@@ -54,7 +54,7 @@ const DemoNav = ({ parkingFull, onToggleParkingFull, onStartDemo, demoRunning })
             data-testid={`demo-nav-${id}`}
             onClick={() => navigate(path)}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-              pathname === path
+              pathname === path || pathname.startsWith(path.split('/').slice(0, 2).join('/') + '/')
                 ? 'bg-white text-gray-900'
                 : 'text-gray-400 hover:text-white hover:bg-gray-800'
             }`}
@@ -126,7 +126,7 @@ export default function App() {
   };
 
   const startDemo = () => {
-    const flow = [PATHS.VENUE, PATHS.BOOKING, PATHS.CONFIRMATION, PATHS.REDIRECT, PATHS.DASHBOARD, PATHS.RETENTION];
+    const flow = [PATHS.VENUE, PATHS.BOOKING, '/confirmation/PE-2026-DEMO1234', PATHS.REDIRECT, PATHS.DASHBOARD, PATHS.RETENTION];
     setDemoRunning(true);
     let i = 0;
     navigate(flow[i]);
@@ -170,7 +170,7 @@ export default function App() {
           } />
           <Route path={PATHS.BOOKING} element={
             <BookingFlowScreen
-              onPaymentSuccess={(bookingId) => navigate(PATHS.CONFIRMATION, { state: { bookingId } })}
+              onPaymentSuccess={(bookingId) => navigate(`/confirmation/${bookingId}`)}
               onNavigateBack={() => navigate(PATHS.VENUE)}
               onParkingFull={() => navigate(PATHS.REDIRECT)}
               userPhone={userPhone}
