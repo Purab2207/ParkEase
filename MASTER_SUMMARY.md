@@ -940,27 +940,19 @@ Audited against industry findings (Escape.tech, The Register, Towards Data Scien
 
 ## Phase 1 — Remaining tasks (next session picks up here)
 
-**Tasks 1–4 complete. Pick up from Task 5.**
+**Tasks 1–7 complete. Phase 1 exit criteria met.**
 
-### Task 5 — Real QR code generation (mock, client-side)
-- `qrcode` npm package is already installed (`frontend/package.json`)
-- Replace `<MockQRCode>` pixel-grid component in `S3_BookingConfirmation.js` with real QR generated from `bookingId` using `qrcode` library
-- Generate as data URL: `QRCode.toDataURL(bookingId)` → render as `<img>`
-- Keep the `#BOOKING_ID` mono text and "Show to attendant" caption below
-- No backend change needed — purely client-side
+### Task 5 — Real QR code generation ✅ COMPLETE
+- `RealQRCode` component in `S3_BookingConfirmation.js:151` uses `QRCode.toDataURL(bookingId)` — no mock grid.
 
-### Task 6 — Mock push notification (toast)
-- S6 RetentionScreen shows a "reminder" card — wire it to a visible mock toast
-- On S3 load (booking confirmed), show a toast: "We'll remind you to leave by 6:00 PM — push notification sent 90 mins before event"
-- Use a simple in-app toast component (no OneSignal, no real push — all mock)
-- File: `frontend/src/components/Toast.js` (new) — simple fixed-bottom notification that auto-dismisses after 4s
-- Trigger from `S3_BookingConfirmation.js` on mount via `useEffect`
+### Task 6 — Mock push notification toast ✅ COMPLETE
+- `Toast.js` exists at `frontend/src/components/Toast.js`, auto-dismisses after 4s.
+- Triggered from `S3_BookingConfirmation.js` on mount via `useEffect(() => setShowToast(true), [])`.
 
-### Task 7 — OTP verification wire-check
-- `AuthModal.js` has a 6-box OTP input with 30s countdown — verify it is fully wired
-- Check: does `onLoginSuccess(phone)` get called after OTP entry? Does `isLoggedIn` state in App.js update?
-- Check: does `userPhone` pre-fill the contact field in S2 with a "✓ Verified" badge?
-- If any of these are broken, fix. If all wired — mark complete, no change needed.
+### Task 7 — OTP verification wire-check ✅ COMPLETE (no fixes needed)
+- `AuthModal.handleOtpContinue` calls `onLoginSuccess(phone)` ✓
+- `App.handleLoginSuccess` sets `isLoggedIn=true` + `userPhone` ✓
+- `S2_BookingFlow` initialises `contactPhone` from `userPhone` and shows "Verified" badge when matched ✓
 
 ---
 
@@ -1016,4 +1008,4 @@ No Razorpay, no Supabase, no OneSignal, no MSG91. All payments, notifications, O
 
 ---
 
-*Last updated: 4 April 2026 — B2B platform fee added to Siddharth journey (PRD + Notion), compliance methodology notes added, Phase 1 Tasks 5–7 documented for next session*
+*Last updated: 8 April 2026 — Phase 1 Tasks 5–7 verified complete (real QR, toast, OTP wire). All 7 Phase 1 tasks done. Phase 1 exit criteria met.*
