@@ -54,6 +54,21 @@
 
 ## Session Log
 
+### Demo nav screen reorder (8 April 2026)
+
+**Files changed:** `app/src/App.jsx` · `01_Product/ParkEase_PRD_Condensed.md` · `01_Product/ParkEase_PRD.md` · `MASTER_SUMMARY.md` · Notion
+
+**What happened:**
+S5 Operator Dashboard was sitting between consumer screens (S4 Redirect) and retention screens (S6) in the demo nav — breaking the presentation narrative. Moved to end.
+
+**New demo order:** S1 → S2 → S3 → S4 → S6 → S7 → S8 → S9 → S5
+
+Consumer flow first, retention next, ground staff, operator dashboard at the end. Both `SCREENS` array and `startDemo` flow updated. PRD Condensed section order updated to match. Main PRD prototype list updated to 9 screens in demo order.
+
+**Commit:** `d951902`
+
+---
+
 ### Technical hardening + portfolio fixes (8 April 2026)
 
 **Files changed:** `frontend/src/App.js` · `frontend/src/screens/S4_RedirectScreen.js` · `01_Product/ParkEase_PRD_Condensed.md` · `.gitignore` · `MASTER_SUMMARY.md` · `README.md`

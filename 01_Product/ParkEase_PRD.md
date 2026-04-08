@@ -972,7 +972,7 @@ Departments
 - Legal (Contracts, SLA, liability)
     
 
-Prototype Screens (5 core screens)
+Prototype Screens (9 screens — demo order)
 
 - S1 — Venue/Event Landing Page
     
@@ -982,6 +982,14 @@ Prototype Screens (5 core screens)
     
 - S4 — Parking Full → Redirect Screen
     
+- S6 — Retention / Re-engagement
+
+- S7 — RCB Booking (retention partner flow)
+
+- S8 — RCB Confirmation
+
+- S9 — Attendant Scanner (ground staff)
+
 - S5 — Operator Dashboard
     
 

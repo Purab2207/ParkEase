@@ -254,12 +254,6 @@ UPI payment QR → entry pass QR → bay details → WhatsApp forward + Google M
 *The hypothesis screen — do Indian attendees book a cab when parking is full?*
 Sold-out state, Ola/Uber/Rapido deep-links with venue drop zone pre-filled, redirect tracking label. Event 1 measures this tap rate.
 
-### Operator Flow
-
-**S5 — Operator Dashboard** · `/dashboard`
-*Siddharth's entire product interaction — the B2B acquisition screen*
-Live fill rate gauge, per-lot occupancy bars, redirect CTA count, colour-coded alert feed, manual override controls (show ends early / lot blocked / emergency), PDF compliance report download.
-
 ### Retention Flow
 
 **S6 — Retention / Re-engagement** · `/retain`
@@ -279,6 +273,12 @@ Named bay entry QR, gate directions, booking ID — all in RCB dark theme.
 **S9 — Attendant Scanner** · `/attendant`
 *Closes the loop between "booking confirmed" and "bay actually occupied" — feeds compliance report*
 Ground-staff PWA with offline manifest caching. Shift login + OTP + zone selection, ready-to-scan state with live/offline indicator, match (green) / mismatch (red) result with plate comparison, bay reassignment flow + session audit log.
+
+### Operator Flow
+
+**S5 — Operator Dashboard** · `/dashboard`
+*Siddharth's entire product interaction — the B2B acquisition screen*
+Live fill rate gauge, per-lot occupancy bars, redirect CTA count, colour-coded alert feed, manual override controls (show ends early / lot blocked / emergency), PDF compliance report download.
 
 ---
 
