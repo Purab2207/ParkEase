@@ -31,11 +31,11 @@ const DemoNav = ({ onStartDemo, demoRunning, parkingFull, onToggleParkingFull })
     { label: 'S2 Booking',  path: `/events/${DEFAULT_EVENT}/book` },
     { label: 'S3 Confirm',  path: `/confirmation/PE-2026-DEMO1234` },
     { label: 'S4 Redirect', path: '/redirect' },
-    { label: 'S5 Ops',      path: '/dashboard' },
     { label: 'S6 Retain',   path: '/retain' },
     { label: 'S7 RCB',      path: '/retain/book' },
     { label: 'S8 RCB✓',     path: '/retain/confirm' },
     { label: 'S9 Staff',    path: '/attendant' },
+    { label: 'S5 Ops',      path: '/dashboard' },
   ];
 
   return (
@@ -127,8 +127,8 @@ export default function App() {
       `/events/${DEFAULT_EVENT}/book`,
       `/confirmation/PE-2026-DEMO1234`,
       '/redirect',
-      '/dashboard',
       '/retain',
+      '/dashboard',
     ];
     setDemoRunning(true);
     let i = 0;
