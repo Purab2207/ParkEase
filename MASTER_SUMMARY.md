@@ -36,8 +36,10 @@
 - ~~**User research conducted**~~ ✅ DONE (Apr 2026) — campus research completed. Documentation pending.
 - ~~**User research artifact**~~ ✅ DONE (8 Apr 2026) — full research doc built and pushed to Notion as "ParkEase — User Research" (Discovery type, ParkEase — Docs). 3-layer structure: verbal conversations (5 named attendees) → own research posts → multi-city evidence (8 cities, 12+ events). 20 screenshot images embedded. Reddit stats stripped. Akshat testimony flagged as headline product insight: "I would have left it in the car — but only if the parking was secure." WTP range confirmed: ₹200–400. PRD §4 + §14 insert still pending.
 - **PRD §4 + §14 insert** — add research findings to Arjun persona (§4) and open questions (§14). Push to Notion + GitHub.
-- **One-pager** — single shareable page: problem (2 lines) · solution (2 lines) · prototype link · key metrics · current status. For PM text review and Siddharth sales conversation.
-- **B2B outreach email template** — cold email referencing a documented failure by name, manual fallback detail upfront, compliance report as hook. Needed for Siddharth GTM motion.
+- ~~**One-pager**~~ ✅ DONE (13 Apr 2026) — ParkEase_Shareable in Notion restructured as cold-outreach one-pager. Hook-first (3 real incidents), solution table, persona table, research callout, status bullets, competitor comparison, 3 links. Inline docs database kept at bottom.
+- ~~**B2B outreach email template**~~ ✅ DONE (15 Apr 2026) — cold email drafted (subject: "After Diljit Delhi — what does your team do differently this time?"). Leads with manual fallback, compliance report as hook, liability boundary as the specific ask. Outreach plan: 5 warm DMs week 1 → 10 cold emails week 2 → follow-up week 3. Targets: BookMyShow Live, Wizcraft, Percept, DNA Entertainment, IPL stadium ops heads, college fest organisers.
+- **Case study** — deeper portfolio artifact for interviews. Build after first PM or operator reply.
+- **Operator persona validation** — 1–2 real conversations with event ops contacts before pitching Siddharth.
 
 ### 🟡 MEDIUM (code fixes)
 - ~~**Atomic bay booking**~~ ✅ DONE (6 Apr 2026) — `findOneAndUpdate({status: "available"})` atomic op in `backend/server.py`. No double-booking possible.
@@ -53,6 +55,25 @@
 ---
 
 ## Session Log
+
+### B2B outreach + one-pager (13–15 April 2026)
+
+**Files changed:** `MASTER_SUMMARY.md` · Notion ParkEase_Shareable
+
+**What happened:**
+
+**1. One-pager built (13 Apr)**
+ParkEase_Shareable in Notion restructured for cold outreach. Hook-first (3 real incidents), solution table (pre-event / event night / post-event), 4-row persona table, research callout with Akshat quote, status bullets, competitor comparison, all 3 links. Inline ParkEase — Docs kept at bottom as "read more."
+
+**2. B2B cold email drafted (15 Apr)**
+Subject: "After Diljit Delhi — what does your team do differently this time?" Leads with manual fallback, compliance report as hook, liability boundary as the specific ask. 4 paragraphs, short.
+
+**3. B2B outreach plan scoped**
+Week 1: 5 warm LinkedIn DMs. Week 2: 10 cold emails (BookMyShow Live, Wizcraft, Percept, DNA Entertainment, IPL stadium ops). Week 3: one follow-up on non-replies. Expected: 10 outreach → 2–3 replies → 1 genuine conversation.
+
+**Next:** Case study (active interview applications) + operator persona validation.
+
+---
 
 ### Demo nav screen reorder (8 April 2026)
 
