@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Header
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
@@ -355,10 +355,8 @@ def get_bays(event_id: str, lot_id: Optional[str] = None):
 
 
 @app.get("/api/events/{event_id}/stats")
-def get_event_stats(event_id: str, x_api_key: Optional[str] = Header(default=None)):
-    """Operator dashboard stats — requires X-Api-Key header"""
-    if x_api_key != DASHBOARD_API_KEY:
-        raise HTTPException(401, "Invalid or missing API key")
+def get_event_stats(event_id: str):
+    """Operator dashboard stats — demo prototype, no auth required (demo data only)"""
     doc = events_col.find_one({"event_id": event_id}, {"_id": 0})
     if not doc:
         raise HTTPException(404, "Event not found")

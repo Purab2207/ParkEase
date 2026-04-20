@@ -4,7 +4,6 @@
 // and local dev with backend running gets live data automatically.
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
-const DASHBOARD_API_KEY = import.meta.env.VITE_DASHBOARD_API_KEY || '';
 
 async function apiFetch(path, options = {}) {
   const res = await fetch(`${BACKEND_URL}${path}`, options);
@@ -179,9 +178,7 @@ export async function fetchBooking(bookingId) {
 
 export async function fetchStats(eventId) {
   try {
-    return await apiFetch(`/api/events/${eventId}/stats`, {
-      headers: { 'X-Api-Key': DASHBOARD_API_KEY },
-    });
+    return await apiFetch(`/api/events/${eventId}/stats`);
   } catch {
     return null;
   }
