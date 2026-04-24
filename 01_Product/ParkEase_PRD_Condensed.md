@@ -61,6 +61,9 @@ India's live events market: ₹20,861 crore (2024), growing 15% YoY. Live music 
 | BookMyShow | Ticketing with informal parking links | Add-on link only — no named bay, no operator dashboard |
 | Google Maps | Navigation | Post-arrival only, no pre-booking |
 
+**Consumer fee defensibility — ₹49 vs BookMyShow:**
+BookMyShow's 18–20% convenience fee (~₹270 on a ₹1,500 ticket) is a toll on a product someone else built — the user gets nothing additional. ParkEase's ₹49 *is* the product: a pillar-mapped bay, QR enforcement, scarcity visibility, and a redirect fallback if the lot fills. The real comparison shoppers make is not BMS vs ParkEase — it is informal parking (₹50–200 cash, no guarantee, no security) vs a named guaranteed bay. On that comparison, ₹49 wins on trust, not just price. Full economic argument: `02_Financials/Business Valuation.md` §7.
+
 ParkEase's differentiator is what happens *after the lot fills*. No competitor addresses this.
 
 ---
@@ -299,7 +302,10 @@ Live fill rate gauge, per-lot occupancy bars, redirect CTA count, colour-coded a
 
 | Stage | Touchpoint | Action | Emotional State | Friction | Product Response |
 |---|---|---|---|---|---|
-| Outreach | Targeted email + one-pager | Reads email, takes the call | Cautious | Generic pitches are ignored | Email references a documented failure by name; includes manual fallback detail upfront |
+| **Lead sourcing** | Founder-curated target list: ops heads at Tier 1 structured venues (Bangalore, Mumbai, Delhi) + college fest coordinators as warm-intro lane | Siddharth is not yet aware of ParkEase | n/a (pre-contact) | No external list exists; founder builds it manually from event credits + LinkedIn | 30–40 names max; college fests = faster trust loop, mid-tier venues = larger scale |
+| **Warm intro (primary)** | College event/fest contact forwards one-pager to ops head | Receives intro from trusted source | Neutral, curious | Intro must be specific — generic forwards are deleted | One-pager leads with documented failure (Chinnaswamy, Diljit), not product features |
+| **Discovery call (15 min)** | Intro call, no pitch | Describes own pain point; names a specific upcoming event where failure would hurt him | Guarded | Pitch-first calls get declined immediately | Listening-mode only; exit criterion = Siddharth names a real event and a real fear |
+| Outreach (cold fallback) | Targeted email + one-pager | Reads email, takes the call | Cautious | Generic pitches are ignored | Email references a documented failure by name; includes manual fallback detail upfront |
 | Sales call | 30-min call | Asks 3 liability questions; agrees to pilot | Objection-heavy | "Who is liable if it fails?" | Contractual SLA scoping ParkEase liability; pilot event waives B2B platform fee |
 | Pre-event setup | Operator dashboard | Configures event, reviews pre-event fill data | Methodical | Dashboard must work before event night, not just on it | Full functional dashboard from day of configuration |
 | Event night | Dashboard — live | Monitors in real time, no manual intervention needed | Alert | Must trust data accuracy under pressure | Live fill rate, redirect count, per-lot status, automated alert feed |
@@ -354,12 +360,16 @@ When parking is full and surge pricing is active, the redirect screen acknowledg
 
 **B2B acquisition chain:**
 ```
-Siddharth signs B2B contract
-    → Arjun discovers ParkEase at BMS checkout
-        → Arjun's group chat → Rahul activates via ticket link
-            → Varun sees redirect → word of mouth
-                → Priya finds via Google / parent WhatsApp group
-                    → Compliance report travels → next Siddharth
+Founder-curated target list (30–40 venues/operators)
+    → Warm intro via college fest contact  OR  Cold email timed to documented failure
+        → Discovery call (listening mode)
+            → Pitch call + pilot scope
+                → Siddharth signs B2B contract
+                    → Arjun discovers ParkEase at BMS checkout
+                        → Arjun's group chat → Rahul activates via ticket link
+                            → Varun sees redirect → word of mouth
+                                → Priya finds via Google / parent WhatsApp group
+                                    → Compliance report travels → next Siddharth
 ```
 
 ---

@@ -226,12 +226,16 @@ Zero paid marketing in Stage 1. Every consumer acquisition flows through a B2B r
 ## The acquisition chain
 
 ```
-Siddharth signs B2B contract
-    → Arjun discovers ParkEase at BMS checkout
-        → Arjun's group chat → Rahul activates via ticket link
-            → Varun sees redirect → word of mouth
-                → Priya finds via Google / parent WhatsApp group
-                    → Compliance report travels → next Siddharth
+Founder-curated target list (30–40 venues/operators)
+    → Warm intro via college fest contact  OR  Cold email timed to documented failure
+        → Discovery call (listening mode)
+            → Pitch call + pilot scope
+                → Siddharth signs B2B contract
+                    → Arjun discovers ParkEase at BMS checkout
+                        → Arjun's group chat → Rahul activates via ticket link
+                            → Varun sees redirect → word of mouth
+                                → Priya finds via Google / parent WhatsApp group
+                                    → Compliance report travels → next Siddharth
 ```
 
 ## Stage sequence
@@ -271,7 +275,15 @@ Siddharth signs B2B contract
 
 > **Consumer fee as % of total price is visible and contestable**
 
-> ParkEase's ₹49 fee on a ₹149 total is a 33% markup on the ₹100 venue base rate. The LocalCircles survey found 80% of Indian users report hidden charges as a frustration on BookMyShow. The fee must be presented as a named, justified line item — "pre-booking + named bay guarantee" — not buried as a convenience charge.
+> **BMS baseline:** BookMyShow charges 18–20% convenience fee on ticket face value — roughly ₹270 on a ₹1,500 concert ticket — for a product someone else built. The user gets nothing additional; it is a pure friction tax.
+>
+> **ParkEase comparison:** ₹49 on a ₹149 parking transaction is 33% by ratio but buys a named product: pillar-mapped bay, QR enforcement, scarcity visibility, redirect fallback, and a compliance-backed SLA. It is the price of the product itself, not a toll on someone else's product.
+>
+> **Informal parking comparison:** The real comparison shoppers make is ₹50–200 cash parking (no guarantee, no attendant accountability, vehicle-vandalism risk — confirmed by Yuvraj and Akshat in user research) vs ₹149 for a named guaranteed bay. On this framing, ₹49 wins on trust, not just price.
+>
+> **Framing rule:** The LocalCircles survey found 80% of Indian users flag hidden charges as a frustration on BookMyShow. The fee must be presented as a named, justified line item — "pre-booking + named bay guarantee" — in the S2 pricing breakdown, never buried as a convenience charge.
+>
+> **What would invalidate this:** Event 1 attach rate below 15% at the ₹149 price point would indicate price elasticity is the blocker, not framing. Triggers an A/B pricing test at V2.
 
 ## Lower severity
 
