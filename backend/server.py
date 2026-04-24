@@ -415,6 +415,11 @@ async def create_booking(data: BookingCreate):
     if len(data.phone) != 10:
         raise HTTPException(400, "Phone must be 10 digits")
 
+    # Validate entry window against the event's allowed windows
+    valid_windows = event.get("entry_windows", [])
+    if valid_windows and data.entry_window not in valid_windows:
+        raise HTTPException(400, f"Invalid entry window. Must be one of: {valid_windows}")
+
     # Atomically claim the bay — prevents double-booking under concurrent requests
     claimed = bays_col.find_one_and_update(
         {"event_id": data.event_id, "pillar_code": data.bay_id, "status": "available"},
