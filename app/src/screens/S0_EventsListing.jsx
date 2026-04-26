@@ -1,10 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchEvents, FALLBACK_EVENTS_LIST } from '../api';
+
+const SLIDE_INTERVAL = 4000;
 
 export default function EventsListingScreen() {
   const navigate = useNavigate();
   const [events, setEvents] = useState(FALLBACK_EVENTS_LIST);
+  const [current, setCurrent] = useState(0);
+  const intervalRef = useRef(null);
 
   useEffect(() => {
     fetchEvents().then(data => {
@@ -12,38 +16,164 @@ export default function EventsListingScreen() {
     }).catch(() => {});
   }, []);
 
+  const startInterval = useCallback(() => {
+    clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
+      setCurrent(prev => (prev + 1) % events.length);
+    }, SLIDE_INTERVAL);
+  }, [events.length]);
+
+  useEffect(() => {
+    startInterval();
+    return () => clearInterval(intervalRef.current);
+  }, [startInterval]);
+
+  function goTo(index) {
+    setCurrent(index);
+    startInterval();
+  }
+
+  function goNext() {
+    goTo((current + 1) % events.length);
+  }
+
+  function goPrev() {
+    goTo((current - 1 + events.length) % events.length);
+  }
+
+  // Touch swipe support
+  const touchStartX = useRef(null);
+  function handleTouchStart(e) { touchStartX.current = e.touches[0].clientX; }
+  function handleTouchEnd(e) {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) diff > 0 ? goNext() : goPrev();
+    touchStartX.current = null;
+  }
+
+  const active = events[current];
+  if (!active) return null;
+
+  const activeId = active.event_id ?? active.id;
+  const activeName = active.event_name ?? active.name;
+  const activePrice = active.consumer_price ?? active.price ?? 169;
+  const activeRemaining = active.spots_remaining ?? 0;
+  const activeTotal = active.total_spots ?? 500;
+  const fillPercent = Math.round(((activeTotal - activeRemaining) / activeTotal) * 100);
+  const isCritical = activeRemaining <= 20;
+
   return (
     <div className="min-h-screen bg-gray-50 pb-8">
-      {/* Hero */}
-      <div className="bg-[#1C1D2B] px-4 pt-6 pb-8">
-        <p className="text-white/60 text-xs uppercase tracking-widest mb-1">Events near you</p>
-        <h1 className="text-white text-2xl font-bold leading-tight">
-          Book your parking<br />before it sells out.
-        </h1>
+
+      {/* ── Rotating Hero Carousel ── */}
+      <div
+        className="relative w-full overflow-hidden select-none"
+        style={{ height: '58vw', maxHeight: 226 }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Slides — absolute-stacked, fade transition */}
+        {events.map((event, i) => {
+          const img = event.hero_image;
+          const name = event.event_name ?? event.name;
+          return (
+            <div
+              key={event.event_id ?? event.id}
+              className="absolute inset-0 transition-opacity duration-700"
+              style={{ opacity: i === current ? 1 : 0, zIndex: i === current ? 1 : 0 }}
+            >
+              {img
+                ? <img src={img} alt={name} className="w-full h-full object-cover" />
+                : <div className="w-full h-full bg-gray-900 flex items-center justify-center">
+                    <span className="text-7xl font-black text-white/10">{name?.charAt(0)}</span>
+                  </div>
+              }
+              {/* Gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            </div>
+          );
+        })}
+
+        {/* Text overlay — always shows active event */}
+        <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-3">
+          <p className="text-white/70 text-[10px] uppercase tracking-widest mb-0.5">
+            {active.date} · {active.city}
+          </p>
+          <h2 className="text-white text-xl font-bold leading-tight truncate">{activeName}</h2>
+          <p className="text-white/70 text-xs truncate">{active.sub_title}</p>
+
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center gap-2">
+              <span className="text-white font-bold text-sm">₹{activePrice}</span>
+              <span className="text-white/60 text-xs">per car</span>
+              {isCritical && (
+                <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                  ALMOST FULL
+                </span>
+              )}
+            </div>
+            <button
+              onClick={() => navigate(`/events/${activeId}`)}
+              className="bg-white text-[#1C1D2B] text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-gray-100 active:scale-95 transition-transform"
+            >
+              Book Parking
+            </button>
+          </div>
+        </div>
+
+        {/* Dot indicators */}
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex gap-1.5 mb-0.5">
+          {events.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              className={`rounded-full transition-all duration-300 ${
+                i === current ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/40'
+              }`}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Event cards */}
-      <div className="px-4 -mt-4 space-y-3">
-        {events.map(event => (
+      {/* Fill bar for active event */}
+      <div className="h-1 bg-gray-200">
+        <div
+          className={`h-full transition-all duration-500 ${isCritical ? 'bg-red-500' : 'bg-[#1C1D2B]'}`}
+          style={{ width: `${fillPercent}%` }}
+        />
+      </div>
+
+      {/* ── Section header ── */}
+      <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">All Events</h3>
+        <span className="text-xs text-gray-400">{events.length} upcoming</span>
+      </div>
+
+      {/* ── Event cards ── */}
+      <div className="px-4 space-y-3">
+        {events.map((event, i) => (
           <EventCard
             key={event.event_id ?? event.id}
             event={event}
+            isActive={i === current}
             onSelect={() => navigate(`/events/${event.event_id ?? event.id}`)}
+            onHover={() => goTo(i)}
           />
         ))}
       </div>
 
-      <p className="text-center text-xs text-gray-400 mt-8">
-        More events coming soon · <span className="text-indigo-500">Get notified</span>
+      <p className="text-center text-xs text-gray-400 mt-8 px-4">
+        More events added weekly · Tap the search icon above to explore
       </p>
     </div>
   );
 }
 
-function EventCard({ event, onSelect }) {
+function EventCard({ event, isActive, onSelect, onHover }) {
   const total = event.total_spots ?? 500;
   const remaining = event.spots_remaining ?? 0;
   const price = event.consumer_price ?? event.price ?? 169;
+  const name = event.event_name ?? event.name;
   const fillPercent = Math.round(((total - remaining) / total) * 100);
   const isCritical = remaining <= 20;
   const isAlmostFull = remaining <= 100;
@@ -51,52 +181,48 @@ function EventCard({ event, onSelect }) {
   return (
     <button
       onClick={onSelect}
-      className="w-full text-left bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow active:scale-[0.98]"
+      onMouseEnter={onHover}
+      className={`w-full text-left bg-white rounded-2xl border overflow-hidden shadow-sm transition-all active:scale-[0.98] ${
+        isActive ? 'border-[#1C1D2B] shadow-md' : 'border-gray-200 hover:shadow-md'
+      }`}
     >
-      {/* Hero image */}
-      <div className="h-40 relative overflow-hidden bg-gray-900">
-        {event.hero_image
-          ? <img src={event.hero_image} alt={event.event_name ?? event.name} className="w-full h-full object-cover" />
-          : <span className="absolute inset-0 flex items-center justify-center text-6xl font-black text-white/10">
-              {(event.event_name ?? event.name ?? '?').charAt(0)}
+      <div className="flex gap-3 p-3">
+        {/* Thumbnail */}
+        <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-gray-900">
+          {event.hero_image
+            ? <img src={event.hero_image} alt={name} className="w-full h-full object-cover" />
+            : <span className="w-full h-full flex items-center justify-center text-2xl font-black text-white/20">
+                {name?.charAt(0)}
+              </span>
+          }
+        </div>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-1">
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-gray-900 truncate">{name}</p>
+              <p className="text-xs text-gray-500 truncate">{event.venue}, {event.city}</p>
+              <p className="text-xs text-gray-400">{event.date}</p>
+            </div>
+            <div className="text-right shrink-0">
+              <p className="text-sm font-bold text-gray-900">₹{price}</p>
+              <p className="text-[10px] text-gray-400">per car</p>
+            </div>
+          </div>
+
+          {/* Fill bar */}
+          <div className="flex items-center gap-2 mt-2">
+            <div className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full ${isCritical ? 'bg-red-500' : isAlmostFull ? 'bg-amber-400' : 'bg-green-400'}`}
+                style={{ width: `${fillPercent}%` }}
+              />
+            </div>
+            <span className={`text-[10px] font-semibold shrink-0 ${isCritical ? 'text-red-500' : isAlmostFull ? 'text-amber-600' : 'text-green-600'}`}>
+              {remaining} left
             </span>
-        }
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-3">
-          <p className="text-white font-bold text-lg leading-tight">{event.event_name ?? event.name}</p>
-          <p className="text-white/80 text-xs">{event.sub_title}</p>
-        </div>
-        {isCritical && (
-          <span className="absolute top-3 right-3 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-            ALMOST FULL
-          </span>
-        )}
-      </div>
-
-      {/* Details */}
-      <div className="px-4 py-3">
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <div>
-            <p className="text-sm text-gray-700 font-medium">{event.venue}</p>
-            <p className="text-xs text-gray-500">{event.city} · {event.date}</p>
           </div>
-          <div className="text-right shrink-0">
-            <p className="text-lg font-bold text-gray-900">₹{price}</p>
-            <p className="text-[10px] text-gray-400">per car</p>
-          </div>
-        </div>
-
-        {/* Fill bar */}
-        <div className="flex items-center gap-2">
-          <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all ${isCritical ? 'bg-red-500' : isAlmostFull ? 'bg-amber-400' : 'bg-green-400'}`}
-              style={{ width: `${fillPercent}%` }}
-            />
-          </div>
-          <span className={`text-xs font-semibold shrink-0 ${isCritical ? 'text-red-500' : isAlmostFull ? 'text-amber-600' : 'text-green-600'}`}>
-            {remaining} spots left
-          </span>
         </div>
       </div>
     </button>
