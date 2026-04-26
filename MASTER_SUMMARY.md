@@ -9,11 +9,11 @@
 
 **ParkEase** (working name also seen as ParkSmart in early PRD drafts) is a two-sided event parking platform for India. It pre-sells named parking bays to event attendees and provides operators a live dashboard + compliance report. When parking sells out, it redirects users to Ola/Uber/Rapido via deep-link.
 
-**Stage:** Phase 0 COMPLETE. Phase 1 (MVP Backend) COMPLETE. Template architecture COMPLETE. Phase 2 (Real Backend) IN PROGRESS.
+**Stage:** Phase 0 COMPLETE. Phase 1 (MVP Backend) COMPLETE. Template architecture COMPLETE. Phase 2 (Real Backend) IN PROGRESS — Supabase live, backend local, Railway deploy pending.
 **Prototype status:** 9 screens live. **`app/`** (Vite) is the single canonical codebase — deployed on Vercel, data-driven, works for any event. `frontend/` (CRA) is frozen/deprecated — do not edit.
 **Stack:** React 19 + Tailwind CSS v4 + React Router v7 (app/, Vite) | FastAPI + MongoDB (backend, port 8001)
 **Stack migration:** MongoDB → Supabase Postgres ✅ | WebSocket → Supabase Realtime ✅ | SMS OTP → Email OTP via Resend ✅ (needs Resend key)
-**Next milestone:** Complete Supabase migration + real auth. Then demo to event organisers.
+**Next milestone:** Deploy backend to Railway → full live stack → demo to event organisers.
 **Notion:** PRD and Business Model pages in Notion are kept in sync — both updated to match .md files.
 
 > ⚠️ **CANONICAL CODEBASE RULE:**
@@ -79,23 +79,24 @@ Tables: `users`, `otp_codes` (with phone column), `events` (full columns), `bays
 **5. S2 booking flow wired to real API**
 `handlePay` now calls `POST /api/bookings` via new `createBooking()` in `api.js`. Navigates to `/confirmation/:booking_id` returned from backend. Error state shown if booking fails (bay taken, backend down, etc.). `userEmail` prop passed from App.jsx → BookingFlowScreen.
 
-**What's needed to run:**
-1. Get Supabase Service Role Key from: supabase.com → Project Settings → API → `service_role` (secret key)
-2. Paste into `backend/.env` replacing `PASTE_SERVICE_ROLE_KEY_HERE`
-3. Get Resend API key from resend.com (free: 3k emails/mo) → paste into `backend/.env`
-4. `pip install -r requirements.txt` in `backend/`
-5. `uvicorn server:app --port 8001 --reload` in `backend/`
-6. OTP prints to console in dev even without Resend key (fallback log)
+**Keys in env files (never commit):**
+- `backend/.env` — SUPABASE_SERVICE_KEY + RESEND_API_KEY pasted and live
+- `app/.env.local` — VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY (local dev)
 
-**Supabase keys in env files:**
-- URL: `https://unbeuxpgpedbfowqretn.supabase.co`
-- Anon key: in `app/.env.local` (safe to commit — public)
-- Service role key: user must paste into `backend/.env` (never commit)
+**Vercel env vars added (26 Apr 2026):**
+- `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` added to Production + Preview environments
+- Redeployed — live site at `park-ease-rho.vercel.app` now has Supabase Realtime
+- Verification: DevTools → Network → WS tab should show connection to `unbeuxpgpedbfowqretn.supabase.co`
 
-**Next:**
-- Add Vercel env vars (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY) for production deploy
-- Test full auth+booking flow locally once service key is pasted
-- Push to GitHub → Vercel auto-deploys frontend with Realtime
+**To run backend locally:**
+```
+cd backend
+python -m uvicorn server:app --port 8001 --reload
+```
+
+**Current gap:** Backend runs locally only. Live Vercel site falls back to FALLBACK_EVENTS (no real bookings/OTP in production until backend is hosted).
+
+**Next: Deploy backend to Railway (free tier, ~5 min)**
 
 ---
 
@@ -1189,4 +1190,4 @@ Phase 2 has started. Supabase (DB + Realtime) and Resend (email OTP) are being w
 
 ---
 
-*Last updated: 26 April 2026 — Supabase migration complete. Schema + seed data live. Backend rewritten (supabase-py + Resend). Frontend Realtime wired. S2 booking hits real API. Next: paste Supabase service role key + Resend key into backend/.env → pip install → test locally → add Vercel env vars → push.*
+*Last updated: 26 April 2026 — Supabase migration complete. Backend rewritten (httpx PostgREST client, no supabase-py). Real OTP via Resend, real booking API, atomic bay claim. Supabase Realtime on frontend. Vercel env vars added + redeployed. Backend runs locally on :8001. Next: Railway deploy → full production stack → operator demo.*
