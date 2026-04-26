@@ -13,6 +13,7 @@ import RetentionScreen from './screens/S6_RetentionScreen';
 import RCBBookingScreen from './screens/S7_RCBBooking';
 import RCBConfirmationScreen from './screens/S8_RCBConfirmation';
 import AttendantScannerScreen from './screens/S9_AttendantScanner';
+import EventsListingScreen from './screens/S0_EventsListing';
 
 // Paths that show the global navbar
 const NAVBAR_PATHS = ['/redirect', '/retain'];
@@ -70,8 +71,9 @@ export default function App() {
 
       <div className={showNavbar ? 'pt-16' : ''}>
         <Routes>
-          {/* Default → events listing (TODO: build /events page) */}
+          {/* Default → events listing */}
           <Route path="/" element={<Navigate to="/events" replace />} />
+          <Route path="/events" element={<EventsListingScreen />} />
 
           {/* S1 — Venue landing: any event by ID */}
           <Route
