@@ -1,159 +1,148 @@
 import { useState, useEffect } from "react";
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
-  const [step, setStep] = useState("phone"); // 'phone' | 'otp'
+  const [step, setStep] = useState("details"); // 'details' | 'otp'
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(Array(6).fill(""));
   const [countdown, setCountdown] = useState(30);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
 
-  // Countdown timer when on OTP step
   useEffect(() => {
     if (step !== "otp") return;
-
     const interval = setInterval(() => {
       setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
+        if (prev <= 1) { clearInterval(interval); return 0; }
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(interval);
-  }, [step, countdown === 30]); // re-run when countdown resets to 30
+  }, [step, countdown === 30]);
 
   if (!isOpen) return null;
 
-  const DEMO_OTP = "123456";
+  const canContinue = phone.length === 10 && EMAIL_RE.test(email);
 
-  function handlePhoneContinue() {
-    if (phone.length < 10) return;
-    setStep("otp");
+  async function sendOtp() {
+    setSending(true);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/request-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, email }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.detail || "Failed to send OTP");
+      }
+      setStep("otp");
+      setOtp(Array(6).fill(""));
+      setCountdown(30);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSending(false);
+    }
+  }
+
+  async function handleResend() {
     setOtp(Array(6).fill(""));
     setCountdown(30);
-    // Simulate SMS delivery — auto-fill demo OTP after 1s
-    setTimeout(() => {
-      setOtp(DEMO_OTP.split(""));
-    }, 1000);
+    await sendOtp();
   }
 
   function handleOtpChange(index, value) {
-    // Accept only single digit
     if (value && !/^\d$/.test(value)) return;
-
     const next = [...otp];
     next[index] = value;
     setOtp(next);
-
-    // Auto-advance to next input
     if (value && index < 5) {
-      const nextInput = document.getElementById(`otp-${index + 1}`);
-      if (nextInput) nextInput.focus();
+      document.getElementById(`otp-${index + 1}`)?.focus();
     }
   }
 
   function handleOtpKeyDown(index, e) {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
-      const prevInput = document.getElementById(`otp-${index - 1}`);
-      if (prevInput) prevInput.focus();
+      document.getElementById(`otp-${index - 1}`)?.focus();
     }
   }
 
-  function handleOtpContinue() {
-    if (otp.filter(Boolean).length < 6) return;
-    onLoginSuccess?.(phone);
-    onClose?.();
-    // Reset state for next open
-    setStep("phone");
-    setPhone("");
-    setOtp(Array(6).fill(""));
+  async function handleOtpContinue() {
+    const code = otp.join("");
+    if (code.length < 6) return;
+    setError("");
+    try {
+      const res = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, email, code }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.detail || "Invalid OTP");
+      }
+      onLoginSuccess?.(phone, email);
+      handleClose();
+    } catch (e) {
+      setError(e.message);
+      setOtp(Array(6).fill(""));
+    }
   }
 
-  function handleResend() {
-    setOtp(Array(6).fill(""));
-    setCountdown(30);
-  }
-
-  function handleBackdropClick() {
+  function handleClose() {
     onClose?.();
-    // Reset state on close
-    setStep("phone");
+    setStep("details");
     setPhone("");
+    setEmail("");
     setOtp(Array(6).fill(""));
+    setError("");
   }
 
   return (
     <div
       className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center"
-      onClick={handleBackdropClick}
+      onClick={handleClose}
     >
-      {/* Modal card */}
       <div
         className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-sm overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Gradient header */}
         <div className="bg-gradient-to-br from-[#7B2FBE] to-[#9B59B6] px-6 pt-8 pb-12 text-center relative">
-          {/* Close button */}
           <button
-            onClick={handleBackdropClick}
+            onClick={handleClose}
             className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors"
             aria-label="Close"
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-
-          {/* Logo */}
           <div className="inline-flex items-center gap-2 mb-2">
             <div className="bg-white/20 rounded-lg p-2">
-              <svg
-                className="w-5 h-5 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4"
-                />
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4" />
               </svg>
             </div>
             <span className="text-white text-xl font-bold">ParkEase</span>
           </div>
-
-          {/* Tagline */}
           <p className="text-white/80 text-sm">Smart Parking, Simplified.</p>
         </div>
 
-        {/* White body (pulls up over gradient) */}
+        {/* Body */}
         <div className="bg-white rounded-t-3xl -mt-6 relative px-6 pt-6 pb-8">
-          {step === "phone" ? (
+          {step === "details" ? (
             <>
-              <h2 className="text-gray-900 text-xl font-bold mb-1">
-                Enter your mobile number
-              </h2>
-              <p className="text-gray-500 text-sm mb-6">
-                New to ParkEase? We'll create your account.
-              </p>
+              <h2 className="text-gray-900 text-xl font-bold mb-1">Sign in to ParkEase</h2>
+              <p className="text-gray-500 text-sm mb-5">New here? We'll create your account automatically.</p>
 
-              {/* Phone input row */}
-              <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden mb-4 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100">
-                <div className="flex items-center gap-1 px-3 py-3 border-r border-gray-300 bg-gray-50 text-sm text-gray-700">
+              {/* Phone */}
+              <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden mb-3 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100">
+                <div className="flex items-center gap-1 px-3 py-3 border-r border-gray-300 bg-gray-50 text-sm text-gray-700 shrink-0">
                   <span>🇮🇳</span>
                   <span>+91</span>
                 </div>
@@ -161,64 +150,55 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                   type="tel"
                   maxLength={10}
                   value={phone}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, "");
-                    setPhone(val);
-                  }}
-                  placeholder="Enter mobile number"
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+                  placeholder="Mobile number"
                   className="flex-1 px-3 py-3 outline-none text-gray-900 text-sm bg-white"
                 />
               </div>
 
-              {/* Continue button */}
+              {/* Email */}
+              <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden mb-5 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100">
+                <div className="flex items-center px-3 py-3 border-r border-gray-300 bg-gray-50 shrink-0">
+                  <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value.trim())}
+                  placeholder="Email address (OTP will be sent here)"
+                  className="flex-1 px-3 py-3 outline-none text-gray-900 text-sm bg-white"
+                />
+              </div>
+
+              {error && <p className="text-red-500 text-xs mb-3">{error}</p>}
+
               <button
-                onClick={handlePhoneContinue}
-                disabled={phone.length < 10}
+                onClick={sendOtp}
+                disabled={!canContinue || sending}
                 className="w-full bg-[#1C1D2B] text-white font-bold py-3.5 rounded-xl uppercase tracking-wide text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors mb-4"
               >
-                Continue
+                {sending ? "Sending OTP…" : "Continue"}
               </button>
 
-              {/* T&C */}
               <p className="text-center text-xs text-gray-400">
                 By continuing, you agree to our{" "}
-                <a
-                  href="#"
-                  className="text-indigo-600 hover:underline"
-                >
-                  Terms of Service
-                </a>{" "}
+                <a href="#" className="text-indigo-600 hover:underline">Terms of Service</a>{" "}
                 &amp;{" "}
-                <a
-                  href="#"
-                  className="text-indigo-600 hover:underline"
-                >
-                  Privacy Policy
-                </a>
+                <a href="#" className="text-indigo-600 hover:underline">Privacy Policy</a>
               </p>
             </>
           ) : (
             <>
-              <h2 className="text-gray-900 text-xl font-bold mb-1">
-                Enter OTP
-              </h2>
+              <h2 className="text-gray-900 text-xl font-bold mb-1">Enter OTP</h2>
               <p className="text-gray-500 text-sm mb-6">
-                Sent to +91 {phone}{" "}
-                <button
-                  onClick={() => setStep("phone")}
-                  className="text-indigo-600 font-medium hover:underline"
-                >
+                Sent to <span className="font-medium text-gray-700">{email}</span>{" "}
+                <button onClick={() => setStep("details")} className="text-indigo-600 font-medium hover:underline">
                   (Change)
                 </button>
               </p>
 
-              {/* Demo OTP hint */}
-              <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-4">
-                <span className="text-amber-500 text-sm">📱</span>
-                <p className="text-xs text-amber-700">Demo OTP <span className="font-mono font-bold tracking-widest">123456</span> — auto-filled via SMS</p>
-              </div>
-
-              {/* 6 OTP boxes */}
               <div className="flex gap-2 mb-4 justify-center">
                 {[0, 1, 2, 3, 4, 5].map((i) => (
                   <input
@@ -234,7 +214,8 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                 ))}
               </div>
 
-              {/* Verify button */}
+              {error && <p className="text-red-500 text-xs mb-3 text-center">{error}</p>}
+
               <button
                 onClick={handleOtpContinue}
                 disabled={otp.filter(Boolean).length < 6}
@@ -243,18 +224,11 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                 Verify &amp; Continue
               </button>
 
-              {/* Resend countdown */}
               <p className="text-center text-sm text-gray-500">
                 {countdown > 0 ? (
-                  <>
-                    Didn't get OTP? Resend in 00:
-                    {String(countdown).padStart(2, "0")}s
-                  </>
+                  <>Didn't get it? Resend in 00:{String(countdown).padStart(2, "0")}s</>
                 ) : (
-                  <button
-                    onClick={handleResend}
-                    className="text-indigo-600 font-medium"
-                  >
+                  <button onClick={handleResend} className="text-indigo-600 font-medium">
                     Resend OTP
                   </button>
                 )}

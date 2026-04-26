@@ -24,6 +24,7 @@ __pycache__/
 # Claude Code local files
 .claude/settings.local.json
 .claude/worktrees/
+.mcp.json
 
 # Temp batch/output files
 *.out.txt

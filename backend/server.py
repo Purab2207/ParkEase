@@ -1,282 +1,88 @@
 import os
 import uuid
-import asyncio
-import json
-from datetime import datetime, timezone
+import random
+import httpx
+from datetime import datetime, timezone, timedelta
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
-from pymongo import MongoClient
 
-MONGO_URL = os.environ.get("MONGO_URL")
-DB_NAME = os.environ.get("DB_NAME")
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
+SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 DASHBOARD_API_KEY = os.environ.get("DASHBOARD_API_KEY", "demo-key-change-before-prod")
 DEMO_MODE = os.environ.get("DEMO_MODE", "false").lower() == "true"
 
 # ---------------------------------------------------------------------------
-# Database helpers
+# Thin PostgREST client — wraps Supabase REST API via httpx.
+# Covers: select, insert, update, upsert with filters and count.
 # ---------------------------------------------------------------------------
-client = MongoClient(MONGO_URL)
-db = client[DB_NAME]
-events_col = db["events"]
-bays_col = db["bays"]
-bookings_col = db["bookings"]
+_REST = f"{SUPABASE_URL}/rest/v1"
+_HEADERS = {
+    "apikey": SUPABASE_SERVICE_KEY,
+    "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
+    "Content-Type": "application/json",
+    "Prefer": "return=representation",
+}
 
 
-def seed_demo_data():
-    """Seed all demo events, bays, and bookings."""
-    _seed_karan_aujla()
-    _seed_simple_event(
-        event_id="arijit-singh-dy-patil-2026",
-        event_name="Arijit Singh",
-        sub_title="Arijit Singh Live in Concert",
-        venue="DY Patil Stadium", city="Navi Mumbai",
-        date="Fri, 18 Apr 2026", doors_open="5:30 PM", show_time="7:30 PM",
-        total_spots=600, consumer_price=149, venue_base_rate=100,
-        distance_to_gate_metres=150, gate_name="Gate 1",
-        lots=[
-            {"id": "north", "name": "DY Patil North Lot", "total": 350, "distance_m": 150, "gate_name": "Gate 1"},
-            {"id": "south", "name": "DY Patil South Lot", "total": 250, "distance_m": 250, "gate_name": "Gate 3"},
-        ],
-        booking_seed=480,
-    )
-    _seed_simple_event(
-        event_id="coldplay-nms-2026",
-        event_name="Coldplay",
-        sub_title="Music of the Spheres World Tour",
-        venue="Narendra Modi Stadium", city="Ahmedabad",
-        date="Sun, 26 Jan 2026", doors_open="4:00 PM", show_time="6:00 PM",
-        total_spots=800, consumer_price=199, venue_base_rate=150,
-        distance_to_gate_metres=200, gate_name="Gate A",
-        lots=[
-            {"id": "north", "name": "NMS North Lot", "total": 500, "distance_m": 200, "gate_name": "Gate A"},
-            {"id": "south", "name": "NMS South Lot", "total": 300, "distance_m": 300, "gate_name": "Gate D"},
-        ],
-        booking_seed=788,
-    )
-    _seed_simple_event(
-        event_id="diljit-dosanjh-pca-2026",
-        event_name="Diljit Dosanjh",
-        sub_title="Dil-Luminati Tour",
-        venue="PCA Cricket Stadium", city="Mohali",
-        date="Sat, 10 May 2026", doors_open="5:00 PM", show_time="7:00 PM",
-        total_spots=400, consumer_price=169, venue_base_rate=120,
-        distance_to_gate_metres=160, gate_name="Gate 3",
-        lots=[
-            {"id": "north", "name": "PCA North Lot", "total": 250, "distance_m": 160, "gate_name": "Gate 3"},
-            {"id": "south", "name": "PCA South Lot", "total": 150, "distance_m": 220, "gate_name": "Gate 5"},
-        ],
-        booking_seed=311,
-    )
+def _params_from_filters(filters: dict) -> dict:
+    """Convert {'id': 'eq.foo', 'status': 'eq.available'} to PostgREST query params."""
+    return filters
 
 
-def _seed_simple_event(event_id, event_name, sub_title, venue, city, date,
-                        doors_open, show_time, total_spots, consumer_price,
-                        venue_base_rate, distance_to_gate_metres, gate_name,
-                        lots, booking_seed):
-    """Seed a generic event with B/C-series bays and mock bookings."""
-    if events_col.find_one({"event_id": event_id}):
-        return
-    events_col.insert_one({
-        "event_id": event_id, "event_name": event_name, "sub_title": sub_title,
-        "venue": venue, "city": city, "date": date,
-        "doors_open": doors_open, "show_time": show_time,
-        "total_spots": total_spots, "consumer_price": consumer_price,
-        "venue_base_rate": venue_base_rate, "park_ease_fee": 49,
-        "event_tier": "Standard", "distance_to_gate_metres": distance_to_gate_metres,
-        "gate_name": gate_name, "covered_parking": False,
-        "entry_windows": ["5:00-6:30 PM", "6:30-8:00 PM"],
-        "redirect_threshold_spots": int(total_spots * 0.9),
-        "lots": lots,
-        "prohibited_items": ["Professional cameras / DSLR", "Outside food & beverages", "Laser pointers"],
-        "amenities": ["Pillar-mapped bays", "QR entry enforcement", "Pre-assigned bay number"],
-        "created_at": datetime.now(timezone.utc).isoformat(),
-    })
-    north_taken = {"B-01", "B-04", "B-07", "B-10", "B-13"}
-    south_taken = {"C-01", "C-03", "C-07", "C-10"}
-    bay_docs = []
-    for i in range(1, 21):
-        code = f"B-{i:02d}"
-        bay_docs.append({"event_id": event_id, "lot_id": "north", "lot_name": lots[0]["name"],
-                          "pillar_code": code, "status": "taken" if code in north_taken else "available"})
-    for i in range(1, 16):
-        code = f"C-{i:02d}"
-        bay_docs.append({"event_id": event_id, "lot_id": "south", "lot_name": lots[1]["name"],
-                          "pillar_code": code, "status": "taken" if code in south_taken else "available"})
-    bays_col.insert_many(bay_docs)
-    mock_bookings = [
-        {"booking_id": f"PE-SEED-{event_id[:4].upper()}-{idx:04d}", "event_id": event_id,
-         "bay_id": f"SEED-{idx:03d}", "lot_id": "north" if idx < booking_seed // 2 else "south",
-         "phone": f"98765{10000+idx}", "entry_window": "5:00-6:30 PM",
-         "group_size": 1, "amount_paid": consumer_price, "status": "confirmed",
-         "created_at": datetime.now(timezone.utc).isoformat()}
-        for idx in range(booking_seed)
-    ]
-    if mock_bookings:
-        bookings_col.insert_many(mock_bookings)
+def sb_select(table: str, filters: dict | None = None, columns: str = "*",
+              order: str | None = None, limit: int | None = None,
+              count: bool = False) -> list:
+    params: dict = {"select": columns}
+    if filters:
+        params.update(filters)
+    if order:
+        params["order"] = order
+    if limit:
+        params["limit"] = limit
+    headers = dict(_HEADERS)
+    if count:
+        headers["Prefer"] = "count=exact"
+    r = httpx.get(f"{_REST}/{table}", headers=headers, params=params, timeout=10)
+    r.raise_for_status()
+    if count:
+        return int(r.headers.get("content-range", "0/0").split("/")[-1])
+    return r.json()
 
 
-def _seed_karan_aujla():
-    """Seed the original Karan Aujla demo event (unchanged)."""
-    event_id = "karan-aujla-jln-2026"
+def sb_insert(table: str, data: dict | list) -> list:
+    r = httpx.post(f"{_REST}/{table}", headers=_HEADERS, json=data, timeout=10)
+    r.raise_for_status()
+    return r.json()
 
-    if events_col.find_one({"event_id": event_id}):
-        return  # already seeded
 
-    # --- Event ---
-    events_col.insert_one({
-        "event_id": event_id,
-        "event_name": "Karan Aujla",
-        "sub_title": "The Bombairiya Tour",
-        "venue": "Jawaharlal Nehru Stadium",
-        "city": "Delhi",
-        "date": "Sat, 12 Apr 2026",
-        "doors_open": "6:00 PM",
-        "show_time": "8:00 PM",
-        "total_spots": 500,
-        "consumer_price": 169,
-        "venue_base_rate": 120,
-        "park_ease_fee": 49,
-        "event_tier": "Standard IPL",
-        "distance_to_gate_metres": 180,
-        "gate_name": "Gate 2",
-        "covered_parking": True,
-        "entry_windows": ["5:30-7:00 PM", "7:00-8:30 PM"],
-        "redirect_threshold_spots": 450,
-        "lots": [
-            {"id": "north", "name": "JLN North Lot", "total": 300, "distance_m": 180, "gate_name": "Gate 2"},
-            {"id": "south", "name": "JLN South Lot", "total": 200, "distance_m": 280, "gate_name": "Gate 4"},
-        ],
-        "prohibited_items": [
-            "Professional cameras / DSLR",
-            "Outside food & beverages",
-            "Laser pointers",
-            "Selfie sticks / tripods",
-            "Power banks above 20,000 mAh",
-        ],
-        "amenities": [
-            "Covered parking",
-            "Pillar-mapped bays",
-            "QR entry enforcement",
-            "Pre-assigned bay number",
-        ],
-        "created_at": datetime.now(timezone.utc).isoformat(),
-    })
+def sb_update(table: str, data: dict, filters: dict) -> list:
+    r = httpx.patch(f"{_REST}/{table}", headers=_HEADERS, json=data,
+                    params=filters, timeout=10)
+    r.raise_for_status()
+    return r.json()
 
-    # --- Bays (North lot: B-01 to B-20, South lot: C-01 to C-15) ---
-    north_taken = {"B-01", "B-04", "B-07", "B-10", "B-13", "B-16", "B-19"}
-    south_taken = {"C-01", "C-03", "C-07", "C-10", "C-12"}
 
-    bay_docs = []
-    for i in range(1, 21):
-        code = f"B-{i:02d}"
-        bay_docs.append({
-            "event_id": event_id,
-            "lot_id": "north",
-            "lot_name": "JLN North Lot",
-            "pillar_code": code,
-            "status": "taken" if code in north_taken else "available",
-        })
-    for i in range(1, 16):
-        code = f"C-{i:02d}"
-        bay_docs.append({
-            "event_id": event_id,
-            "lot_id": "south",
-            "lot_name": "JLN South Lot",
-            "pillar_code": code,
-            "status": "taken" if code in south_taken else "available",
-        })
-    bays_col.insert_many(bay_docs)
-
-    # --- Seed ~435 mock bookings to get fill rate to ~87% (PRD demo value) ---
-    # We create virtual bookings (not tied to specific bays) to simulate 87% fill
-    mock_bookings = []
-    for idx in range(435):
-        lot_id = "north" if idx < 265 else "south"
-        mock_bookings.append({
-            "booking_id": f"PE-SEED-{idx:04d}",
-            "event_id": event_id,
-            "bay_id": f"SEED-{idx:03d}",
-            "lot_id": lot_id,
-            "phone": f"98765{10000+idx}",
-            "entry_window": "5:30-7:00 PM",
-            "group_size": 1,
-            "amount_paid": 169,
-            "status": "confirmed",
-            "created_at": datetime.now(timezone.utc).isoformat(),
-        })
-    if mock_bookings:
-        bookings_col.insert_many(mock_bookings)
+def sb_upsert(table: str, data: dict, on_conflict: str) -> list:
+    headers = {**_HEADERS, "Prefer": f"resolution=merge-duplicates,return=representation"}
+    r = httpx.post(f"{_REST}/{table}", headers=headers, json=data,
+                   params={"on_conflict": on_conflict}, timeout=10)
+    r.raise_for_status()
+    return r.json()
 
 
 # ---------------------------------------------------------------------------
-# WebSocket connection manager for live scarcity updates
-# ---------------------------------------------------------------------------
-class LiveCounterManager:
-    def __init__(self):
-        self.connections: dict[str, list[WebSocket]] = {}
-
-    async def connect(self, event_id: str, ws: WebSocket):
-        await ws.accept()
-        if event_id not in self.connections:
-            self.connections[event_id] = []
-        self.connections[event_id].append(ws)
-
-    def disconnect(self, event_id: str, ws: WebSocket):
-        if event_id in self.connections:
-            self.connections[event_id] = [c for c in self.connections[event_id] if c != ws]
-
-    async def broadcast(self, event_id: str):
-        if event_id not in self.connections:
-            return
-        data = _get_live_counts(event_id)
-        if data is None:
-            return
-        msg = json.dumps(data)
-        dead = []
-        for ws in self.connections[event_id]:
-            try:
-                await ws.send_text(msg)
-            except Exception:
-                dead.append(ws)
-        for ws in dead:
-            self.disconnect(event_id, ws)
-
-
-def _get_live_counts(event_id: str):
-    doc = events_col.find_one({"event_id": event_id}, {"_id": 0, "total_spots": 1, "redirect_threshold_spots": 1})
-    if not doc:
-        return None
-    total = doc["total_spots"]
-    booked = bookings_col.count_documents({"event_id": event_id, "status": "confirmed"})
-    spots_remaining = max(total - booked, 0)
-    fill_percent = round((booked / total) * 100) if total > 0 else 0
-    return {
-        "type": "live_count",
-        "spots_remaining": spots_remaining,
-        "booked_spots": booked,
-        "fill_percent": fill_percent,
-        "total_spots": total,
-        "redirect_active": booked >= doc.get("redirect_threshold_spots", total),
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-    }
-
-
-live_manager = LiveCounterManager()
-
-
-# ---------------------------------------------------------------------------
-# App lifecycle
+# App
 # ---------------------------------------------------------------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    seed_demo_data()
     yield
 
 
@@ -284,8 +90,8 @@ app = FastAPI(lifespan=lifespan)
 
 ALLOWED_ORIGINS = [
     "https://park-ease-rho.vercel.app",
-    "http://localhost:5173",  # Vite dev
-    "http://localhost:3000",  # CRA dev (deprecated but kept for local testing)
+    "http://localhost:5173",
+    "http://localhost:3000",
 ]
 
 app.add_middleware(
@@ -300,76 +106,181 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 # Pydantic models
 # ---------------------------------------------------------------------------
+class OtpRequest(BaseModel):
+    phone: str
+    email: str
+
+
+class OtpVerify(BaseModel):
+    email: str
+    code: str
+    phone: Optional[str] = None
+
+
 class BookingCreate(BaseModel):
     event_id: str
-    bay_id: str
+    bay_id: str          # pillar_code e.g. "B-14"
     lot_id: str
     phone: str
+    email: str
     entry_window: str
+    vehicle_number: Optional[str] = None
     group_size: int = 1
 
 
 # ---------------------------------------------------------------------------
-# Routes
+# Helpers
 # ---------------------------------------------------------------------------
+async def _send_otp_email(email: str, code: str):
+    if not RESEND_API_KEY:
+        print(f"[DEV] OTP for {email}: {code}")
+        return
+    async with httpx.AsyncClient() as client:
+        await client.post(
+            "https://api.resend.com/emails",
+            headers={"Authorization": f"Bearer {RESEND_API_KEY}"},
+            json={
+                "from": "ParkEase <onboarding@resend.dev>",
+                "to": [email],
+                "subject": f"Your ParkEase OTP: {code}",
+                "html": f"""
+                <div style="font-family:sans-serif;max-width:400px;margin:0 auto;padding:32px">
+                  <h2 style="color:#1C1D2B">Your ParkEase login code</h2>
+                  <p style="font-size:14px;color:#555">Enter this code to verify your account:</p>
+                  <div style="font-size:40px;font-weight:bold;letter-spacing:8px;color:#1C1D2B;margin:24px 0">{code}</div>
+                  <p style="font-size:12px;color:#888">Valid for 10 minutes. Ignore if you didn't request this.</p>
+                  <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
+                  <p style="font-size:11px;color:#aaa">ParkEase · Pre-sell named parking bays for events</p>
+                </div>
+                """,
+            },
+            timeout=10,
+        )
 
+
+# ---------------------------------------------------------------------------
+# Auth routes
+# ---------------------------------------------------------------------------
 @app.get("/api/health")
 def health():
     return {"status": "ok"}
 
 
+@app.post("/api/auth/request-otp", status_code=200)
+async def request_otp(data: OtpRequest):
+    if len(data.phone) != 10 or not data.phone.isdigit():
+        raise HTTPException(400, "Phone must be 10 digits")
+    if "@" not in data.email or "." not in data.email.split("@")[-1]:
+        raise HTTPException(400, "Invalid email")
+
+    code = f"{random.randint(0, 999999):06d}"
+    expires_at = (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()
+
+    sb_insert("otp_codes", {
+        "email": data.email,
+        "phone": data.phone,
+        "code": code,
+        "expires_at": expires_at,
+        "used": False,
+    })
+
+    await _send_otp_email(data.email, code)
+    return {"message": "OTP sent", "email": data.email}
+
+
+@app.post("/api/auth/verify-otp")
+async def verify_otp(data: OtpVerify):
+    now = datetime.now(timezone.utc).isoformat()
+    rows = sb_select(
+        "otp_codes",
+        filters={"email": f"eq.{data.email}", "code": f"eq.{data.code}",
+                 "used": "eq.false", "expires_at": f"gt.{now}"},
+        order="created_at.desc",
+        limit=1,
+    )
+    if not rows:
+        raise HTTPException(400, "Invalid or expired OTP")
+
+    otp_row = rows[0]
+    sb_update("otp_codes", {"used": True}, {"id": f"eq.{otp_row['id']}"})
+
+    phone = data.phone or otp_row.get("phone")
+    user_rows = sb_upsert("users", {"email": data.email, "phone": phone}, on_conflict="email")
+    user = user_rows[0] if user_rows else {}
+
+    return {"verified": True, "user_id": user.get("id"), "email": data.email}
+
+
+# ---------------------------------------------------------------------------
+# Event routes
+# ---------------------------------------------------------------------------
 @app.get("/api/events")
 def list_events():
-    docs = list(events_col.find({}, {"_id": 0}))
-    return docs
+    rows = sb_select("events")
+    for e in rows:
+        e["event_id"] = e["id"]
+        e["event_name"] = e["name"]
+        e["consumer_price"] = e["price"]
+    return rows
 
 
 @app.get("/api/events/{event_id}")
 def get_event(event_id: str):
-    doc = events_col.find_one({"event_id": event_id}, {"_id": 0})
-    if not doc:
+    rows = sb_select("events", filters={"id": f"eq.{event_id}"})
+    if not rows:
         raise HTTPException(404, "Event not found")
 
-    # Compute live spots remaining
-    booked_count = bookings_col.count_documents({"event_id": event_id, "status": "confirmed"})
-    total = doc["total_spots"]
-    spots_remaining = max(total - booked_count, 0)
-    fill_percent = round((booked_count / total) * 100) if total > 0 else 0
+    e = rows[0]
+    total = e["total_spots"]
+    remaining = e["spots_remaining"]
+    booked = total - remaining
+    fill_percent = round((booked / total) * 100) if total > 0 else 0
+    redirect_threshold = int(total * 0.9)
 
-    doc["booked_spots"] = booked_count
-    doc["spots_remaining"] = spots_remaining
-    doc["fill_percent"] = fill_percent
-    doc["booking_count"] = booked_count
-    doc["redirect_active"] = booked_count >= doc.get("redirect_threshold_spots", total)
-
-    return doc
+    return {
+        **e,
+        "event_id": event_id,
+        "event_name": e["name"],
+        "consumer_price": e["price"],
+        "booked_spots": booked,
+        "fill_percent": fill_percent,
+        "booking_count": booked,
+        "redirect_active": booked >= redirect_threshold,
+    }
 
 
 @app.get("/api/events/{event_id}/bays")
 def get_bays(event_id: str, lot_id: Optional[str] = None):
-    query = {"event_id": event_id}
+    filters = {"event_id": f"eq.{event_id}"}
     if lot_id:
-        query["lot_id"] = lot_id
-    docs = list(bays_col.find(query, {"_id": 0}))
-    return docs
+        filters["lot_id"] = f"eq.{lot_id}"
+    rows = sb_select("bays", filters=filters,
+                     columns="event_id,lot_id,pillar_code,status")
+    return rows
 
 
 @app.get("/api/events/{event_id}/stats")
 def get_event_stats(event_id: str):
-    """Operator dashboard stats — demo prototype, no auth required (demo data only)"""
-    doc = events_col.find_one({"event_id": event_id}, {"_id": 0})
-    if not doc:
+    rows = sb_select("events", filters={"id": f"eq.{event_id}"})
+    if not rows:
         raise HTTPException(404, "Event not found")
 
-    booked_count = bookings_col.count_documents({"event_id": event_id, "status": "confirmed"})
-    total = doc["total_spots"]
-    spots_remaining = max(total - booked_count, 0)
-    fill_percent = round((booked_count / total) * 100) if total > 0 else 0
+    e = rows[0]
+    total = e["total_spots"]
+    remaining = e["spots_remaining"]
+    booked = total - remaining
+    fill_percent = round((booked / total) * 100) if total > 0 else 0
+    redirect_threshold = int(total * 0.9)
+    redirect_active = booked >= redirect_threshold
+    redirect_cta_taps = max(0, round((fill_percent - 50) * 2.36)) if fill_percent > 50 else 0
 
-    # Per-lot stats
+    lots = e.get("lots") or []
     lot_stats = []
-    for lot in doc.get("lots", []):
-        lot_booked = bookings_col.count_documents({"event_id": event_id, "lot_id": lot["id"], "status": "confirmed"})
+    for lot in lots:
+        bay_rows = sb_select("bays", filters={"event_id": f"eq.{event_id}",
+                                               "lot_id": f"eq.{lot['id']}"},
+                             columns="status")
+        lot_booked = sum(1 for b in bay_rows if b["status"] == "booked")
         lot_total = lot["total"]
         lot_percent = round((lot_booked / lot_total) * 100) if lot_total > 0 else 0
         lot_stats.append({
@@ -379,24 +290,17 @@ def get_event_stats(event_id: str):
             "percent": lot_percent,
         })
 
-    redirect_threshold = doc.get("redirect_threshold_spots", total)
-    redirect_active = booked_count >= redirect_threshold
-
-    # Mock redirect CTA taps (based on fill rate for demo)
-    redirect_cta_taps = max(0, round((fill_percent - 50) * 2.36)) if fill_percent > 50 else 0
-    compliance_rate = 0.55
-
     return {
-        "event_name": doc["event_name"],
-        "venue": f"{doc['venue']}, {doc['city']}",
-        "date": doc["date"],
+        "event_name": e["name"],
+        "venue": f"{e['venue']}, {e['city']}",
+        "date": e["date"],
         "event_status": "live",
         "total_spots": total,
-        "booked_spots": booked_count,
-        "spots_remaining": spots_remaining,
+        "booked_spots": booked,
+        "spots_remaining": remaining,
         "fill_percent": fill_percent,
         "redirect_cta_taps": redirect_cta_taps,
-        "compliance_rate": compliance_rate,
+        "compliance_rate": 0.55,
         "redirect_threshold_spots": redirect_threshold,
         "redirect_active": redirect_active,
         "lots": lot_stats,
@@ -405,145 +309,144 @@ def get_event_stats(event_id: str):
 
 
 @app.post("/api/bookings", status_code=201)
-async def create_booking(data: BookingCreate):
-    # Check event exists
-    event = events_col.find_one({"event_id": data.event_id}, {"_id": 0})
-    if not event:
+def create_booking(data: BookingCreate):
+    event_rows = sb_select("events", filters={"id": f"eq.{data.event_id}"})
+    if not event_rows:
         raise HTTPException(404, "Event not found")
+    event = event_rows[0]
 
-    # Check phone length
     if len(data.phone) != 10:
         raise HTTPException(400, "Phone must be 10 digits")
 
-    # Validate entry window against the event's allowed windows
-    valid_windows = event.get("entry_windows", [])
+    valid_windows = event.get("entry_windows") or []
     if valid_windows and data.entry_window not in valid_windows:
-        raise HTTPException(400, f"Invalid entry window. Must be one of: {valid_windows}")
+        raise HTTPException(400, f"Invalid entry window. Choose one of: {valid_windows}")
 
-    # Atomically claim the bay — prevents double-booking under concurrent requests
-    claimed = bays_col.find_one_and_update(
-        {"event_id": data.event_id, "pillar_code": data.bay_id, "status": "available"},
-        {"$set": {"status": "taken"}},
+    # Atomically claim bay: UPDATE WHERE status='available' — only one concurrent
+    # request will get a non-empty result back; the rest get 0 rows.
+    now = datetime.now(timezone.utc).isoformat()
+    claimed = sb_update(
+        "bays",
+        {"status": "booked", "booked_at": now},
+        {"event_id": f"eq.{data.event_id}", "pillar_code": f"eq.{data.bay_id}",
+         "status": "eq.available"},
     )
-    if claimed is None:
-        # Bay either doesn't exist or was already taken
-        bay_exists = bays_col.find_one({"event_id": data.event_id, "pillar_code": data.bay_id})
-        if not bay_exists:
+    if not claimed:
+        exists = sb_select("bays", filters={"event_id": f"eq.{data.event_id}",
+                                             "pillar_code": f"eq.{data.bay_id}"},
+                           columns="id")
+        if not exists:
             raise HTTPException(404, "Bay not found")
         raise HTTPException(409, "Bay already taken")
 
-    # Create booking
+    bay_row = claimed[0]
+
+    # Upsert user
+    user_rows = sb_upsert("users", {"phone": data.phone, "email": data.email},
+                          on_conflict="email")
+    user_id = user_rows[0]["id"] if user_rows else None
+
+    # Create booking record
     booking_id = f"PE-{datetime.now(timezone.utc).strftime('%Y')}-{uuid.uuid4().hex[:8].upper()}"
-    booking_doc = {
+    sb_insert("bookings", {
+        "booking_id": booking_id,
+        "event_id": data.event_id,
+        "bay_id": bay_row["id"],
+        "user_id": user_id,
+        "phone": data.phone,
+        "email": data.email,
+        "vehicle_number": data.vehicle_number,
+        "entry_window": data.entry_window,
+        "amount_paid": event["price"],
+        "status": "confirmed",
+    })
+
+    # Decrement spots_remaining — triggers Supabase Realtime on the frontend
+    new_remaining = max(event["spots_remaining"] - 1, 0)
+    sb_update("events", {"spots_remaining": new_remaining}, {"id": f"eq.{data.event_id}"})
+
+    return {
         "booking_id": booking_id,
         "event_id": data.event_id,
         "bay_id": data.bay_id,
         "lot_id": data.lot_id,
         "phone": data.phone,
+        "email": data.email,
+        "vehicle_number": data.vehicle_number,
         "entry_window": data.entry_window,
-        "group_size": data.group_size,
-        "amount_paid": event["consumer_price"],
-        "status": "confirmed",  # Mock payment — auto-confirm
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "amount_paid": event["price"],
+        "status": "confirmed",
+        "created_at": now,
     }
-    bookings_col.insert_one(booking_doc)
-
-    # Broadcast live count to all connected WebSocket clients
-    await live_manager.broadcast(data.event_id)
-
-    # Return booking without _id
-    booking_doc.pop("_id", None)
-    return booking_doc
 
 
 @app.get("/api/bookings/{booking_id}")
 def get_booking(booking_id: str):
-    doc = bookings_col.find_one({"booking_id": booking_id}, {"_id": 0})
-    if not doc:
+    rows = sb_select("bookings", filters={"booking_id": f"eq.{booking_id}"})
+    if not rows:
         raise HTTPException(404, "Booking not found")
+    doc = rows[0]
 
-    # Enrich with event + bay details
-    event = events_col.find_one({"event_id": doc["event_id"]}, {"_id": 0})
-    bay = bays_col.find_one({"event_id": doc["event_id"], "pillar_code": doc["bay_id"]}, {"_id": 0})
+    event_rows = sb_select("events", filters={"id": f"eq.{doc['event_id']}"})
+    event = event_rows[0] if event_rows else {}
 
-    lot_info = {}
-    if event:
-        for lot in event.get("lots", []):
-            if lot["id"] == doc["lot_id"]:
-                lot_info = lot
-                break
+    bay_lot = {}
+    if doc.get("bay_id"):
+        bay_rows = sb_select("bays", filters={"id": f"eq.{doc['bay_id']}"})
+        if bay_rows:
+            b = bay_rows[0]
+            lots = event.get("lots") or []
+            lot_info = next((l for l in lots if l["id"] == b["lot_id"]), {})
+            bay_lot = {
+                "bay_pillar_code": b["pillar_code"],
+                "lot_name": lot_info.get("name", ""),
+                "distance_to_gate_metres": lot_info.get("distance_m", 0),
+                "gate_name": lot_info.get("gate_name", ""),
+            }
 
     return {
         **doc,
-        "event_name": event["event_name"] if event else "",
-        "venue": f"{event['venue']}, {event['city']}" if event else "",
-        "date": event["date"] if event else "",
-        "consumer_price": event["consumer_price"] if event else 0,
-        "bay_pillar_code": doc["bay_id"],
-        "lot_name": lot_info.get("name", ""),
-        "distance_to_gate_metres": lot_info.get("distance_m", 0),
-        "gate_name": lot_info.get("gate_name", ""),
+        "event_name": event.get("name", ""),
+        "venue": f"{event.get('venue', '')}, {event.get('city', '')}",
+        "date": event.get("date", ""),
+        "consumer_price": event.get("price", 0),
+        **bay_lot,
     }
 
 
 # ---------------------------------------------------------------------------
-# WebSocket: Live scarcity counter
-# ---------------------------------------------------------------------------
-@app.websocket("/api/ws/events/{event_id}/live")
-async def websocket_live_counter(websocket: WebSocket, event_id: str):
-    await live_manager.connect(event_id, websocket)
-    # Send initial count immediately
-    data = _get_live_counts(event_id)
-    if data:
-        await websocket.send_text(json.dumps(data))
-    try:
-        while True:
-            # Keep connection alive, listen for pings
-            msg = await websocket.receive_text()
-            if msg == "ping":
-                await websocket.send_text(json.dumps({"type": "pong"}))
-    except WebSocketDisconnect:
-        live_manager.disconnect(event_id, websocket)
-
-
-# ---------------------------------------------------------------------------
-# Demo simulation: fake bookings to show live counter in action
-# Only active when DEMO_MODE=true in environment — never in production.
+# Demo simulation — DEMO_MODE=true only, never in production
 # ---------------------------------------------------------------------------
 @app.post("/api/events/{event_id}/simulate-booking")
-async def simulate_booking(event_id: str):
-    """Create a fake booking to demonstrate live counter updates. DEMO_MODE only."""
+def simulate_booking(event_id: str):
     if not DEMO_MODE:
         raise HTTPException(404, "Not found")
-    event = events_col.find_one({"event_id": event_id}, {"_id": 0})
-    if not event:
-        raise HTTPException(404, "Event not found")
 
-    booked = bookings_col.count_documents({"event_id": event_id, "status": "confirmed"})
-    if booked >= event["total_spots"]:
+    event_rows = sb_select("events", filters={"id": f"eq.{event_id}"})
+    if not event_rows:
+        raise HTTPException(404, "Event not found")
+    event = event_rows[0]
+
+    remaining = event["spots_remaining"]
+    if remaining <= 0:
         return {"message": "Event is full", "spots_remaining": 0}
 
-    idx = booked + 1
-    lot_id = "north" if idx % 2 == 0 else "south"
-    bookings_col.insert_one({
+    idx = event["total_spots"] - remaining + 1
+    sb_insert("bookings", {
         "booking_id": f"PE-SIM-{uuid.uuid4().hex[:8].upper()}",
         "event_id": event_id,
-        "bay_id": f"SIM-{idx:03d}",
-        "lot_id": lot_id,
-        "phone": f"90000{10000+idx}",
-        "entry_window": "5:30-7:00 PM",
-        "group_size": 1,
-        "amount_paid": event["consumer_price"],
+        "phone": f"9000{10000 + idx}",
+        "email": f"sim{idx}@demo.parkease.in",
+        "entry_window": (event.get("entry_windows") or ["5:30–7:00 PM"])[0],
+        "amount_paid": event["price"],
         "status": "confirmed",
-        "created_at": datetime.now(timezone.utc).isoformat(),
     })
 
-    # Broadcast to all connected clients
-    await live_manager.broadcast(event_id)
+    new_remaining = remaining - 1
+    sb_update("events", {"spots_remaining": new_remaining}, {"id": f"eq.{event_id}"})
 
-    new_count = bookings_col.count_documents({"event_id": event_id, "status": "confirmed"})
     return {
         "message": "Simulated booking created",
-        "spots_remaining": max(event["total_spots"] - new_count, 0),
-        "booked_spots": new_count,
+        "spots_remaining": new_remaining,
+        "booked_spots": event["total_spots"] - new_remaining,
     }

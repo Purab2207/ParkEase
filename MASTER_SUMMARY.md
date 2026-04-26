@@ -9,16 +9,18 @@
 
 **ParkEase** (working name also seen as ParkSmart in early PRD drafts) is a two-sided event parking platform for India. It pre-sells named parking bays to event attendees and provides operators a live dashboard + compliance report. When parking sells out, it redirects users to Ola/Uber/Rapido via deep-link.
 
-**Stage:** Phase 0 COMPLETE. Phase 1 (MVP Backend) COMPLETE. Template architecture migration COMPLETE.
+**Stage:** Phase 0 COMPLETE. Phase 1 (MVP Backend) COMPLETE. Template architecture COMPLETE. Phase 2 (Real Backend) IN PROGRESS.
 **Prototype status:** 9 screens live. **`app/`** (Vite) is the single canonical codebase — deployed on Vercel, data-driven, works for any event. `frontend/` (CRA) is frozen/deprecated — do not edit.
 **Stack:** React 19 + Tailwind CSS v4 + React Router v7 (app/, Vite) | FastAPI + MongoDB (backend, port 8001)
-**Next milestone:** Demo to event organisers.
+**Stack migration:** MongoDB → Supabase Postgres ✅ | WebSocket → Supabase Realtime ✅ | SMS OTP → Email OTP via Resend ✅ (needs Resend key)
+**Next milestone:** Complete Supabase migration + real auth. Then demo to event organisers.
 **Notion:** PRD and Business Model pages in Notion are kept in sync — both updated to match .md files.
 
 > ⚠️ **CANONICAL CODEBASE RULE:**
 > All changes go into **`app/src/`** only. `frontend/` is deprecated (CRA is unmaintained) and must not be edited.
 > Live site: `https://park-ease-rho.vercel.app` — auto-deploys on every push to `main`.
-> Routes: `/events/:eventId` (S1) · `/events/:eventId/book` (S2) · `/confirmation/:bookingId` (S3) · `/redirect` · `/dashboard` · `/retain` · `/retain/book` (S7) · `/retain/confirm` (S8) · `/attendant` (S9)
+> Routes: `/events` (TODO: listing page) · `/events/:eventId` (S1) · `/events/:eventId/book` (S2) · `/confirmation/:bookingId` (S3) · `/redirect` · `/dashboard` · `/retain` · `/retain/book` (S7) · `/retain/confirm` (S8) · `/attendant` (S9)
+> Default `/` and catch-all `*` now redirect to `/events` (not hardcoded to Karan Aujla event).
 
 **Team size:** 2 founders, full-stack ownership.
 
@@ -55,6 +57,98 @@
 ---
 
 ## Session Log
+
+### Supabase migration complete — DB, Realtime, real booking API wired (26 April 2026)
+
+**Files changed:** `backend/server.py` · `backend/requirements.txt` · `backend/.env` · `app/src/api.js` · `app/src/hooks/useLiveSpots.js` · `app/src/screens/S2_BookingFlow.jsx` · `app/src/App.jsx` · `app/.env.local` · `app/package.json`
+
+**What happened:**
+
+**1. Supabase project confirmed live**
+Project `Parkease` — `unbeuxpgpedbfowqretn` — region `ap-south-1` (Mumbai). Status: `ACTIVE_HEALTHY`.
+
+**2. Schema created via MCP migrations**
+Tables: `users`, `otp_codes` (with phone column), `events` (full columns), `bays`, `bookings`. RLS enabled on all. Public read policy on `events` + `bays`. All 4 events seeded with full data. 140 bays seeded (35 per event: B-01..B-20 North, C-01..C-15 South, ~87% booked). Supabase Realtime enabled on `events` + `bays` tables.
+
+**3. Backend fully migrated MongoDB → Supabase**
+`backend/server.py` rewritten: pymongo removed, supabase-py + httpx added. All 6 endpoints updated (`GET /events`, `GET /events/:id`, `GET /events/:id/bays`, `GET /events/:id/stats`, `POST /bookings`, `GET /bookings/:id`). Auth endpoints (`POST /auth/request-otp`, `POST /auth/verify-otp`) now real — OTP stored in Supabase, emailed via Resend. Atomic bay booking via Postgres UPDATE WHERE status='available'. Booking creation decrements `events.spots_remaining` → triggers Supabase Realtime. WebSocket + LiveCounterManager removed. `requirements.txt`: pymongo + websockets removed, supabase + httpx added.
+
+**4. Frontend Realtime wired**
+`useLiveSpots.js` rewritten: WebSocket removed, Supabase Realtime subscription on `events` table UPDATE for the specific event. Falls back to 30s API polling when Realtime unavailable. `@supabase/supabase-js` installed in `app/`. `app/.env.local` updated with Supabase URL + anon key.
+
+**5. S2 booking flow wired to real API**
+`handlePay` now calls `POST /api/bookings` via new `createBooking()` in `api.js`. Navigates to `/confirmation/:booking_id` returned from backend. Error state shown if booking fails (bay taken, backend down, etc.). `userEmail` prop passed from App.jsx → BookingFlowScreen.
+
+**What's needed to run:**
+1. Get Supabase Service Role Key from: supabase.com → Project Settings → API → `service_role` (secret key)
+2. Paste into `backend/.env` replacing `PASTE_SERVICE_ROLE_KEY_HERE`
+3. Get Resend API key from resend.com (free: 3k emails/mo) → paste into `backend/.env`
+4. `pip install -r requirements.txt` in `backend/`
+5. `uvicorn server:app --port 8001 --reload` in `backend/`
+6. OTP prints to console in dev even without Resend key (fallback log)
+
+**Supabase keys in env files:**
+- URL: `https://unbeuxpgpedbfowqretn.supabase.co`
+- Anon key: in `app/.env.local` (safe to commit — public)
+- Service role key: user must paste into `backend/.env` (never commit)
+
+**Next:**
+- Add Vercel env vars (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY) for production deploy
+- Test full auth+booking flow locally once service key is pasted
+- Push to GitHub → Vercel auto-deploys frontend with Realtime
+
+---
+
+### Phase 2 kickoff — DemoNav removal, auth redesign, Supabase+Resend setup (26 April 2026)
+
+**Files changed:** `app/src/App.jsx` · `app/src/components/AuthModal.jsx` · `app/src/screens/S1_VenueLanding.jsx` · `.mcp.json` (new) · `.gitignore`
+
+**What happened:**
+
+**1. DemoNav removed from App.jsx**
+Entire `DemoNav` component (~55 lines) deleted. `DEFAULT_EVENT = 'karan-aujla-jln-2026'` constant removed. `startDemo`, `handleToggleParkingFull` functions removed. `demoRunning`, `parkingFull` state removed. Default `/` and catch-all `*` routes now redirect to `/events` instead of hardcoded event. `RCBConfirmationScreen.onDone` now navigates to `/events`.
+
+**2. S1_VenueLanding.jsx cleaned up**
+`parkingFull` prop removed — parking full state now driven only by `spotsRemaining === 0` from live data. Props changed to `{ isLoggedIn, userPhone }`.
+
+**3. AuthModal completely rewritten**
+- Old: phone-only input → demo OTP `123456` auto-filled, no API call
+- New: phone + email both collected on step 1 → `POST /api/auth/request-otp` called automatically on Continue → OTP sent to email → user enters OTP → `POST /api/auth/verify-otp` verifies
+- Resend on countdown expiry re-calls the same `sendOtp()` function
+- `App.jsx` `handleLoginSuccess(phone, email)` now stores both; logout clears both
+- Demo OTP banner removed — no more fake auth
+
+**4. Infrastructure migration plan decided (not yet implemented)**
+- **MongoDB → Supabase Postgres** (free tier, relational, better fit)
+- **Backend WebSocket → Supabase Realtime** (removes need for always-on server)
+- **SMS OTP → Email OTP via Resend** (free, 3k/mo)
+- FastAPI backend stays but gets slimmed: only booking creation + OTP endpoints remain stateful
+- Full free stack: Vercel (frontend) + Railway free tier (FastAPI, can sleep now) + Supabase free (DB + Realtime) + Resend free (email OTP)
+
+**5. Supabase MCP server configured**
+`.mcp.json` created at project root with `@supabase/mcp-server-supabase` config. `.gitignore` updated to exclude `.mcp.json` (contains personal access token). User needs to:
+  1. Get Personal Access Token from supabase.com/dashboard/account/tokens
+  2. Paste into `.mcp.json` replacing `PASTE_YOUR_PERSONAL_ACCESS_TOKEN_HERE`
+  3. Restart Claude Code — MCP server loads at session start
+
+**What's needed next session (after MCP restart):**
+- User provides: Supabase Project URL, Supabase anon public key, Resend API key
+- I will: create Supabase tables via MCP (users, events, bookings, bays), rewrite `backend/server.py` replacing pymongo with supabase-py + Resend OTP, update `useLiveSpots.js` to use Supabase Realtime instead of WebSocket
+
+**Backend endpoints needed (new):**
+- `POST /api/auth/request-otp` — generates 6-digit OTP, stores in Supabase with 10min expiry, emails via Resend
+- `POST /api/auth/verify-otp` — verifies code, upserts user row (phone + email), returns session token
+
+**Supabase tables to create:**
+```
+users        (id, phone, email, created_at)
+otp_codes    (id, email, code, expires_at, used)
+events       (mirrors FALLBACK_EVENTS structure)
+bays         (event_id, lot_id, pillar_code, status)
+bookings     (booking_id, event_id, bay_id, user_id, phone, email, entry_window, amount_paid, status, created_at)
+```
+
+---
 
 ### Security fix push + comprehensive project report (23 April 2026)
 
@@ -1072,24 +1166,27 @@ Target contacts: venue operations managers at JLN Stadium (Delhi) and Chinnaswam
 | --------------------- | ------------------------------------------------------------------------- |
 | Full product spec     | `01_Product/ParkEase_PRD.md` (large — use offset/limit, search with Grep) |
 | Revenue / pricing     | `02_Financials/Business Valuation.md`                                     |
-| Active frontend       | `frontend/src/` — App.js, screens/, components/, hooks/                   |
-| Active backend        | `backend/server.py` — FastAPI, MongoDB, WebSocket                         |
+| Active frontend       | `app/src/` — App.jsx, screens/, components/, hooks/                       |
+| Active backend        | `backend/server.py` — FastAPI, MongoDB (migrating to Supabase)            |
+| Auth modal            | `app/src/components/AuthModal.jsx` — phone + email + email OTP            |
+| API layer             | `app/src/api.js` — fetchEvent, fetchBooking, fetchStats etc.              |
+| Live spots hook       | `app/src/hooks/useLiveSpots.js` — WebSocket (migrating to Supabase Realtime) |
 | Notion PRD            | Page ID `33018e3e-67e7-81a1-ba57-c11d06f4db91`                            |
 | Notion Business Model | Page ID `33218e3e-67e7-8146-bc2a-ed8acd5f2622`                            |
-| Archived prototype    | `app/` — Phase 0 Vite, all mocked, on Vercel (do not edit)                |
+| Deprecated frontend   | `frontend/` — CRA, frozen, do not edit                                    |
 
 ---
 
-## Rule: all changes go to `frontend/` + `backend/`, never `app/`
+## Rule: all changes go to `app/src/` + `backend/`, never `frontend/`
 
-`app/` is the archived Phase 0 Vite prototype. It is on Vercel as a demo URL. Do not add features there. All active development happens in `frontend/` (React CRA, port 3000) and `backend/` (FastAPI, port 8001). When Emergent auto-commits changes, they go to both codebases — verify changes landed in `frontend/`, not just `app/`.
-
----
-
-## Rule: all mocks, zero third-party charges
-
-No Razorpay, no Supabase, no OneSignal, no MSG91. All payments, notifications, OTP, and analytics are mocked client-side. Replace with real services only after the first paying event organiser is signed.
+`app/` (Vite + React 19 + Tailwind v4) is the canonical codebase — deployed on Vercel. All active development happens in `app/src/` and `backend/`. `frontend/` (CRA) is deprecated and frozen — do not edit it.
 
 ---
 
-*Last updated: 8 April 2026 — Phase 1 Tasks 5–7 verified complete (real QR, toast, OTP wire). All 7 Phase 1 tasks done. Phase 1 exit criteria met.*
+## Rule: real services now in progress
+
+Phase 2 has started. Supabase (DB + Realtime) and Resend (email OTP) are being wired in. Payments (Razorpay), push notifications (OneSignal), and analytics remain mocked until first paying event organiser is signed.
+
+---
+
+*Last updated: 26 April 2026 — Supabase migration complete. Schema + seed data live. Backend rewritten (supabase-py + Resend). Frontend Realtime wired. S2 booking hits real API. Next: paste Supabase service role key + Resend key into backend/.env → pip install → test locally → add Vercel env vars → push.*

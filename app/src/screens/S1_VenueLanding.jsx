@@ -348,7 +348,7 @@ const BookCTA = ({ spotsRemaining, consumerPrice, onBook }) => {
 // ----------------------------------------------------------------------------
 // MAIN SCREEN
 // ----------------------------------------------------------------------------
-export default function VenueLandingScreen({ parkingFull }) {
+export default function VenueLandingScreen({ isLoggedIn, userPhone }) {
   const { eventId } = useParams();
   const navigate = useNavigate();
 
@@ -370,7 +370,7 @@ export default function VenueLandingScreen({ parkingFull }) {
   const bookingCount = live.bookedSpots ?? venue.bookingCount;
 
   const handleBook = () => {
-    if (parkingFull || spotsRemaining === 0) navigate('/redirect');
+    if (spotsRemaining === 0) navigate('/redirect');
     else navigate(`/events/${eventId}/book`);
   };
 

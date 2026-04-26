@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { fetchEvent, FALLBACK_EVENTS } from '../api';
+import { fetchEvent, createBooking, FALLBACK_EVENTS } from '../api';
 
 // S2 — Parking Pre-Booking Flow
 // React / Tailwind Implementation
@@ -510,7 +510,7 @@ const StepCompletedChip = ({ label, value, onClick }) => (
 // MAIN SCREEN COMPONENT
 // ----------------------------------------------------------------------------
 
-export default function BookingFlowScreen({ userPhone, isLoggedIn }) {
+export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn }) {
   const { eventId } = useParams();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
@@ -554,6 +554,7 @@ export default function BookingFlowScreen({ userPhone, isLoggedIn }) {
   // Payment
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
 
   // Prohibited items banner
   const [prohibitedOpen, setProhibitedOpen] = useState(false);
@@ -585,14 +586,27 @@ export default function BookingFlowScreen({ userPhone, isLoggedIn }) {
     setSelectedBay(null); // clear selection on lot change
   };
 
-  const handlePay = () => {
+  const handlePay = async () => {
     if (!selectedBay || !selectedWindow) return;
     setPaymentLoading(true);
-    setTimeout(() => {
-      setPaymentLoading(false);
+    setPaymentError('');
+    try {
+      const booking = await createBooking({
+        event_id: eventId,
+        bay_id: selectedBay.pillarCode,
+        lot_id: selectedLotId,
+        phone: contactPhone,
+        email: userEmail || '',
+        entry_window: selectedWindow,
+        vehicle_number: vehicleNo || null,
+        group_size: groupSize,
+      });
       setPaymentSuccess(true);
-      navigate('/confirmation/PE-2026-DEMO1234');
-    }, 1500);
+      navigate(`/confirmation/${booking.booking_id}`);
+    } catch (err) {
+      setPaymentError(err.message || 'Booking failed. Please try again.');
+      setPaymentLoading(false);
+    }
   };
 
   if (paymentSuccess) {
@@ -764,6 +778,9 @@ export default function BookingFlowScreen({ userPhone, isLoggedIn }) {
         )}
 
         {/* Step 5 — UPI Payment (sticky) */}
+        {paymentError && (
+          <p className="text-red-600 text-sm text-center px-2">{paymentError}</p>
+        )}
         <UPIPaymentButton
           consumerPrice={event.consumerPrice}
           selectedBay={selectedBay}

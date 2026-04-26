@@ -14,69 +14,8 @@ import RCBBookingScreen from './screens/S7_RCBBooking';
 import RCBConfirmationScreen from './screens/S8_RCBConfirmation';
 import AttendantScannerScreen from './screens/S9_AttendantScanner';
 
-const DEFAULT_EVENT = 'karan-aujla-jln-2026';
-
 // Paths that show the global navbar
 const NAVBAR_PATHS = ['/redirect', '/retain'];
-
-// ---------------------------------------------------------------------------
-// Demo Nav — quick jump bar for presentations
-// ---------------------------------------------------------------------------
-const DemoNav = ({ onStartDemo, demoRunning, parkingFull, onToggleParkingFull }) => {
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
-
-  const SCREENS = [
-    { label: 'S1 Landing',  path: `/events/${DEFAULT_EVENT}` },
-    { label: 'S2 Booking',  path: `/events/${DEFAULT_EVENT}/book` },
-    { label: 'S3 Confirm',  path: `/confirmation/PE-2026-DEMO1234` },
-    { label: 'S4 Redirect', path: '/redirect' },
-    { label: 'S6 Retain',   path: '/retain' },
-    { label: 'S7 RCB',      path: '/retain/book' },
-    { label: 'S8 RCB✓',     path: '/retain/confirm' },
-    { label: 'S9 Staff',    path: '/attendant' },
-    { label: 'S5 Ops',      path: '/dashboard' },
-  ];
-
-  return (
-    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] z-[100] flex flex-col items-center pb-2 px-4 pointer-events-none">
-      <div className="bg-gray-950/95 border border-gray-700 rounded-2xl px-2 py-2 flex items-center gap-0.5 shadow-2xl pointer-events-auto w-full overflow-x-auto">
-        {SCREENS.map(({ label, path }) => (
-          <button
-            key={path}
-            onClick={() => navigate(path)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-              pathname === path || pathname.startsWith(path + '/')
-                ? 'bg-white text-gray-900'
-                : 'text-gray-400 hover:text-white hover:bg-gray-800'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-        <div className="w-px h-5 bg-gray-700 mx-1 shrink-0" />
-        <button
-          onClick={onToggleParkingFull}
-          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
-            parkingFull ? 'bg-red-600 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800'
-          }`}
-        >
-          {parkingFull ? '🔴 Full' : 'Avail'}
-        </button>
-      </div>
-      <button
-        onClick={onStartDemo}
-        disabled={demoRunning}
-        className={`w-full max-w-md py-1.5 rounded-lg text-[11px] font-bold tracking-wide transition-all pointer-events-auto ${
-          demoRunning ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-[#1C1D2B] text-white active:scale-95'
-        }`}
-      >
-        {demoRunning ? 'Demo running…' : '▶ Start Demo'}
-      </button>
-      <span className="text-[10px] text-gray-600 mt-1 pointer-events-none">Demo mode · ParkEase v0.6</span>
-    </div>
-  );
-};
 
 // ---------------------------------------------------------------------------
 // App
@@ -85,13 +24,12 @@ export default function App() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  const [parkingFull, setParkingFull] = useState(false);
-  const [demoRunning, setDemoRunning] = useState(false);
   const [rcbBookingData, setRcbBookingData] = useState(null);
 
   // Auth state
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userPhone, setUserPhone] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const [showAuth, setShowAuth] = useState(false);
 
   // Search
@@ -107,37 +45,11 @@ export default function App() {
   const showNavbar = pathname.startsWith('/events') || NAVBAR_PATHS.includes(pathname) ||
     pathname.startsWith('/confirmation') || pathname === '/redirect';
 
-  const handleLoginSuccess = (phone) => {
+  const handleLoginSuccess = (phone, email) => {
     setIsLoggedIn(true);
     setUserPhone(phone);
+    setUserEmail(email);
     setShowAuth(false);
-  };
-
-  const handleToggleParkingFull = () => {
-    setParkingFull(prev => {
-      const next = !prev;
-      navigate(next ? '/redirect' : `/events/${DEFAULT_EVENT}`);
-      return next;
-    });
-  };
-
-  const startDemo = () => {
-    const flow = [
-      `/events/${DEFAULT_EVENT}`,
-      `/events/${DEFAULT_EVENT}/book`,
-      `/confirmation/PE-2026-DEMO1234`,
-      '/redirect',
-      '/retain',
-      '/dashboard',
-    ];
-    setDemoRunning(true);
-    let i = 0;
-    navigate(flow[i]);
-    const interval = setInterval(() => {
-      i++;
-      if (i >= flow.length) { clearInterval(interval); setDemoRunning(false); return; }
-      navigate(flow[i]);
-    }, 4000);
   };
 
   return (
@@ -158,15 +70,14 @@ export default function App() {
 
       <div className={showNavbar ? 'pt-16' : ''}>
         <Routes>
-          {/* Default → Karan Aujla landing */}
-          <Route path="/" element={<Navigate to={`/events/${DEFAULT_EVENT}`} replace />} />
+          {/* Default → events listing (TODO: build /events page) */}
+          <Route path="/" element={<Navigate to="/events" replace />} />
 
           {/* S1 — Venue landing: any event by ID */}
           <Route
             path="/events/:eventId"
             element={
               <VenueLandingScreen
-                parkingFull={parkingFull}
                 isLoggedIn={isLoggedIn}
                 userPhone={userPhone}
               />
@@ -179,6 +90,7 @@ export default function App() {
             element={
               <BookingFlowScreen
                 userPhone={userPhone}
+                userEmail={userEmail}
                 isLoggedIn={isLoggedIn}
               />
             }
@@ -219,7 +131,7 @@ export default function App() {
             element={
               <RCBConfirmationScreen
                 bookingData={rcbBookingData}
-                onDone={() => navigate(`/events/${DEFAULT_EVENT}`)}
+                onDone={() => navigate('/events')}
               />
             }
           />
@@ -228,16 +140,9 @@ export default function App() {
           <Route path="/attendant" element={<AttendantScannerScreen />} />
 
           {/* Catch-all */}
-          <Route path="*" element={<Navigate to={`/events/${DEFAULT_EVENT}`} replace />} />
+          <Route path="*" element={<Navigate to="/events" replace />} />
         </Routes>
       </div>
-
-      <DemoNav
-        onStartDemo={startDemo}
-        demoRunning={demoRunning}
-        parkingFull={parkingFull}
-        onToggleParkingFull={handleToggleParkingFull}
-      />
 
       <AuthModal
         isOpen={showAuth}
@@ -251,7 +156,7 @@ export default function App() {
         <ProfileModal
           userPhone={userPhone}
           onClose={() => setShowProfile(false)}
-          onLogout={() => { setIsLoggedIn(false); setUserPhone(''); }}
+          onLogout={() => { setIsLoggedIn(false); setUserPhone(''); setUserEmail(''); }}
         />
       )}
     </div>
