@@ -513,7 +513,7 @@ const StepCompletedChip = ({ label, value, onClick }) => (
 export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn }) {
   const { eventId } = useParams();
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(2);
 
   // Event data — fetched from API, falls back to local data
   const [event, setEvent] = useState(DEFAULT_EVENT);
@@ -524,22 +524,40 @@ export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn }) 
   const [lots, setLots] = useState(LOTS);
 
   useEffect(() => {
-    fetchEvent(eventId).then(data => {
-      setEvent(normaliseEvent(data));
-      setSpotsRemaining(data.spots_remaining ?? 47);
-    });
-    fetchBays(eventId).then(liveBays => {
-      if (!liveBays || liveBays.length === 0) return;
-      setLots(prev => prev.map(lot => ({
-        ...lot,
-        bays: lot.bays.map(bay => {
-          const live = liveBays.find(b => b.pillar_code === bay.pillarCode && b.lot_id === lot.id);
-          if (!live) return bay;
-          return { ...bay, status: live.status === 'booked' ? 'taken' : 'available' };
-        }),
-      })));
+    Promise.all([fetchEvent(eventId), fetchBays(eventId)]).then(([eventData, liveBays]) => {
+      if (!eventData) return;
+      setEvent(normaliseEvent(eventData));
+      setSpotsRemaining(eventData.spots_remaining ?? 47);
+
+      const eventLots = eventData.lots || [];
+      if (liveBays && liveBays.length > 0 && eventLots.length > 0) {
+        const built = eventLots.map(lot => ({
+          id: lot.id,
+          label: lot.name,
+          distanceToGateMetres: lot.distance_m,
+          gateName: lot.gate_name,
+          bays: liveBays
+            .filter(b => b.lot_id === lot.id)
+            .map(b => ({ id: b.pillar_code, pillarCode: b.pillar_code, status: b.status === 'booked' ? 'taken' : 'available' })),
+        }));
+        if (built.length > 0) setLots(built);
+      } else if (liveBays && liveBays.length > 0) {
+        setLots(prev => prev.map(lot => ({
+          ...lot,
+          bays: lot.bays.map(bay => {
+            const live = liveBays.find(b => b.pillar_code === bay.pillarCode && b.lot_id === lot.id);
+            return live ? { ...bay, status: live.status === 'booked' ? 'taken' : 'available' } : bay;
+          }),
+        })));
+      }
     }).catch(() => {});
   }, [eventId]);
+
+  useEffect(() => {
+    if (lots.length > 0 && !lots.find(l => l.id === selectedLotId)) {
+      setSelectedLotId(lots[0].id);
+    }
+  }, [lots]);
 
   // Selections
   const [selectedLotId, setSelectedLotId] = useState('north');

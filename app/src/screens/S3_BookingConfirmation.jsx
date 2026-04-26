@@ -1,5 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { fetchBooking } from '../api';
+
+function normaliseBooking(raw) {
+  return {
+    bookingId: raw.booking_id,
+    eventId: raw.event_id,
+    eventName: raw.event_name || '',
+    venue: raw.venue || '',
+    date: raw.date || '',
+    bayPillarCode: raw.bay_pillar_code || '',
+    lotName: raw.lot_name || '',
+    distanceToGateMetres: raw.distance_to_gate_metres || 0,
+    gateName: raw.gate_name || '',
+    entryWindow: raw.entry_window || '',
+    departureNudgeTime: '6:00 PM',
+    consumerPrice: raw.consumer_price || 0,
+    exitGate: 'Gate C',
+    exitSection: 'Section B',
+    exitEstimatedMins: 12,
+    cancellationDeadline: raw.date || '',
+    parkingLat: null,
+    parkingLng: null,
+  };
+}
 
 // S3 — Booking Confirmation Screen
 // React / Tailwind Implementation
@@ -477,38 +501,51 @@ const PaymentScreen = ({ booking, onPaymentConfirmed }) => {
 export default function BookingConfirmationScreen() {
   const { bookingId: routeBookingId } = useParams();
   const navigate = useNavigate();
-  const bookingId = routeBookingId || 'pe-2026-karan-aujla-b18';
   const onNavigateToRetention = () => navigate('/retain');
 
-  // In MVP these values arrive as route params from S2 (navigate('/confirmation/:bookingId'))
-  const booking = {
-    bookingId,
-    eventId: 'karan-aujla-jln-2026',
-    eventName: 'Karan Aujla',
-    venue: 'Jawaharlal Nehru Stadium, Delhi',
-    date: 'Sat, 12 Apr 2026',
-    bayPillarCode: 'B-18',         // Rahul's bay — exact value from PRD narrative
-    lotName: 'JLN North Lot',
-    distanceToGateMetres: 180,
-    gateName: 'Gate 2',
-    entryWindow: '5:30–7:00 PM',
-    departureNudgeTime: '6:00 PM',  // PRD: "Leave by 6:00 PM" from Rahul's journey
-    consumerPrice: 169,             // Business Valuation: Standard IPL tier
-    exitGate: 'Gate C',             // PRD: "Exit via Gate C" from Arjun's journey
-    exitSection: 'Section B',
-    exitEstimatedMins: 12,
-    cancellationDeadline: 'Fri, 11 Apr 2026',
-    parkingLat: 28.5673,
-    parkingLng: 77.2431,
-  };
-
+  const [booking, setBooking] = useState(null);
+  const [loadingBooking, setLoadingBooking] = useState(true);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
-  const [groupSize, setGroupSize] = useState(5); // PRD demo: Rahul's group of 5
+  const [groupSize, setGroupSize] = useState(1);
+
+  useEffect(() => {
+    if (!routeBookingId) { setLoadingBooking(false); return; }
+    fetchBooking(routeBookingId).then(raw => {
+      if (!raw) { setLoadingBooking(false); return; }
+      setBooking(normaliseBooking(raw));
+      setGroupSize(raw.group_size || 1);
+      setLoadingBooking(false);
+    }).catch(() => setLoadingBooking(false));
+  }, [routeBookingId]);
+
+  if (loadingBooking) {
+    return (
+      <div className="min-h-[100dvh] bg-gray-50 flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!booking) {
+    return (
+      <div className="min-h-[100dvh] bg-gray-50 flex flex-col items-center justify-center px-4 gap-4">
+        <div className="text-5xl">🎫</div>
+        <h2 className="text-xl font-bold text-gray-900">Booking not found</h2>
+        <p className="text-sm text-gray-500 text-center">We couldn't find this booking. It may have expired or the link is incorrect.</p>
+        <button
+          onClick={() => navigate('/events')}
+          className="bg-[#1C1D2B] text-white font-bold px-6 py-3 rounded-2xl text-sm uppercase tracking-wide"
+        >
+          Browse Events
+        </button>
+      </div>
+    );
+  }
+
   const splitAmount = Math.ceil(booking.consumerPrice / groupSize);
 
-  // Save booking to localStorage when payment confirmed — powers the profile screen
   useEffect(() => {
-    if (!paymentConfirmed) return;
+    if (!paymentConfirmed || !booking) return;
     try {
       const existing = JSON.parse(localStorage.getItem('parkease_bookings') || '[]');
       const alreadySaved = existing.some(b => b.bookingId === booking.bookingId);
@@ -530,7 +567,7 @@ export default function BookingConfirmationScreen() {
         localStorage.setItem('parkease_bookings', JSON.stringify([entry, ...existing]));
       }
     } catch { /* localStorage unavailable */ }
-  }, [paymentConfirmed]);
+  }, [paymentConfirmed, booking]);
 
   // Stage 1 — payment screen
   if (!paymentConfirmed) {

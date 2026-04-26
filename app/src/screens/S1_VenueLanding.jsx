@@ -352,19 +352,41 @@ export default function VenueLandingScreen({ isLoggedIn, userPhone }) {
   const { eventId } = useParams();
   const navigate = useNavigate();
 
-  const [venue, setVenue] = useState(() =>
-    normaliseEvent(FALLBACK_EVENTS[eventId] || FALLBACK_EVENTS['karan-aujla-jln-2026'])
-  );
+  const [venue, setVenue] = useState(() => {
+    const fb = FALLBACK_EVENTS[eventId];
+    return fb ? normaliseEvent(fb) : null;
+  });
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const live = useLiveSpots(eventId);
 
   useEffect(() => {
     setLoading(true);
+    setNotFound(false);
     fetchEvent(eventId).then(data => {
+      if (!data) { setNotFound(true); setLoading(false); return; }
       setVenue(normaliseEvent(data));
       setLoading(false);
     });
   }, [eventId]);
+
+  if (notFound) {
+    return (
+      <div className="min-h-[100dvh] bg-gray-50 flex flex-col items-center justify-center px-4 gap-4">
+        <div className="text-5xl">🔍</div>
+        <h2 className="text-xl font-bold text-gray-900">Event not found</h2>
+        <p className="text-sm text-gray-500 text-center">This event doesn't exist or is no longer available.</p>
+        <button
+          onClick={() => navigate('/events')}
+          className="bg-[#1C1D2B] text-white font-bold px-6 py-3 rounded-2xl text-sm uppercase tracking-wide"
+        >
+          Browse Events
+        </button>
+      </div>
+    );
+  }
+
+  if (!venue) return null;
 
   const spotsRemaining = live.spotsRemaining ?? venue.spotsRemaining;
   const bookingCount = live.bookedSpots ?? venue.bookingCount;

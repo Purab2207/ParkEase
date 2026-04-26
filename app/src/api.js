@@ -185,12 +185,12 @@ export async function fetchEvents() {
 export async function fetchEvent(eventId) {
   try {
     const sb = getSupabase();
-    if (!sb) return FALLBACK_EVENTS[eventId] ?? FALLBACK_EVENTS['karan-aujla-jln-2026'];
+    if (!sb) return FALLBACK_EVENTS[eventId] ?? null;
     const { data, error } = await sb.from('events').select('*').eq('id', eventId).single();
     if (error) throw error;
     return normalizeEvent(data);
   } catch {
-    return FALLBACK_EVENTS[eventId] ?? FALLBACK_EVENTS['karan-aujla-jln-2026'];
+    return FALLBACK_EVENTS[eventId] ?? null;
   }
 }
 
