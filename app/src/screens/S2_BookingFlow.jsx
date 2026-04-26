@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { fetchEvent, createBooking, FALLBACK_EVENTS } from '../api';
+import { fetchEvent, fetchBays, createBooking, FALLBACK_EVENTS } from '../api';
 
 // S2 — Parking Pre-Booking Flow
 // React / Tailwind Implementation
@@ -520,11 +520,25 @@ export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn }) 
   const [spotsRemaining, setSpotsRemaining] = useState(47);
   const totalSpots = 500;
 
+  // Bay grid — starts with hardcoded mock, overwritten with live Supabase statuses
+  const [lots, setLots] = useState(LOTS);
+
   useEffect(() => {
     fetchEvent(eventId).then(data => {
       setEvent(normaliseEvent(data));
       setSpotsRemaining(data.spots_remaining ?? 47);
     });
+    fetchBays(eventId).then(liveBays => {
+      if (!liveBays || liveBays.length === 0) return;
+      setLots(prev => prev.map(lot => ({
+        ...lot,
+        bays: lot.bays.map(bay => {
+          const live = liveBays.find(b => b.pillar_code === bay.pillarCode && b.lot_id === lot.id);
+          if (!live) return bay;
+          return { ...bay, status: live.status === 'booked' ? 'taken' : 'available' };
+        }),
+      })));
+    }).catch(() => {});
   }, [eventId]);
 
   // Selections
@@ -657,7 +671,7 @@ export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn }) 
             </span>
             {currentStep === 2 ? (
               <BaySelectionPanel
-                lots={LOTS}
+                lots={lots}
                 selectedLotId={selectedLotId}
                 selectedBay={selectedBay}
                 onSelectLot={handleSelectLot}
