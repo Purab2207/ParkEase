@@ -896,9 +896,67 @@ const PreEventChecklist = () => {
 };
 
 // ----------------------------------------------------------------------------
+// OPERATOR PIN GATE
+// ----------------------------------------------------------------------------
+const OPERATOR_PIN = import.meta.env.VITE_OPERATOR_PIN || '2207';
+
+function PinGate({ onUnlock }) {
+  const [pin, setPin] = useState('');
+  const [error, setError] = useState(false);
+
+  const handleSubmit = () => {
+    if (pin === OPERATOR_PIN) {
+      onUnlock();
+    } else {
+      setError(true);
+      setPin('');
+      setTimeout(() => setError(false), 1500);
+    }
+  };
+
+  return (
+    <div className="min-h-[100dvh] bg-gray-50 flex flex-col items-center justify-center px-6 gap-6">
+      <div className="w-12 h-12 bg-[#1C1D2B] rounded-2xl flex items-center justify-center">
+        <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+        </svg>
+      </div>
+      <div className="text-center">
+        <h2 className="text-xl font-bold text-gray-900">Operator Dashboard</h2>
+        <p className="text-sm text-gray-500 mt-1">Enter your operator PIN to continue</p>
+      </div>
+      <div className={`w-full max-w-xs flex flex-col gap-3 transition-all ${error ? 'animate-pulse' : ''}`}>
+        <input
+          type="password"
+          inputMode="numeric"
+          maxLength={8}
+          value={pin}
+          onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
+          onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+          placeholder="PIN"
+          className={`w-full text-center text-2xl font-bold tracking-widest px-4 py-4 rounded-2xl border-2 outline-none transition-colors bg-white ${
+            error ? 'border-red-400 text-red-500' : 'border-gray-200 text-gray-900 focus:border-[#1C1D2B]'
+          }`}
+        />
+        {error && <p className="text-center text-sm text-red-500">Incorrect PIN</p>}
+        <button
+          onClick={handleSubmit}
+          disabled={pin.length < 4}
+          className="w-full bg-[#1C1D2B] text-white font-bold py-3.5 rounded-2xl uppercase tracking-wide text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Unlock Dashboard
+        </button>
+      </div>
+      <p className="text-xs text-gray-400 text-center">ParkEase · Operator access only</p>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------------
 // MAIN SCREEN
 // ----------------------------------------------------------------------------
 export default function OperatorDashboardScreen() {
+  const [unlocked, setUnlocked] = useState(false);
   const [mode, setMode] = useState('live');
   const [lastRefreshed, setLastRefreshed] = useState(MOCK_DASHBOARD.lastUpdated);
   const [toast, setToast] = useState(null);
@@ -926,6 +984,8 @@ export default function OperatorDashboardScreen() {
     const current = liveAlerts ?? baseData.alerts;
     setLiveAlerts([alert, ...current]);
   };
+
+  if (!unlocked) return <PinGate onUnlock={() => setUnlocked(true)} />;
 
   return (
     <div className="min-h-[100dvh] bg-gray-50 font-sans sm:bg-gray-50">
