@@ -1,18 +1,24 @@
 // ParkEase API layer — app/ (Vite)
-// Tries the real FastAPI backend first, falls back to local data if unavailable.
-// This means the Vercel deploy (no backend) always works via fallback,
-// and local dev with backend running gets live data automatically.
+// GET endpoints: direct Supabase client calls (anon key, RLS-protected).
+// POST endpoints: Supabase Edge Functions (service-role key, server-side only).
+// Falls back to FALLBACK_EVENTS when Supabase isn't configured.
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
+import { createClient } from '@supabase/supabase-js';
 
-async function apiFetch(path, options = {}) {
-  const res = await fetch(`${BACKEND_URL}${path}`, options);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const FUNCTIONS_URL = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1` : '';
+
+let _supabase = null;
+function getSupabase() {
+  if (!_supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
+    _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+  return _supabase;
 }
 
 // ---------------------------------------------------------------------------
-// Fallback event data — used when backend is unreachable (e.g. Vercel deploy)
+// Fallback event data — used when Supabase isn't reachable.
 // Add new events here when onboarding new organisers.
 // ---------------------------------------------------------------------------
 export const FALLBACK_EVENTS = {
@@ -141,12 +147,36 @@ export const FALLBACK_EVENTS = {
 export const FALLBACK_EVENTS_LIST = Object.values(FALLBACK_EVENTS);
 
 // ---------------------------------------------------------------------------
-// API functions — each falls back to local data on network failure
+// Normalize a raw Supabase events row to the shape the frontend expects.
+// ---------------------------------------------------------------------------
+function normalizeEvent(e) {
+  const total = e.total_spots ?? 0;
+  const remaining = e.spots_remaining ?? 0;
+  const booked = total - remaining;
+  const fillPercent = total > 0 ? Math.round((booked / total) * 100) : 0;
+  return {
+    ...e,
+    event_id: e.id ?? e.event_id,
+    event_name: e.name ?? e.event_name,
+    consumer_price: e.price ?? e.consumer_price,
+    booked_spots: booked,
+    fill_percent: fillPercent,
+    booking_count: booked,
+    redirect_active: booked >= Math.floor(total * 0.9),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// GET endpoints — direct Supabase client (anon key, no backend needed)
 // ---------------------------------------------------------------------------
 
 export async function fetchEvents() {
   try {
-    return await apiFetch('/api/events');
+    const sb = getSupabase();
+    if (!sb) return FALLBACK_EVENTS_LIST;
+    const { data, error } = await sb.from('events').select('*');
+    if (error) throw error;
+    return data.map(normalizeEvent);
   } catch {
     return FALLBACK_EVENTS_LIST;
   }
@@ -154,23 +184,67 @@ export async function fetchEvents() {
 
 export async function fetchEvent(eventId) {
   try {
-    return await apiFetch(`/api/events/${eventId}`);
+    const sb = getSupabase();
+    if (!sb) return FALLBACK_EVENTS[eventId] ?? FALLBACK_EVENTS['karan-aujla-jln-2026'];
+    const { data, error } = await sb.from('events').select('*').eq('id', eventId).single();
+    if (error) throw error;
+    return normalizeEvent(data);
   } catch {
-    return FALLBACK_EVENTS[eventId] || FALLBACK_EVENTS['karan-aujla-jln-2026'];
+    return FALLBACK_EVENTS[eventId] ?? FALLBACK_EVENTS['karan-aujla-jln-2026'];
   }
 }
 
 export async function fetchBays(eventId) {
   try {
-    return await apiFetch(`/api/events/${eventId}/bays`);
+    const sb = getSupabase();
+    if (!sb) return null;
+    const { data, error } = await sb
+      .from('bays')
+      .select('event_id,lot_id,pillar_code,status')
+      .eq('event_id', eventId);
+    if (error) throw error;
+    return data;
   } catch {
-    return null; // caller falls back to generic bay grid
+    return null;
   }
 }
 
 export async function fetchBooking(bookingId) {
   try {
-    return await apiFetch(`/api/bookings/${bookingId}`);
+    const sb = getSupabase();
+    if (!sb) return null;
+    const { data: booking, error } = await sb
+      .from('bookings')
+      .select('*')
+      .eq('booking_id', bookingId)
+      .single();
+    if (error) throw error;
+
+    const { data: event } = await sb.from('events').select('*').eq('id', booking.event_id).single();
+
+    let bayLot = {};
+    if (booking.bay_id && event) {
+      const { data: bay } = await sb.from('bays').select('*').eq('id', booking.bay_id).single();
+      if (bay) {
+        const lots = event.lots || [];
+        const lotInfo = lots.find(l => l.id === bay.lot_id) || {};
+        bayLot = {
+          bay_pillar_code: bay.pillar_code,
+          lot_name: lotInfo.name || '',
+          distance_to_gate_metres: lotInfo.distance_m || 0,
+          gate_name: lotInfo.gate_name || '',
+        };
+      }
+    }
+
+    return {
+      ...booking,
+      event_name: event?.name || '',
+      venue: event ? `${event.venue}, ${event.city}` : '',
+      date: event?.date || '',
+      consumer_price: event?.price || 0,
+      ...bayLot,
+    };
   } catch {
     return null;
   }
@@ -178,16 +252,97 @@ export async function fetchBooking(bookingId) {
 
 export async function fetchStats(eventId) {
   try {
-    return await apiFetch(`/api/events/${eventId}/stats`);
+    const sb = getSupabase();
+    if (!sb) return null;
+    const { data: event, error } = await sb.from('events').select('*').eq('id', eventId).single();
+    if (error) throw error;
+
+    const total = event.total_spots;
+    const remaining = event.spots_remaining;
+    const booked = total - remaining;
+    const fillPercent = total > 0 ? Math.round((booked / total) * 100) : 0;
+    const redirectThreshold = Math.floor(total * 0.9);
+    const redirectCtaTaps = fillPercent > 50 ? Math.max(0, Math.round((fillPercent - 50) * 2.36)) : 0;
+
+    const lots = event.lots || [];
+    const lotStats = await Promise.all(lots.map(async lot => {
+      const { data: bays } = await sb
+        .from('bays')
+        .select('status')
+        .eq('event_id', eventId)
+        .eq('lot_id', lot.id);
+      const lotBooked = bays?.filter(b => b.status === 'booked').length || 0;
+      return {
+        name: lot.name,
+        total: lot.total,
+        booked: lotBooked,
+        percent: lot.total > 0 ? Math.round((lotBooked / lot.total) * 100) : 0,
+      };
+    }));
+
+    return {
+      event_name: event.name,
+      venue: `${event.venue}, ${event.city}`,
+      date: event.date,
+      event_status: 'live',
+      total_spots: total,
+      booked_spots: booked,
+      spots_remaining: remaining,
+      fill_percent: fillPercent,
+      redirect_cta_taps: redirectCtaTaps,
+      compliance_rate: 0.55,
+      redirect_threshold_spots: redirectThreshold,
+      redirect_active: booked >= redirectThreshold,
+      lots: lotStats,
+      last_updated: new Date().toISOString().slice(11, 16),
+    };
   } catch {
     return null;
   }
 }
 
+// ---------------------------------------------------------------------------
+// POST endpoints — Supabase Edge Functions (server-side secrets)
+// ---------------------------------------------------------------------------
+
+export async function requestOtp(phone, email) {
+  if (!FUNCTIONS_URL) throw new Error('Supabase not configured');
+  const res = await fetch(`${FUNCTIONS_URL}/request-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone, email }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || body.detail || 'Failed to send OTP');
+  }
+  return res.json();
+}
+
+export async function verifyOtp(email, code, phone) {
+  if (!FUNCTIONS_URL) throw new Error('Supabase not configured');
+  const res = await fetch(`${FUNCTIONS_URL}/verify-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code, phone }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || body.detail || 'Invalid OTP');
+  }
+  return res.json();
+}
+
 export async function createBooking(payload) {
-  return apiFetch('/api/bookings', {
+  if (!FUNCTIONS_URL) throw new Error('Supabase not configured');
+  const res = await fetch(`${FUNCTIONS_URL}/create-booking`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.detail || body.error || `HTTP ${res.status}`);
+  }
+  return res.json();
 }

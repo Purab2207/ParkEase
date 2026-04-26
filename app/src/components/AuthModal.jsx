@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { requestOtp, verifyOtp } from "../api";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -30,15 +31,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
     setSending(true);
     setError("");
     try {
-      const res = await fetch("/api/auth/request-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, email }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.detail || "Failed to send OTP");
-      }
+      await requestOtp(phone, email);
       setStep("otp");
       setOtp(Array(6).fill(""));
       setCountdown(30);
@@ -76,15 +69,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
     if (code.length < 6) return;
     setError("");
     try {
-      const res = await fetch("/api/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, email, code }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.detail || "Invalid OTP");
-      }
+      await verifyOtp(email, code, phone);
       onLoginSuccess?.(phone, email);
       handleClose();
     } catch (e) {

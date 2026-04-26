@@ -9,11 +9,11 @@
 
 **ParkEase** (working name also seen as ParkSmart in early PRD drafts) is a two-sided event parking platform for India. It pre-sells named parking bays to event attendees and provides operators a live dashboard + compliance report. When parking sells out, it redirects users to Ola/Uber/Rapido via deep-link.
 
-**Stage:** Phase 0 COMPLETE. Phase 1 (MVP Backend) COMPLETE. Template architecture COMPLETE. Phase 2 (Real Backend) IN PROGRESS — Supabase live, backend local, Railway deploy pending.
+**Stage:** Phase 0 COMPLETE. Phase 1 (MVP Backend) COMPLETE. Template architecture COMPLETE. Phase 2 (Real Backend) COMPLETE — Supabase live, 3 Edge Functions deployed, FastAPI backend retired.
 **Prototype status:** 9 screens live. **`app/`** (Vite) is the single canonical codebase — deployed on Vercel, data-driven, works for any event. `frontend/` (CRA) is frozen/deprecated — do not edit.
-**Stack:** React 19 + Tailwind CSS v4 + React Router v7 (app/, Vite) | FastAPI + MongoDB (backend, port 8001)
-**Stack migration:** MongoDB → Supabase Postgres ✅ | WebSocket → Supabase Realtime ✅ | SMS OTP → Email OTP via Resend ✅ (needs Resend key)
-**Next milestone:** Deploy backend to Railway → full live stack → demo to event organisers.
+**Stack:** React 19 + Tailwind CSS v4 + React Router v7 (app/, Vite) | Supabase (Postgres + Realtime + Edge Functions) | Resend (email OTP)
+**Stack migration:** MongoDB → Supabase Postgres ✅ | WebSocket → Supabase Realtime ✅ | SMS OTP → Email OTP via Resend ✅ | FastAPI → Supabase Edge Functions ✅ | Railway deploy → eliminated ✅
+**Next milestone:** Demo to event organisers. Set RESEND_API_KEY in Supabase Secrets (see below).
 **Notion:** PRD and Business Model pages in Notion are kept in sync — both updated to match .md files.
 
 > ⚠️ **CANONICAL CODEBASE RULE:**
@@ -58,6 +58,35 @@
 
 ## Session Log
 
+### FastAPI retired — full serverless stack via Supabase Edge Functions (26 April 2026)
+
+**Files changed:** `app/src/api.js` · `app/src/components/AuthModal.jsx` · `MASTER_SUMMARY.md`
+
+**What happened:**
+
+Replaced the FastAPI backend (which needed Railway hosting at $5/mo) with 3 Supabase Edge Functions deployed directly to the existing Supabase project. Stack is now fully serverless and free.
+
+**3 Edge Functions deployed (ACTIVE):**
+- `request-otp` — generates 6-digit OTP, inserts into `otp_codes`, emails via Resend
+- `verify-otp` — validates OTP, marks used, upserts user row
+- `create-booking` — atomic bay claim (UPDATE WHERE status='available'), creates booking record, decrements `spots_remaining` → triggers Realtime
+
+**Frontend changes:**
+- `api.js` fully rewritten: GET endpoints now use Supabase anon client directly (no backend). POST endpoints call Edge Functions at `${SUPABASE_URL}/functions/v1/<name>`. `requestOtp`, `verifyOtp`, `createBooking` all exported.
+- `AuthModal.jsx`: imports `requestOtp`/`verifyOtp` from `api.js` — direct fetch calls removed.
+
+**One manual step remaining:** Set `RESEND_API_KEY` as a Supabase Secret so OTP emails fire. Until then, OTP is logged to Edge Function console only (visible in Supabase Dashboard → Logs).
+
+**How to set the secret (Supabase Dashboard):**
+Dashboard → your project → Edge Functions → Manage secrets → Add `RESEND_API_KEY`
+
+**Edge Function URLs:**
+- `https://unbeuxpgpedbfowqretn.supabase.co/functions/v1/request-otp`
+- `https://unbeuxpgpedbfowqretn.supabase.co/functions/v1/verify-otp`
+- `https://unbeuxpgpedbfowqretn.supabase.co/functions/v1/create-booking`
+
+---
+
 ### Supabase migration complete — DB, Realtime, real booking API wired (26 April 2026)
 
 **Files changed:** `backend/server.py` · `backend/requirements.txt` · `backend/.env` · `app/src/api.js` · `app/src/hooks/useLiveSpots.js` · `app/src/screens/S2_BookingFlow.jsx` · `app/src/App.jsx` · `app/.env.local` · `app/package.json`
@@ -94,9 +123,14 @@ cd backend
 python -m uvicorn server:app --port 8001 --reload
 ```
 
-**Current gap:** Backend runs locally only. Live Vercel site falls back to FALLBACK_EVENTS (no real bookings/OTP in production until backend is hosted).
+**Stack now fully serverless — no Railway, no FastAPI process.**
 
-**Next: Deploy backend to Railway (free tier, ~5 min)**
+**One remaining manual step:** Set RESEND_API_KEY in Supabase Secrets so OTP emails fire in production:
+```
+# In terminal (needs Supabase CLI) or Supabase Dashboard → Edge Functions → Secrets
+supabase secrets set RESEND_API_KEY=re_xxxx
+```
+Until this is set, the Edge Function logs the OTP to console (dev fallback) instead of emailing it.
 
 ---
 
@@ -1190,4 +1224,4 @@ Phase 2 has started. Supabase (DB + Realtime) and Resend (email OTP) are being w
 
 ---
 
-*Last updated: 26 April 2026 — Supabase migration complete. Backend rewritten (httpx PostgREST client, no supabase-py). Real OTP via Resend, real booking API, atomic bay claim. Supabase Realtime on frontend. Vercel env vars added + redeployed. Backend runs locally on :8001. Next: Railway deploy → full production stack → operator demo.*
+*Last updated: 26 April 2026 — FastAPI backend retired. 3 Supabase Edge Functions deployed (request-otp, verify-otp, create-booking). api.js rewritten with direct Supabase client for GETs + Edge Function calls for POSTs. AuthModal updated. Stack: Vercel + Supabase + Resend — fully free, fully serverless. One step left: set RESEND_API_KEY in Supabase Secrets.*
