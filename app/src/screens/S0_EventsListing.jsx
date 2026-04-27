@@ -4,8 +4,22 @@ import { fetchEvents, FALLBACK_EVENTS_LIST } from '../api';
 
 const SLIDE_INTERVAL = 4000;
 
+// RCB static entry — bookable via the retention flow, appended to All Events
+const RCB_EVENT = {
+  event_id: 'rcb-mi-ipl-2026',
+  event_name: 'RCB vs MI — IPL 2026',
+  sub_title: 'Playoffs · M. Chinnaswamy Stadium',
+  venue: 'M. Chinnaswamy Stadium',
+  city: 'Bangalore',
+  date: 'May 2026',
+  total_spots: 300,
+  spots_remaining: 87,
+  consumer_price: 149,
+  hero_image: null,
+  _retain: true,
+};
+
 const IPL_COMING_SOON = [
-  { id: 'rcb-mi', teams: 'RCB vs MI', label: 'Playoffs', venue: 'M. Chinnaswamy Stadium', city: 'Bangalore', date: 'May 2026', color: 'from-red-600 to-red-800', badge: 'RCB' },
   { id: 'csk-kkr', teams: 'CSK vs KKR', label: 'League Stage', venue: 'MA Chidambaram Stadium', city: 'Chennai', date: 'Apr 2026', color: 'from-yellow-500 to-yellow-600', badge: 'CSK' },
   { id: 'mi-srh', teams: 'MI vs SRH', label: 'League Stage', venue: 'Wankhede Stadium', city: 'Mumbai', date: 'Apr 2026', color: 'from-blue-600 to-blue-800', badge: 'MI' },
 ];
@@ -32,13 +46,13 @@ function IPLComingSoonCard({ match }) {
 
 export default function EventsListingScreen() {
   const navigate = useNavigate();
-  const [events, setEvents] = useState(FALLBACK_EVENTS_LIST);
+  const [events, setEvents] = useState([...FALLBACK_EVENTS_LIST, RCB_EVENT]);
   const [current, setCurrent] = useState(0);
   const intervalRef = useRef(null);
 
   useEffect(() => {
     fetchEvents().then(data => {
-      if (data && data.length > 0) setEvents(data);
+      if (data && data.length > 0) setEvents([...data, RCB_EVENT]);
     }).catch(() => {});
   }, []);
 
@@ -202,37 +216,10 @@ export default function EventsListingScreen() {
             key={event.event_id ?? event.id}
             event={event}
             isActive={i === current}
-            onSelect={() => navigate(`/events/${event.event_id ?? event.id}`)}
+            onSelect={() => event._retain ? navigate('/retain') : navigate(`/events/${event.event_id ?? event.id}`)}
             onHover={() => goTo(i)}
           />
         ))}
-      </div>
-
-      {/* ── Sports & IPL ── */}
-      <div className="px-4 mt-6">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Sports Events</h3>
-          <span className="text-[10px] text-white bg-[#1C1D2B] px-2 py-0.5 rounded-full font-semibold">BETA</span>
-        </div>
-        <button
-          onClick={() => navigate('/retain')}
-          className="w-full text-left bg-gradient-to-r from-red-600 to-red-800 rounded-2xl overflow-hidden shadow-md active:scale-[0.98] transition-transform"
-        >
-          <div className="px-4 py-4 flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-              <span className="text-2xl font-black text-white">RCB</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-white font-bold text-sm truncate">RCB vs MI — IPL 2026 Playoffs</p>
-              <p className="text-white/70 text-xs">M. Chinnaswamy Stadium · Bangalore</p>
-              <p className="text-white/60 text-xs mt-0.5">Repeat booking · 1-tap reserve</p>
-            </div>
-            <div className="text-right shrink-0">
-              <p className="text-white font-bold text-sm">₹149</p>
-              <p className="text-white/60 text-[10px]">per car</p>
-            </div>
-          </div>
-        </button>
       </div>
 
       {/* ── IPL Coming Soon ── */}
@@ -274,12 +261,14 @@ function EventCard({ event, isActive, onSelect, onHover }) {
     >
       <div className="flex gap-3 p-3">
         {/* Thumbnail */}
-        <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-gray-900">
+        <div className={`w-16 h-16 rounded-xl overflow-hidden shrink-0 ${event._retain ? 'bg-gradient-to-br from-red-600 to-red-900' : 'bg-gray-900'}`}>
           {event.hero_image
             ? <img src={event.hero_image} alt={name} className="w-full h-full object-cover" />
-            : <span className="w-full h-full flex items-center justify-center text-2xl font-black text-white/20">
-                {name?.charAt(0)}
-              </span>
+            : event._retain
+              ? <span className="w-full h-full flex items-center justify-center text-xs font-black text-white">RCB</span>
+              : <span className="w-full h-full flex items-center justify-center text-2xl font-black text-white/20">
+                  {name?.charAt(0)}
+                </span>
           }
         </div>
 
