@@ -627,6 +627,34 @@ export default function BookingConfirmationScreen() {
         {/* Cancellation policy */}
         <CancellationPolicyBar eventDate={booking.cancellationDeadline} />
 
+        {/* Cross-sell — RCB loyalty event */}
+        <div className="w-full rounded-2xl overflow-hidden border border-red-100 bg-gradient-to-r from-red-600 to-red-800 shadow-md">
+          <div className="px-4 pt-4 pb-2">
+            <p className="text-white/70 text-[10px] uppercase tracking-widest font-semibold mb-1">Also happening · Book now</p>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                <span className="text-lg font-black text-white">RCB</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-bold text-sm truncate">RCB vs MI — IPL 2026 Playoffs</p>
+                <p className="text-white/70 text-xs">M. Chinnaswamy Stadium · Bangalore</p>
+              </div>
+              <div className="text-right shrink-0">
+                <p className="text-white font-bold text-sm">₹149</p>
+                <p className="text-white/60 text-[10px]">per car</p>
+              </div>
+            </div>
+          </div>
+          <div className="px-4 pb-4 pt-2">
+            <button
+              onClick={() => navigate('/retain')}
+              className="w-full bg-white text-red-700 font-bold text-sm rounded-xl py-2.5 active:scale-95 transition-all"
+            >
+              Book Parking for RCB →
+            </button>
+          </div>
+        </div>
+
         {/* Navigation to events */}
         <button
           onClick={() => navigate('/events')}

@@ -4,6 +4,32 @@ import { fetchEvents, FALLBACK_EVENTS_LIST } from '../api';
 
 const SLIDE_INTERVAL = 4000;
 
+const IPL_COMING_SOON = [
+  { id: 'rcb-mi', teams: 'RCB vs MI', label: 'Playoffs', venue: 'M. Chinnaswamy Stadium', city: 'Bangalore', date: 'May 2026', color: 'from-red-600 to-red-800', badge: 'RCB' },
+  { id: 'csk-kkr', teams: 'CSK vs KKR', label: 'League Stage', venue: 'MA Chidambaram Stadium', city: 'Chennai', date: 'Apr 2026', color: 'from-yellow-500 to-yellow-600', badge: 'CSK' },
+  { id: 'mi-srh', teams: 'MI vs SRH', label: 'League Stage', venue: 'Wankhede Stadium', city: 'Mumbai', date: 'Apr 2026', color: 'from-blue-600 to-blue-800', badge: 'MI' },
+];
+
+function IPLComingSoonCard({ match }) {
+  return (
+    <div className={`w-full rounded-2xl bg-gradient-to-r ${match.color} px-4 py-3 flex items-center gap-3 opacity-80`}>
+      <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+        <span className="text-xs font-black text-white">{match.badge}</span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-white font-bold text-sm truncate">{match.teams} · {match.label}</p>
+        <p className="text-white/70 text-xs truncate">{match.venue} · {match.city}</p>
+        <p className="text-white/60 text-xs">{match.date}</p>
+      </div>
+      <div className="shrink-0">
+        <span className="text-[10px] text-white/80 bg-white/10 border border-white/20 px-2 py-1 rounded-full font-semibold">
+          Notify me
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function EventsListingScreen() {
   const navigate = useNavigate();
   const [events, setEvents] = useState(FALLBACK_EVENTS_LIST);
@@ -207,6 +233,19 @@ export default function EventsListingScreen() {
             </div>
           </div>
         </button>
+      </div>
+
+      {/* ── IPL Coming Soon ── */}
+      <div className="px-4 mt-6">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">IPL 2026</h3>
+          <span className="text-[10px] text-amber-700 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-full font-semibold">Coming Soon</span>
+        </div>
+        <div className="space-y-2">
+          {IPL_COMING_SOON.map(match => (
+            <IPLComingSoonCard key={match.id} match={match} />
+          ))}
+        </div>
       </div>
 
       <p className="text-center text-xs text-gray-400 mt-6 mb-2 px-4">
