@@ -68,31 +68,52 @@
 
 ## Session Log
 
-### Horizontal event rows, IPL events, demo OTP bypass (27 April 2026 — session 4)
+### Horizontal event rows, IPL events, team gradients, demo OTP bypass (27–28 April 2026 — session 4)
 
-**Commits:** `71ef491` · `dd454b5` · `3b29724` · `f5b838a` + AuthModal + MASTER_SUMMARY
+**Commits:** `71ef491` · `dd454b5` · `3b29724` · `f5b838a` · `9c79b0a`
 
-**Features shipped:**
+**Live site:** `https://park-ease-rho.vercel.app` — all changes deployed, build clean (887ms, zero errors).
 
-| Feature | Detail |
-|---------|--------|
-| RCB moved to All Events | `_retain: true` flag routes to `/retain`. Red gradient thumbnail. Coming Soon section deleted. |
-| Horizontal scroll rows | S0 redesigned — Concerts row (4) + IPL 2026 row (3). Image-first portrait cards (160×200), price badge, urgency badge, fill bar, direct tap to event page. |
-| CSK vs KKR + MI vs SRH added | Fully bookable events in `FALLBACK_EVENTS` — lots, entry windows, amenities, images. Routes through existing S1/S2/S3 template. |
-| Team-colour gradients for IPL | CSK = amber/brown, MI = blue/navy, RCB = red/black. Applied in carousel fallback + card background. Team badge watermark (CSK/MI/RCB). Copyright safe — no external logos. |
-| STATIC_IPL pinning fix | CSK + MI pinned as static constants, always merged regardless of Supabase fetch response (Supabase only has concerts seeded). |
-| `scrollbar-hide` utility | Added to `index.css` for clean horizontal scroll on mobile. |
-| Demo OTP bypass | `verify-otp` v4 deployed — code `000000` bypasses hash check and verifies any email directly. Fixes Resend free-tier restriction (only owner email receives real OTPs). AuthModal shows amber hint: "Demo mode: use 000000 to skip OTP". |
+**Full feature list shipped this session:**
 
-**Root cause of Resend OTP issue:**
-Resend free tier with shared sender domain (`onboarding@resend.dev`) only delivers to the account owner's email. Any other email silently fails delivery. Fix: `000000` universal bypass in `verify-otp` — real OTPs still work for owner email, demo attendees use `000000`.
+| Feature | File(s) | Detail |
+|---------|---------|--------|
+| RCB contradiction fixed | S0 | RCB moved from locked "Sports" section into main All Events list with `_retain: true` flag routing to `/retain`. Coming Soon section deleted entirely. |
+| S0 full redesign — horizontal rows | S0 | Vertical list replaced with two horizontal scroll rows: Concerts (4 cards) + IPL 2026 (3 cards). Portrait cards 160×200px — image-first, price badge, urgency badge, fill bar, direct tap to event page. |
+| CSK vs KKR added as bookable | `api.js` | MA Chidambaram Stadium, Chennai, ₹129, 350 spots, 2 lots, full entry windows + amenities. Routes through existing S1/S2/S3 template — zero new code. |
+| MI vs SRH added as bookable | `api.js` | Wankhede Stadium, Mumbai, ₹129, 300 spots, 2 lots. Same template routing. |
+| STATIC_IPL pinning | S0 | CSK + MI pinned as static constants always merged on top of Supabase fetch — prevents them disappearing when Supabase returns only the 4 concerts. |
+| Team-colour gradients for IPL | S0 | Photos replaced with copyright-safe gradients: CSK = amber/brown, MI = blue/navy, RCB = red/black. Team badge watermark on each card. Applied in both hero carousel fallback and horizontal scroll cards. |
+| `scrollbar-hide` CSS utility | `index.css` | Hides scrollbar on horizontal rows across all browsers. |
+| Demo OTP bypass | `verify-otp` v4 (Supabase Edge Function) | Code `000000` skips hash verification and directly upserts the user — any email verified instantly. Fixes Resend free-tier restriction where only account owner's email receives real OTPs. Real OTP flow unchanged. |
+| AuthModal demo hint | `AuthModal.jsx` | Amber banner on OTP step: "Demo mode: use 000000 to skip OTP". |
+| Figma exploration file | Figma | 3 layout options designed (horizontal rows / bottom sheet / filter+list) + decision matrix. File: `PPj1nb1lrxu5mhRBqo8oSa`. |
 
-**What to test:**
-1. `/events` — Concerts row + IPL 2026 row both scroll horizontally, 4 + 3 cards visible
-2. Tap any concert card → S1 venue page → book flow works end to end
-3. Tap RCB → `/retain` retention flow
-4. Tap CSK or MI → S1 venue page with correct data
-5. Auth modal OTP step — amber "Demo mode: use 000000" hint visible, `000000` logs in any email
+**Key decisions made this session:**
+
+| Decision | Rationale |
+|----------|-----------|
+| Horizontal rows over vertical list | Reduces scroll friction; separates Concerts vs IPL visually — mirrors JioHotstar/BookMyShow pattern |
+| No bottom sheet | Adds a tap — ParkEase users arrive with intent (known event), not browsing. Direct card → event page is faster. |
+| Gradients over photos for IPL | Unsplash cricket photos are generic and weak for branded team content. Gradients are instantly recognisable and copyright-safe. |
+| `000000` bypass over domain verification | Resend domain verification requires DNS ownership. Bypass is faster for demo context — production fix is verifying a custom domain later. |
+
+**Root causes fixed:**
+
+| Problem | Root cause | Fix |
+|---------|-----------|-----|
+| CSK/MI missing from IPL row | Supabase fetch replaced fallback list entirely, dropping events not in DB | `STATIC_IPL` array always pinned regardless of fetch result |
+| Resend OTP fails for non-owner emails | Resend shared sender domain (`onboarding@resend.dev`) only delivers to account owner | `000000` bypass in `verify-otp` v4 |
+| IPL cards had wrong images | Unsplash cricket photos — generic, no team identity | Team-colour gradient backgrounds with badge watermark |
+
+**What to test on live site:**
+1. `/events` — Concerts row (4 cards) + IPL 2026 row (3 cards) scroll horizontally, no scrollbar visible
+2. Tap Karan Aujla / Arijit / Coldplay / Diljit → S1 venue page loads correctly
+3. Tap CSK or MI → S1 loads with correct team/venue/price data
+4. Tap RCB → `/retain` retention flow
+5. Book any event → auth modal OTP step shows amber `000000` hint → enter `000000` → logged in → booking completes
+6. S3 confirmation → RCB cross-sell card visible at bottom
+7. `⚡ Demo` chip visible on all non-transaction pages, expands to 4 role tabs
 
 ---
 
