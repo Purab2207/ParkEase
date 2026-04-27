@@ -13,7 +13,7 @@
 **Prototype status:** 9 screens live. **`app/`** (Vite) is the single canonical codebase — deployed on Vercel, data-driven, works for any event. `frontend/` and `backend/` directories have been fully deleted — do not reference them.
 **Stack:** React 19 + Tailwind CSS v4 + React Router v7 (app/, Vite) | Supabase (Postgres + Realtime + Edge Functions) | Resend (email OTP)
 **Stack migration:** MongoDB → Supabase Postgres ✅ | WebSocket → Supabase Realtime ✅ | SMS OTP → Email OTP via Resend ✅ | FastAPI → Supabase Edge Functions ✅ | Railway deploy → eliminated ✅
-**Next milestone:** Demo to event organisers. Set RESEND_API_KEY in Supabase Secrets (see below).
+**Next milestone:** Demo to event organisers. RESEND_API_KEY confirmed set in Supabase Secrets — OTP emails firing in production.
 **Notion:** PRD and Business Model pages in Notion are kept in sync — both updated to match .md files.
 
 > ⚠️ **CANONICAL CODEBASE RULE:**
@@ -67,6 +67,43 @@
 ---
 
 ## Session Log
+
+### UPI payment restored, RCB cross-sell, IPL cards, role nav, backend verified (27 April 2026 — session 3)
+
+**Commits:** `56922ea` · `545c72c`
+
+**Live site status: FULLY FUNCTIONAL** — confirmed via Supabase Edge Function logs:
+- `request-otp` → 200 ✓ (OTP emails firing — RESEND_API_KEY confirmed live in Supabase Secrets)
+- `verify-otp` → 200 ✓
+- `create-booking` → 201 ✓ (real bookings created, bay atomically claimed, spots_remaining decremented)
+
+**RESEND_API_KEY status:** Confirmed set in Supabase Secrets. Key value in `backend/.env` locally. Do NOT commit this file — it was already deleted from git in the `backend/` cleanup.
+
+**Features added this session:**
+
+| Feature | Where | Detail |
+|---------|-------|--------|
+| UPI payment screen restored | S3 | `PaymentScreen` re-added with `paymentConfirmed` state correctly declared before all conditional returns. Flow: booking loads → UPI QR + GPay/PhonePe/Paytm/BHIM → Simulate Payment → spinner → confirmation QR |
+| RCB cross-sell card | S3 (bottom) | Inline "Also happening" card after cancellation policy — red gradient, links to `/retain` booking flow |
+| RCB/IPL entry point | S0 | "Loyalty Preview" section with red RCB vs MI card linking to `/retain` |
+| IPL Coming Soon cards | S0 | 3 greyed match cards: RCB vs MI, CSK vs KKR, MI vs SRH — "Notify me" badge, no broken booking flow wired |
+| Demo role-switcher nav | App.jsx | Floating dark pill on `/dashboard`, `/attendant`, `/retain` — 4 tabs: 🎪 Consumer · 📊 Operator · 🔍 Staff · 🎯 Loyalty. Active tab highlights white. |
+
+**Why things were broken (root causes):**
+
+| Problem | Root cause | Fix |
+|---------|-----------|-----|
+| UPI payment page missing | Deleted `PaymentScreen` in session 2 as a blunt fix for a hooks crash. Real fix was hook declaration order. | Restored with `paymentConfirmed` declared at top with other state |
+| RCB page unreachable | `/retain` route existed but nothing in the UI linked to it | Added RCB card to S0 + cross-sell card on S3 |
+| No role switching | Never built — each screen was standalone | New `DemoRoleNav` floating component in App.jsx |
+
+**What to test on live site:**
+1. `/events` — IPL Coming Soon section visible below Loyalty Preview
+2. Complete booking → confirmation shows UPI screen first, then "Simulate Payment ✓" → entry QR + RCB cross-sell card at bottom
+3. `/dashboard` or `/attendant` — floating role-switcher pill visible, all 4 tabs navigate correctly
+4. `/retain` → RCB booking flow → `/retain/confirm`
+
+---
 
 ### Codebase audit + DB reset + booking flow fixed (27 April 2026 — session 2)
 
@@ -180,7 +217,7 @@ Replaced the FastAPI backend (which needed Railway hosting at $5/mo) with 3 Supa
 - `api.js` fully rewritten: GET endpoints now use Supabase anon client directly (no backend). POST endpoints call Edge Functions at `${SUPABASE_URL}/functions/v1/<name>`. `requestOtp`, `verifyOtp`, `createBooking` all exported.
 - `AuthModal.jsx`: imports `requestOtp`/`verifyOtp` from `api.js` — direct fetch calls removed.
 
-**One manual step remaining:** Set `RESEND_API_KEY` as a Supabase Secret so OTP emails fire. Until then, OTP is logged to Edge Function console only (visible in Supabase Dashboard → Logs).
+**RESEND_API_KEY confirmed live** in Supabase Secrets — OTP emails fire in production. Verified via Edge Function logs (request-otp returning 200). Key also stored locally in `backend/.env` (not in git).
 
 **How to set the secret (Supabase Dashboard):**
 Dashboard → your project → Edge Functions → Manage secrets → Add `RESEND_API_KEY`
