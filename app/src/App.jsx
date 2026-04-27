@@ -18,6 +18,40 @@ import EventsListingScreen from './screens/S0_EventsListing';
 // Paths that show the global navbar
 const NAVBAR_PATHS = ['/redirect', '/retain'];
 
+// Demo role-switcher — floating tab bar for non-consumer screens
+const DEMO_NAV_PATHS = ['/dashboard', '/attendant', '/retain'];
+
+function DemoRoleNav({ pathname }) {
+  const navigate = useNavigate();
+  const roles = [
+    { label: 'Consumer', icon: '🎪', path: '/events' },
+    { label: 'Operator', icon: '📊', path: '/dashboard' },
+    { label: 'Staff', icon: '🔍', path: '/attendant' },
+    { label: 'Loyalty', icon: '🎯', path: '/retain' },
+  ];
+  const showNav = DEMO_NAV_PATHS.some(p => pathname.startsWith(p));
+  if (!showNav) return null;
+  return (
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-[#1C1D2B]/90 backdrop-blur-sm rounded-2xl px-2 py-2 shadow-xl border border-white/10" style={{ maxWidth: 340 }}>
+      {roles.map(r => {
+        const active = pathname.startsWith(r.path);
+        return (
+          <button
+            key={r.path}
+            onClick={() => navigate(r.path)}
+            className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all text-[10px] font-semibold ${
+              active ? 'bg-white text-[#1C1D2B]' : 'text-white/60 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <span className="text-base leading-none">{r.icon}</span>
+            <span>{r.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // App
 // ---------------------------------------------------------------------------
@@ -146,6 +180,8 @@ export default function App() {
           <Route path="*" element={<Navigate to="/events" replace />} />
         </Routes>
       </div>
+
+      <DemoRoleNav pathname={pathname} />
 
       <AuthModal
         isOpen={showAuth}

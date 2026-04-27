@@ -182,7 +182,34 @@ export default function EventsListingScreen() {
         ))}
       </div>
 
-      <p className="text-center text-xs text-gray-400 mt-8 px-4">
+      {/* ── Loyalty / Retention Demo ── */}
+      <div className="px-4 mt-6">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Loyalty Preview</h3>
+          <span className="text-[10px] text-white bg-[#1C1D2B] px-2 py-0.5 rounded-full font-semibold">BETA</span>
+        </div>
+        <button
+          onClick={() => navigate('/retain')}
+          className="w-full text-left bg-gradient-to-r from-red-600 to-red-800 rounded-2xl overflow-hidden shadow-md active:scale-[0.98] transition-transform"
+        >
+          <div className="px-4 py-4 flex items-center gap-4">
+            <div className="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+              <span className="text-2xl font-black text-white">RCB</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-bold text-sm truncate">RCB vs MI — IPL 2026 Playoffs</p>
+              <p className="text-white/70 text-xs">M. Chinnaswamy Stadium · Bangalore</p>
+              <p className="text-white/60 text-xs mt-0.5">Repeat booking · 1-tap reserve</p>
+            </div>
+            <div className="text-right shrink-0">
+              <p className="text-white font-bold text-sm">₹149</p>
+              <p className="text-white/60 text-[10px]">per car</p>
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <p className="text-center text-xs text-gray-400 mt-6 mb-2 px-4">
         More events added weekly · Tap the search icon above to explore
       </p>
     </div>
