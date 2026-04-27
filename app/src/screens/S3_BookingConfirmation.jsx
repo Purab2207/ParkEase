@@ -501,20 +501,34 @@ const PaymentScreen = ({ booking, onPaymentConfirmed }) => {
 export default function BookingConfirmationScreen() {
   const { bookingId: routeBookingId } = useParams();
   const navigate = useNavigate();
-  const onNavigateToRetention = () => navigate('/retain');
 
   const [booking, setBooking] = useState(null);
   const [loadingBooking, setLoadingBooking] = useState(true);
-  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [groupSize, setGroupSize] = useState(1);
 
+  // ALL hooks must be declared before any conditional returns
   useEffect(() => {
     if (!routeBookingId) { setLoadingBooking(false); return; }
     fetchBooking(routeBookingId).then(raw => {
       if (!raw) { setLoadingBooking(false); return; }
-      setBooking(normaliseBooking(raw));
+      const b = normaliseBooking(raw);
+      setBooking(b);
       setGroupSize(raw.group_size || 1);
       setLoadingBooking(false);
+      // Save to localStorage for profile screen
+      try {
+        const existing = JSON.parse(localStorage.getItem('parkease_bookings') || '[]');
+        if (!existing.some(x => x.bookingId === b.bookingId)) {
+          const vehicleNo = localStorage.getItem('parkease_vehicle_no') || '';
+          localStorage.setItem('parkease_bookings', JSON.stringify([
+            { bookingId: b.bookingId, eventId: b.eventId, eventName: b.eventName,
+              venue: b.venue, date: b.date, bayPillarCode: b.bayPillarCode,
+              lotName: b.lotName, consumerPrice: b.consumerPrice, vehicleNo,
+              status: 'upcoming', bookedAt: new Date().toISOString() },
+            ...existing,
+          ]));
+        }
+      } catch {}
     }).catch(() => setLoadingBooking(false));
   }, [routeBookingId]);
 
@@ -544,40 +558,26 @@ export default function BookingConfirmationScreen() {
 
   const splitAmount = Math.ceil(booking.consumerPrice / groupSize);
 
-  useEffect(() => {
-    if (!paymentConfirmed || !booking) return;
-    try {
-      const existing = JSON.parse(localStorage.getItem('parkease_bookings') || '[]');
-      const alreadySaved = existing.some(b => b.bookingId === booking.bookingId);
-      if (!alreadySaved) {
-        const vehicleNo = localStorage.getItem('parkease_vehicle_no') || '';
-        const entry = {
-          bookingId: booking.bookingId,
-          eventId: booking.eventId,
-          eventName: booking.eventName,
-          venue: booking.venue,
-          date: booking.date,
-          bayPillarCode: booking.bayPillarCode,
-          lotName: booking.lotName,
-          consumerPrice: booking.consumerPrice,
-          vehicleNo,
-          status: 'upcoming',
-          bookedAt: new Date().toISOString(),
-        };
-        localStorage.setItem('parkease_bookings', JSON.stringify([entry, ...existing]));
-      }
-    } catch { /* localStorage unavailable */ }
-  }, [paymentConfirmed, booking]);
-
-  // Stage 1 — payment screen
-  if (!paymentConfirmed) {
-    return <PaymentScreen booking={booking} onPaymentConfirmed={() => setPaymentConfirmed(true)} />;
-  }
-
-  // Stage 2 — confirmed: entry QR + all post-payment content
+  // Booking is confirmed by the server — show confirmation directly, no payment gate
   return (
     <div className="min-h-[100dvh] bg-gray-50 font-sans sm:bg-gray-50">
       <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-50 flex flex-col px-4 py-6 gap-5 pb-20 sm:shadow-2xl">
+
+        {/* Back navigation */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => navigate('/events')}
+            className="flex items-center gap-1.5 text-gray-500 hover:text-gray-900 transition-colors text-sm"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            All Events
+          </button>
+          <span className="text-xs text-gray-400 bg-green-50 text-green-600 border border-green-200 px-2.5 py-1 rounded-full font-semibold">
+            Confirmed ✓
+          </span>
+        </div>
 
         {/* Confirmation header */}
         <ConfirmationHeader bookingId={booking.bookingId} />
