@@ -10,14 +10,14 @@
 **ParkEase** (working name also seen as ParkSmart in early PRD drafts) is a two-sided event parking platform for India. It pre-sells named parking bays to event attendees and provides operators a live dashboard + compliance report. When parking sells out, it redirects users to Ola/Uber/Rapido via deep-link.
 
 **Stage:** Phase 0 COMPLETE. Phase 1 (MVP Backend) COMPLETE. Template architecture COMPLETE. Phase 2 (Real Backend) COMPLETE — Supabase live, 3 Edge Functions deployed, FastAPI backend retired.
-**Prototype status:** 9 screens live. **`app/`** (Vite) is the single canonical codebase — deployed on Vercel, data-driven, works for any event. `frontend/` (CRA) is frozen/deprecated — do not edit.
+**Prototype status:** 9 screens live. **`app/`** (Vite) is the single canonical codebase — deployed on Vercel, data-driven, works for any event. `frontend/` and `backend/` directories have been fully deleted — do not reference them.
 **Stack:** React 19 + Tailwind CSS v4 + React Router v7 (app/, Vite) | Supabase (Postgres + Realtime + Edge Functions) | Resend (email OTP)
 **Stack migration:** MongoDB → Supabase Postgres ✅ | WebSocket → Supabase Realtime ✅ | SMS OTP → Email OTP via Resend ✅ | FastAPI → Supabase Edge Functions ✅ | Railway deploy → eliminated ✅
 **Next milestone:** Demo to event organisers. Set RESEND_API_KEY in Supabase Secrets (see below).
 **Notion:** PRD and Business Model pages in Notion are kept in sync — both updated to match .md files.
 
 > ⚠️ **CANONICAL CODEBASE RULE:**
-> All changes go into **`app/src/`** only. `frontend/` is deprecated (CRA is unmaintained) and must not be edited.
+> All changes go into **`app/src/`** only. `frontend/` and `backend/` are permanently deleted from the repo.
 > Live site: `https://park-ease-rho.vercel.app` — auto-deploys on every push to `main`.
 > Routes: `/events` (TODO: listing page) · `/events/:eventId` (S1) · `/events/:eventId/book` (S2) · `/confirmation/:bookingId` (S3) · `/redirect` · `/dashboard` · `/retain` · `/retain/book` (S7) · `/retain/confirm` (S8) · `/attendant` (S9)
 > Default `/` and catch-all `*` now redirect to `/events` (not hardcoded to Karan Aujla event).
@@ -67,6 +67,65 @@
 ---
 
 ## Session Log
+
+### Codebase audit + DB reset + booking flow fixed (27 April 2026 — session 2)
+
+**Commits:** `c740597` · `4581e9d` · `3949f5e` · `48e9e20` · `455286b`
+
+**Root cause of Vercel not showing changes — fixed:**
+Two `vercel.json` files existed. Root `vercel.json` had old `experimentalServices` config pointing to deleted `frontend/` (CRA) and `backend/` (FastAPI) directories. Vercel was building the dead CRA app on every push. Fixed by deleting root `vercel.json` and setting root directory to `app/` in Vercel dashboard. Single source of truth: `app/vercel.json`.
+
+**Root cause of blank confirmation screen — fixed:**
+`onNavigateToRetention` referenced in S3 JSX but never declared anywhere — caused `ReferenceError` crash on every confirmation load. Fixed by replacing with `navigate('/events')`.
+
+**Root cause of payment always failing — fixed:**
+`createBooking` Edge Function requires `email` to exist in `users` table (OTP verified). S2 was calling it with `email: ''` when user wasn't logged in — returning 401 silently. Fixed with:
+- Pay button now shows **"Sign in to confirm booking"** when not logged in
+- Clicking it opens the auth modal (via `onAuthRequired` callback)
+- `handlePay` short-circuits before calling Edge Function if not logged in
+
+**Full bug list fixed this session:**
+
+| # | Bug | File | Fix |
+|---|-----|------|-----|
+| 1 | Vercel building old CRA app, not `app/` | root `vercel.json` | Deleted root config, set dashboard root dir = `app/` |
+| 2 | S3 crash — `onNavigateToRetention` undeclared | S3:635 | Replaced with `navigate('/events')` |
+| 3 | S3 dead `PaymentScreen` component (~70 lines) | S3 | Deleted — server already confirmed booking |
+| 4 | S2 `totalSpots` hardcoded to 500 | S2:521 | Now reads from fetched event data |
+| 5 | Payment always 401 — no login check before booking | S2 + App.jsx | `isLoggedIn` check + `onAuthRequired` callback |
+| 6 | Dead `VITE_BACKEND_URL` in `.env.local` | app/.env.local | Removed |
+
+**Dead code removed from repo:**
+- `frontend/` — 28 files, old CRA app with its own node_modules (29 files deleted)
+- `backend/` — FastAPI server (5 files deleted)
+- `backend_test.py` — orphaned test
+
+**DB reset (bays were 31–33/35 booked, killing the demo):**
+
+| Event | Before | After (bays) | spots_remaining |
+|-------|--------|--------------|-----------------|
+| Karan Aujla | 32 booked / 3 available | 10 booked / 25 available | 150 / 500 (70% fill) |
+| Arijit Singh | 32 booked / 3 available | 10 booked / 25 available | 120 / 600 (80% fill) |
+| Coldplay | 33 booked / 2 available | 27 booked / 8 available | 160 / 800 (80% fill) |
+| Diljit Dosanjh | 31 booked / 4 available | 8 booked / 27 available | 90 / 400 (78% fill) |
+
+**Backend verified healthy:**
+5 confirmed bookings in DB, join chain (bookings → bays → events) returns correct pillar codes, lot IDs, amounts. `create-booking` Edge Function logic confirmed correct — uses `pillar_code` for atomic bay claim, decrements `spots_remaining` for Realtime.
+
+**Remaining ambiguities logged (low priority, pre-demo):**
+- S2 `ProhibitedItemsBanner` venueName hardcoded to "JLN Stadium" (line 679)
+- S3 `DirectionsButton` venueName hardcoded to "JLN Stadium" (line 599)  
+- S2 `BookingFooter` copy hardcoded to "JLN Stadium" (line 491)
+- S3 exit guidance fields (`exitGate`, `exitSection`, `exitEstimatedMins`) are mock values
+
+**What to test on live site after this session:**
+1. `/events` — carousel arrows work, fill bars show correct data
+2. `/events/karan-aujla-jln-2026` → `/events/karan-aujla-jln-2026/book` — bay grid shows 25 available slots
+3. Without login: pay button shows "Sign in to confirm booking", clicking opens auth modal
+4. With login (OTP via email): pay button shows "Pay ₹169 via UPI", flow completes → `/confirmation/:id`
+5. `/confirmation/:id` — QR, summary, share, directions all visible (no blank page)
+
+---
 
 ### 12-issue audit fixed + site hardened (27 April 2026)
 
