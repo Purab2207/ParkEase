@@ -28,15 +28,18 @@ ParkEase is the software layer that fixes this. It does not own or operate parki
 
 | Screen | Route | Description |
 |--------|-------|-------------|
-| S1 — Event Page | `/events/:eventId` | Live scarcity counter, bay availability, CTA |
-| S2 — Booking Flow | `/events/:eventId/book` | 5-step progressive disclosure: bay → window → price → UPI |
-| S3 — Confirmation | `/confirmation/:bookingId` | QR code (offline-cached), WhatsApp share, UPI split |
-| S4 — Redirect | `/redirect` | Parking full → Ola/Uber/Rapido deep-links |
-| S5 — Operator Dashboard | `/dashboard` | Live fill rate, per-lot status, alert feed, PDF export |
-| S6 — Profile | `/profile` | Booking history, upcoming events |
-| S7 — Retention Event | `/retain` | Re-engagement for repeat booking |
-| S8 — Retention Confirm | `/retain/confirm` | Confirmation for retained booking |
-| S9 — Attendant Scanner | `/attendant` | QR scan, plate verification, bay reassignment |
+| S0 — Events Listing | [`/events`](https://park-ease-rho.vercel.app/events) | Rotating hero carousel, all events, live fill bars |
+| S1 — Event Page | [`/events/:eventId`](https://park-ease-rho.vercel.app/events/karan-aujla-jln-2026) | Live scarcity counter, bay availability, CTA |
+| S2 — Booking Flow | `/events/:eventId/book` | Bay selection, entry window, pricing, UPI |
+| S3 — Confirmation | `/confirmation/:bookingId` | QR code, WhatsApp share, UPI split, directions |
+| S4 — Redirect | [`/redirect`](https://park-ease-rho.vercel.app/redirect) | Parking full → Ola/Uber/Rapido deep-links |
+| S5 — Operator Dashboard | [`/dashboard`](https://park-ease-rho.vercel.app/dashboard) | PIN-protected · Fill rate, per-lot status, alert feed, PDF export |
+| S6 — Retention | [`/retain`](https://park-ease-rho.vercel.app/retain) | Re-engagement for repeat booking |
+| S7 — Retention Booking | [`/retain/book`](https://park-ease-rho.vercel.app/retain/book) | Retention booking flow |
+| S8 — Retention Confirm | [`/retain/confirm`](https://park-ease-rho.vercel.app/retain/confirm) | Confirmation for retained booking |
+| S9 — Attendant Scanner | [`/attendant`](https://park-ease-rho.vercel.app/attendant) | QR scan, plate verification, bay reassignment |
+
+> **Access:** Consumer flow starts at `/events`. Operator dashboard at `/dashboard` (PIN: share privately). Ground staff scanner at `/attendant`.
 
 ---
 
@@ -44,11 +47,11 @@ ParkEase is the software layer that fixes this. It does not own or operate parki
 
 **Frontend** — React 19 · Tailwind CSS v4 · React Router v7 · Vite (`app/`)
 
-**Backend** — FastAPI · MongoDB · WebSockets for live inventory counter (`backend/`)
+**Backend** — Supabase (Postgres + Realtime + 3 Edge Functions) · Resend (email OTP)
 
-**Deployed** — Vercel (auto-deploys on push to `main`)
+**Deployed** — Vercel (auto-deploys on push to `main`) · Supabase (Mumbai, `ap-south-1`)
 
-> `frontend/` (Create React App) is frozen and deprecated. All active development is in `app/`.
+> `frontend/` and `backend/` are deprecated. All active development is in `app/src/`.
 
 ---
 
@@ -86,8 +89,13 @@ The frontend proxies `/api/*` to `localhost:8001` via `vite.config.js`.
 
 ## Project status
 
-**Stage:** Prototype complete (9 screens, Vercel). Backend hardened — atomic booking, CORS restricted, dashboard API key auth, simulate-booking gated behind `DEMO_MODE`. Frontend hardened — booking ID as URL param (`/confirmation/:bookingId`), fake redirect counter removed. First live event not yet secured.
+**Stage:** Phase 2 complete. Supabase live (Postgres + Realtime + Edge Functions). Real OTP auth (email via Resend), real bay booking (atomic), real confirmation screen pulling live data. 12-issue audit fixed. First live event not yet secured.
 
-**Next milestone:** Demo to 3–5 event organiser contacts in Bangalore.
+**Access links:**
+- Consumer: [park-ease-rho.vercel.app/events](https://park-ease-rho.vercel.app/events)
+- Operator dashboard: [park-ease-rho.vercel.app/dashboard](https://park-ease-rho.vercel.app/dashboard) ← PIN-protected
+- Ground staff: [park-ease-rho.vercel.app/attendant](https://park-ease-rho.vercel.app/attendant)
+
+**Next milestone:** Demo to event organiser contacts. Set `RESEND_API_KEY` in Supabase Secrets if not already done.
 
 Full product context: [`01_Product/ParkEase_PRD_Condensed.md`](01_Product/ParkEase_PRD_Condensed.md)

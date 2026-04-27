@@ -56,7 +56,53 @@
 
 ---
 
+## Access Links (live site)
+
+| Who | URL | Auth |
+|-----|-----|------|
+| Consumer | [park-ease-rho.vercel.app/events](https://park-ease-rho.vercel.app/events) | None |
+| Operator (Siddharth) | [park-ease-rho.vercel.app/dashboard](https://park-ease-rho.vercel.app/dashboard) | PIN `2207` (override: `VITE_OPERATOR_PIN` Vercel env var) |
+| Ground staff (attendant) | [park-ease-rho.vercel.app/attendant](https://park-ease-rho.vercel.app/attendant) | Demo shift login (phone + zone) |
+
+---
+
 ## Session Log
+
+### 12-issue audit fixed + site hardened (27 April 2026)
+
+**Commits:** `9259783` · `7691df0` · `e0cb0ad` · `dbd1726`
+
+**12 issues fixed (full list):**
+
+| # | Issue | Fix |
+|---|-------|-----|
+| 1 | OTP stored plain text in DB | SHA-256 hashing in request-otp + verify-otp v3 |
+| 2 | No OTP rate limiting | 60s cooldown in request-otp |
+| 3 | Expired OTPs never cleaned up | Cleanup on each new request |
+| 4 | No auth gate on booking creation | create-booking checks email in users table |
+| 5 | RLS relied on implicit deny | Explicit DENY policies on bookings/users/otp_codes |
+| 6 | Bay double-booking race condition | Atomic UPDATE WHERE status='available' |
+| 7 | Bay grid showed hardcoded statuses | fetchBays on S2 mount syncs live statuses |
+| 8 | fetchEvent silently defaulted to Karan Aujla | Returns null for unknown IDs |
+| 9 | /events/fake-id showed wrong content | S1 "Event not found" screen |
+| 10 | Bay grid hidden on S2 load | currentStep starts at 2 |
+| 11 | Wrong lot data for non-JLN events | Dynamic lots built from event.lots + fetchBays |
+| 12 | S3 booking not found / "event expired" | RLS SELECT policy added; S3 fetches real booking |
+
+**Additional fixes this session:**
+- S3 blank page: React hooks violation fixed (useEffect after conditional return) — was crashing on every real booking
+- S3 PaymentScreen removed — booking already confirmed by server, demo gate was blocking QR/share/details
+- S3 back button added (`← All Events`)
+- S0 carousel: prev/next arrow buttons added
+- `/dashboard` PIN gate added (default `2207`, env var `VITE_OPERATOR_PIN`)
+- Supabase `bookings_select_anon` RLS policy added — anon client can now read bookings by ID
+
+**Access:**
+- Consumer: `/events`
+- Operator dashboard: `/dashboard` → PIN `2207`
+- Ground staff: `/attendant` → demo shift login
+
+---
 
 ### FastAPI retired — full serverless stack via Supabase Edge Functions (26 April 2026)
 
@@ -1224,4 +1270,4 @@ Phase 2 has started. Supabase (DB + Realtime) and Resend (email OTP) are being w
 
 ---
 
-*Last updated: 26 April 2026 — FastAPI backend retired. 3 Supabase Edge Functions deployed (request-otp, verify-otp, create-booking). api.js rewritten with direct Supabase client for GETs + Edge Function calls for POSTs. AuthModal updated. Stack: Vercel + Supabase + Resend — fully free, fully serverless. One step left: set RESEND_API_KEY in Supabase Secrets.*
+*Last updated: 27 April 2026 — 12-issue audit fixed. All changes live on Vercel. See session log below.*
