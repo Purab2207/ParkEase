@@ -33,7 +33,7 @@ function DemoChip({ pathname }) {
     { label: 'Consumer', icon: '🎪', path: '/events' },
     { label: 'Operator', icon: '📊', path: '/dashboard' },
     { label: 'Staff',    icon: '🔍', path: '/attendant' },
-    { label: 'Loyalty',  icon: '🎯', path: '/retain' },
+    { label: 'Sports',   icon: '🏏', path: '/retain' },
   ];
 
   if (!show) return null;

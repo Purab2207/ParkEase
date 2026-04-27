@@ -84,7 +84,7 @@ export const FALLBACK_EVENTS = {
   },
   'coldplay-nms-2026': {
     event_id: 'coldplay-nms-2026',
-    hero_image: 'https://images.unsplash.com/photo-1501386761578-eaa54b1ea5b5?w=800&q=80&auto=format&fit=crop',
+    hero_image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80&auto=format&fit=crop',
     event_name: 'Coldplay',
     sub_title: 'Music of the Spheres World Tour',
     venue: 'Narendra Modi Stadium',

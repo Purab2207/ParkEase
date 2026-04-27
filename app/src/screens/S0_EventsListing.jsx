@@ -208,10 +208,10 @@ export default function EventsListingScreen() {
         ))}
       </div>
 
-      {/* ── Loyalty / Retention Demo ── */}
+      {/* ── Sports & IPL ── */}
       <div className="px-4 mt-6">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Loyalty Preview</h3>
+          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Sports Events</h3>
           <span className="text-[10px] text-white bg-[#1C1D2B] px-2 py-0.5 rounded-full font-semibold">BETA</span>
         </div>
         <button
