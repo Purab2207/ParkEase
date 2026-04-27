@@ -14,15 +14,15 @@ const RCB_EVENT = {
   total_spots: 300,
   spots_remaining: 87,
   consumer_price: 149,
-  hero_image: 'https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972?w=800&q=80&auto=format&fit=crop',
-  event_category: 'ipl',
+  hero_image: null,
+  _gradient: { from: '#991B1B', to: '#3B0000', label: 'RCB' },
   _retain: true,
 };
 
-// IPL events that live only in fallback (not seeded in Supabase) — always pinned
+// IPL events pinned with team-colour gradients (not seeded in Supabase)
 const STATIC_IPL = [
-  FALLBACK_EVENTS['csk-kkr-ipl-2026'],
-  FALLBACK_EVENTS['mi-srh-ipl-2026'],
+  { ...FALLBACK_EVENTS['csk-kkr-ipl-2026'], hero_image: null, _gradient: { from: '#CA8A04', to: '#78350F', label: 'CSK' } },
+  { ...FALLBACK_EVENTS['mi-srh-ipl-2026'],  hero_image: null, _gradient: { from: '#1D4ED8', to: '#0F172A', label: 'MI'  } },
   RCB_EVENT,
 ];
 
@@ -113,9 +113,14 @@ export default function EventsListingScreen() {
             >
               {img
                 ? <img src={img} alt={name} className="w-full h-full object-cover" />
-                : <div className="w-full h-full bg-gray-900 flex items-center justify-center">
-                    <span className="text-7xl font-black text-white/10">{name?.charAt(0)}</span>
-                  </div>
+                : event._gradient
+                  ? <div className="w-full h-full flex items-center justify-center"
+                      style={{ background: `linear-gradient(135deg, ${event._gradient.from}, ${event._gradient.to})` }}>
+                      <span className="text-8xl font-black text-white/10">{event._gradient.label}</span>
+                    </div>
+                  : <div className="w-full h-full bg-gray-900 flex items-center justify-center">
+                      <span className="text-7xl font-black text-white/10">{name?.charAt(0)}</span>
+                    </div>
               }
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
             </div>
@@ -227,11 +232,23 @@ function EventCard({ event, onTap }) {
       className="shrink-0 snap-start w-40 rounded-2xl overflow-hidden shadow-sm active:scale-95 transition-transform relative"
       style={{ height: 200 }}
     >
-      {/* Background image or gradient */}
+      {/* Background image or team gradient */}
       {event.hero_image
         ? <img src={event.hero_image} alt={name} className="absolute inset-0 w-full h-full object-cover" />
-        : <div className={`absolute inset-0 ${event._retain ? 'bg-gradient-to-br from-red-700 to-red-950' : 'bg-gray-900'}`} />
+        : <div className="absolute inset-0"
+            style={event._gradient
+              ? { background: `linear-gradient(160deg, ${event._gradient.from}, ${event._gradient.to})` }
+              : { background: '#111827' }
+            }
+          />
       }
+
+      {/* Team badge watermark for IPL cards */}
+      {event._gradient && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <span className="text-5xl font-black text-white/10">{event._gradient.label}</span>
+        </div>
+      )}
 
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
