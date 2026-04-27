@@ -15,14 +15,14 @@ const RCB_EVENT = {
   spots_remaining: 87,
   consumer_price: 149,
   hero_image: null,
-  _gradient: { from: '#991B1B', to: '#3B0000', label: 'RCB' },
+  _gradient: { from: '#991B1B', to: '#1D4ED8', label: 'RCB' },
   _retain: true,
 };
 
 // IPL events pinned with team-colour gradients (not seeded in Supabase)
 const STATIC_IPL = [
-  { ...FALLBACK_EVENTS['csk-kkr-ipl-2026'], hero_image: null, _gradient: { from: '#CA8A04', to: '#78350F', label: 'CSK' } },
-  { ...FALLBACK_EVENTS['mi-srh-ipl-2026'],  hero_image: null, _gradient: { from: '#1D4ED8', to: '#0F172A', label: 'MI'  } },
+  { ...FALLBACK_EVENTS['csk-kkr-ipl-2026'], hero_image: null, _gradient: { from: '#CA8A04', to: '#4B0082', label: 'CSK' } },
+  { ...FALLBACK_EVENTS['mi-srh-ipl-2026'],  hero_image: null, _gradient: { from: '#1D4ED8', to: '#F97316', label: 'MI'  } },
   RCB_EVENT,
 ];
 
