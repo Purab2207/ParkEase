@@ -98,15 +98,14 @@ const VenueHero = ({ eventName, subTitle, venueName, city, heroImage }) => (
       <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10">
         <span className="text-xs font-bold text-white tracking-wide">ParkEase</span>
       </div>
-      <div className="absolute bottom-4 left-4 right-4 z-10">
-        <span className="text-2xl font-black text-white tracking-tight">{eventName}</span>
-        <p className="text-sm text-gray-300 mt-0.5">{subTitle}</p>
+      <div className="absolute bottom-4 left-4 right-4 z-10 flex flex-col items-start">
+        <span className="text-3xl font-black text-white">{eventName}</span>
+        <span className="text-sm text-gray-400 mt-0.5">{subTitle}</span>
+        <div className="flex items-center gap-1 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full border border-white/10 mt-1">
+          <MapPinIcon />
+          <span className="text-xs text-white/80">{venueName}, {city}</span>
+        </div>
       </div>
-    </div>
-    {/* Venue badge — overlaps hero bottom */}
-    <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10 flex items-center gap-1.5">
-      <MapPinIcon />
-      <span className="text-xs text-white font-medium">{venueName}, {city}</span>
     </div>
   </div>
 );
