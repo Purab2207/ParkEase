@@ -441,7 +441,7 @@ const PricingBreakdown = ({ event, groupSize, onGroupSizeChange }) => (
 );
 
 // Step 5 — UPI Payment
-const UPIPaymentButton = ({ consumerPrice, selectedBay, selectedWindow, contactPhoneValid, vehicleNoValid, isLoading, onPay, onOpenBaySelection }) => {
+const UPIPaymentButton = ({ consumerPrice, selectedBay, selectedWindow, contactPhoneValid, vehicleNoValid, isLoggedIn, isLoading, onPay, onOpenBaySelection }) => {
   const isDisabled = isLoading || (selectedBay && (!selectedWindow || !contactPhoneValid || !vehicleNoValid));
 
   const getLabel = () => {
@@ -450,6 +450,7 @@ const UPIPaymentButton = ({ consumerPrice, selectedBay, selectedWindow, contactP
     if (!selectedWindow) return 'Select arrival time to continue';
     if (!contactPhoneValid) return 'Enter contact number to continue';
     if (!vehicleNoValid) return 'Enter vehicle number to continue';
+    if (!isLoggedIn) return 'Sign in to confirm booking';
     return `Pay ₹${consumerPrice} via UPI`;
   };
 
@@ -510,7 +511,7 @@ const StepCompletedChip = ({ label, value, onClick }) => (
 // MAIN SCREEN COMPONENT
 // ----------------------------------------------------------------------------
 
-export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn }) {
+export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn, onAuthRequired }) {
   const { eventId } = useParams();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(2);
@@ -621,6 +622,7 @@ export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn }) 
 
   const handlePay = async () => {
     if (!selectedBay || !selectedWindow) return;
+    if (!isLoggedIn) { onAuthRequired?.(); return; }
     setPaymentLoading(true);
     setPaymentError('');
     try {
@@ -820,6 +822,7 @@ export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn }) 
           selectedWindow={selectedWindow}
           contactPhoneValid={contactPhone.length === 10}
           vehicleNoValid={vehicleNo.length >= 6}
+          isLoggedIn={isLoggedIn}
           isLoading={paymentLoading}
           onPay={handlePay}
           onOpenBaySelection={() => setCurrentStep(2)}

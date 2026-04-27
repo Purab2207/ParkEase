@@ -94,6 +94,7 @@ export default function App() {
                 userPhone={userPhone}
                 userEmail={userEmail}
                 isLoggedIn={isLoggedIn}
+                onAuthRequired={() => setShowAuth(true)}
               />
             }
           />
