@@ -518,7 +518,7 @@ export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn }) 
   // Event data — fetched from API, falls back to local data
   const [event, setEvent] = useState(DEFAULT_EVENT);
   const [spotsRemaining, setSpotsRemaining] = useState(47);
-  const totalSpots = 500;
+  const [totalSpots, setTotalSpots] = useState(500);
 
   // Bay grid — starts with hardcoded mock, overwritten with live Supabase statuses
   const [lots, setLots] = useState(LOTS);
@@ -528,6 +528,7 @@ export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn }) 
       if (!eventData) return;
       setEvent(normaliseEvent(eventData));
       setSpotsRemaining(eventData.spots_remaining ?? 47);
+      setTotalSpots(eventData.total_spots ?? 500);
 
       const eventLots = eventData.lots || [];
       if (liveBays && liveBays.length > 0 && eventLots.length > 0) {
