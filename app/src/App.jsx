@@ -18,36 +18,58 @@ import EventsListingScreen from './screens/S0_EventsListing';
 // Paths that show the global navbar
 const NAVBAR_PATHS = ['/redirect', '/retain'];
 
-// Demo role-switcher — floating tab bar for non-consumer screens
-const DEMO_NAV_PATHS = ['/dashboard', '/attendant', '/retain'];
+// Pages where demo chip shows — excludes mid-transaction flows
+const DEMO_CHIP_SHOW = ['/events', '/redirect', '/dashboard', '/attendant', '/retain'];
+const DEMO_CHIP_HIDE = ['/events/', '/confirmation']; // S2 /book and S3
 
-function DemoRoleNav({ pathname }) {
+function DemoChip({ pathname }) {
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+
+  const show = DEMO_CHIP_SHOW.some(p => pathname.startsWith(p))
+    && !DEMO_CHIP_HIDE.some(p => pathname.includes(p));
+
   const roles = [
     { label: 'Consumer', icon: '🎪', path: '/events' },
     { label: 'Operator', icon: '📊', path: '/dashboard' },
-    { label: 'Staff', icon: '🔍', path: '/attendant' },
-    { label: 'Loyalty', icon: '🎯', path: '/retain' },
+    { label: 'Staff',    icon: '🔍', path: '/attendant' },
+    { label: 'Loyalty',  icon: '🎯', path: '/retain' },
   ];
-  const showNav = DEMO_NAV_PATHS.some(p => pathname.startsWith(p));
-  if (!showNav) return null;
+
+  if (!show) return null;
+
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-[#1C1D2B]/90 backdrop-blur-sm rounded-2xl px-2 py-2 shadow-xl border border-white/10" style={{ maxWidth: 340 }}>
-      {roles.map(r => {
-        const active = pathname.startsWith(r.path);
-        return (
-          <button
-            key={r.path}
-            onClick={() => navigate(r.path)}
-            className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all text-[10px] font-semibold ${
-              active ? 'bg-white text-[#1C1D2B]' : 'text-white/60 hover:text-white hover:bg-white/10'
-            }`}
-          >
-            <span className="text-base leading-none">{r.icon}</span>
-            <span>{r.label}</span>
-          </button>
-        );
-      })}
+    <div className="fixed bottom-5 right-4 z-50 flex flex-col items-end gap-2">
+      {/* Expanded role menu */}
+      {open && (
+        <div className="flex flex-col gap-1 bg-[#1C1D2B]/95 backdrop-blur-sm rounded-2xl px-2 py-2 shadow-2xl border border-white/10">
+          {roles.map(r => {
+            const active = pathname.startsWith(r.path);
+            return (
+              <button
+                key={r.path}
+                onClick={() => { navigate(r.path); setOpen(false); }}
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all text-xs font-semibold w-full text-left ${
+                  active ? 'bg-white text-[#1C1D2B]' : 'text-white/70 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <span className="text-base leading-none w-5 text-center">{r.icon}</span>
+                <span>{r.label}</span>
+                {active && <span className="ml-auto text-[10px] text-[#1C1D2B]/50 font-normal">here</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Trigger chip */}
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="flex items-center gap-1.5 bg-[#1C1D2B] text-white text-[11px] font-bold px-3 py-2 rounded-full shadow-lg border border-white/10 active:scale-95 transition-all"
+      >
+        <span className="text-xs">{open ? '✕' : '⚡'}</span>
+        <span>Demo</span>
+      </button>
     </div>
   );
 }
@@ -181,7 +203,7 @@ export default function App() {
         </Routes>
       </div>
 
-      <DemoRoleNav pathname={pathname} />
+      <DemoChip pathname={pathname} />
 
       <AuthModal
         isOpen={showAuth}
