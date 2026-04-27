@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchEvents, FALLBACK_EVENTS_LIST } from '../api';
+import { fetchEvents, FALLBACK_EVENTS_LIST, FALLBACK_EVENTS } from '../api';
 
 const SLIDE_INTERVAL = 4000;
 
@@ -19,6 +19,13 @@ const RCB_EVENT = {
   _retain: true,
 };
 
+// IPL events that live only in fallback (not seeded in Supabase) — always pinned
+const STATIC_IPL = [
+  FALLBACK_EVENTS['csk-kkr-ipl-2026'],
+  FALLBACK_EVENTS['mi-srh-ipl-2026'],
+  RCB_EVENT,
+];
+
 const CONCERT_IDS = ['karan-aujla-jln-2026', 'arijit-singh-dy-patil-2026', 'coldplay-nms-2026', 'diljit-dosanjh-pca-2026'];
 const IPL_IDS = ['rcb-mi-ipl-2026', 'csk-kkr-ipl-2026', 'mi-srh-ipl-2026'];
 
@@ -30,9 +37,9 @@ export default function EventsListingScreen() {
 
   useEffect(() => {
     fetchEvents().then(data => {
-      const base = data && data.length > 0 ? data : FALLBACK_EVENTS_LIST;
-      setAllEvents([...base, RCB_EVENT]);
-    }).catch(() => setAllEvents([...FALLBACK_EVENTS_LIST, RCB_EVENT]));
+      const concerts = data && data.length > 0 ? data : FALLBACK_EVENTS_LIST;
+      setAllEvents([...concerts, ...STATIC_IPL]);
+    }).catch(() => setAllEvents([...FALLBACK_EVENTS_LIST, ...STATIC_IPL]));
   }, []);
 
   const concerts = allEvents.filter(e => CONCERT_IDS.includes(e.event_id ?? e.id));
