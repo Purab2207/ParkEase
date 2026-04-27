@@ -199,6 +199,12 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                 ))}
               </div>
 
+              {/* Demo hint */}
+              <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3">
+                <span className="text-amber-500 text-xs">⚡</span>
+                <p className="text-amber-700 text-xs">Demo mode: use <span className="font-bold tracking-widest">000000</span> to skip OTP</p>
+              </div>
+
               {error && <p className="text-red-500 text-xs mb-3 text-center">{error}</p>}
 
               <button

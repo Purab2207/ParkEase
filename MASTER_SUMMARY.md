@@ -68,6 +68,34 @@
 
 ## Session Log
 
+### Horizontal event rows, IPL events, demo OTP bypass (27 April 2026 — session 4)
+
+**Commits:** `71ef491` · `dd454b5` · `3b29724` · `f5b838a` + AuthModal + MASTER_SUMMARY
+
+**Features shipped:**
+
+| Feature | Detail |
+|---------|--------|
+| RCB moved to All Events | `_retain: true` flag routes to `/retain`. Red gradient thumbnail. Coming Soon section deleted. |
+| Horizontal scroll rows | S0 redesigned — Concerts row (4) + IPL 2026 row (3). Image-first portrait cards (160×200), price badge, urgency badge, fill bar, direct tap to event page. |
+| CSK vs KKR + MI vs SRH added | Fully bookable events in `FALLBACK_EVENTS` — lots, entry windows, amenities, images. Routes through existing S1/S2/S3 template. |
+| Team-colour gradients for IPL | CSK = amber/brown, MI = blue/navy, RCB = red/black. Applied in carousel fallback + card background. Team badge watermark (CSK/MI/RCB). Copyright safe — no external logos. |
+| STATIC_IPL pinning fix | CSK + MI pinned as static constants, always merged regardless of Supabase fetch response (Supabase only has concerts seeded). |
+| `scrollbar-hide` utility | Added to `index.css` for clean horizontal scroll on mobile. |
+| Demo OTP bypass | `verify-otp` v4 deployed — code `000000` bypasses hash check and verifies any email directly. Fixes Resend free-tier restriction (only owner email receives real OTPs). AuthModal shows amber hint: "Demo mode: use 000000 to skip OTP". |
+
+**Root cause of Resend OTP issue:**
+Resend free tier with shared sender domain (`onboarding@resend.dev`) only delivers to the account owner's email. Any other email silently fails delivery. Fix: `000000` universal bypass in `verify-otp` — real OTPs still work for owner email, demo attendees use `000000`.
+
+**What to test:**
+1. `/events` — Concerts row + IPL 2026 row both scroll horizontally, 4 + 3 cards visible
+2. Tap any concert card → S1 venue page → book flow works end to end
+3. Tap RCB → `/retain` retention flow
+4. Tap CSK or MI → S1 venue page with correct data
+5. Auth modal OTP step — amber "Demo mode: use 000000" hint visible, `000000` logs in any email
+
+---
+
 ### UPI payment restored, RCB cross-sell, IPL cards, role nav, backend verified (27 April 2026 — session 3)
 
 **Commits:** `56922ea` · `545c72c`
