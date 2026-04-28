@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { fetchEventStats } from '../api';
 
 const DownloadIcon = () => (
   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -33,14 +32,6 @@ const WarningIcon = () => (
   </svg>
 );
 
-const EVENT_ID = 'karan-aujla-jln-2026';
-
-const MODES = [
-  { id: 'pre', label: 'Pre-event' },
-  { id: 'live', label: 'Live' },
-  { id: 'post', label: 'Post-event' },
-];
-
 const OVERRIDE_REASONS = [
   'Evacuation / Safety',
   'Attendant Issue',
@@ -48,6 +39,9 @@ const OVERRIDE_REASONS = [
   'System Fault',
   'Other',
 ];
+
+const COMPLIANCE_RATE = 0.65;
+const REDIRECT_THRESHOLD = 162; // 90% of 180
 
 const MetricCard = ({ label, value, sub, highlight, icon: Icon }) => (
   <div className={`flex flex-col gap-1.5 rounded-2xl px-4 py-3 border ${highlight ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200 shadow-sm'}`}>
@@ -117,38 +111,25 @@ function EmergencyOverridePanel({ onActivate, onDeactivate }) {
       <div className="w-full bg-red-950 border border-red-700 rounded-2xl px-4 py-4 flex flex-col gap-4" data-testid="override-armed-panel">
         <div className="flex items-center justify-between">
           <span className="text-red-300 font-bold text-sm">Select override reason</span>
-          <span className="text-amber-400 font-mono font-bold text-sm">
-            00:{String(countdown).padStart(2, '0')}
-          </span>
+          <span className="text-amber-400 font-mono font-bold text-sm">00:{String(countdown).padStart(2, '0')}</span>
         </div>
         <div className="flex flex-wrap gap-2">
           {OVERRIDE_REASONS.map(r => (
-            <button
-              key={r}
-              onClick={() => setReason(r)}
+            <button key={r} onClick={() => setReason(r)}
               className={`text-xs px-3 py-1.5 rounded-xl font-semibold border transition-all ${
-                reason === r
-                  ? 'bg-red-500 border-red-400 text-white'
-                  : 'border-red-700 text-red-400 hover:border-red-500'
-              }`}
-            >
+                reason === r ? 'bg-red-500 border-red-400 text-white' : 'border-red-700 text-red-400 hover:border-red-500'
+              }`}>
               {r}
             </button>
           ))}
         </div>
         <div className="flex gap-2">
-          <button
-            onClick={handleConfirm}
-            disabled={!reason}
-            data-testid="override-confirm-btn"
-            className="flex-1 bg-red-600 text-white font-bold py-2.5 rounded-xl text-sm disabled:opacity-40 hover:bg-red-500 transition-all"
-          >
+          <button onClick={handleConfirm} disabled={!reason} data-testid="override-confirm-btn"
+            className="flex-1 bg-red-600 text-white font-bold py-2.5 rounded-xl text-sm disabled:opacity-40 hover:bg-red-500 transition-all">
             Confirm Override
           </button>
-          <button
-            onClick={() => { setPhase('idle'); setReason(''); }}
-            className="px-4 py-2.5 text-red-400 hover:text-red-300 text-sm font-medium"
-          >
+          <button onClick={() => { setPhase('idle'); setReason(''); }}
+            className="px-4 py-2.5 text-red-400 hover:text-red-300 text-sm font-medium">
             Cancel
           </button>
         </div>
@@ -160,18 +141,15 @@ function EmergencyOverridePanel({ onActivate, onDeactivate }) {
     <div className="w-full bg-red-600 border border-red-400 rounded-2xl px-4 py-4 flex flex-col gap-3" data-testid="override-active-panel">
       <div className="flex items-center gap-2">
         <div className="w-3 h-3 rounded-full bg-white animate-pulse" />
-        <span className="text-white font-black text-sm tracking-wide">OVERRIDE ACTIVE</span>
+        <span className="text-white font-black text-sm tracking-wide">OVERRIDE ACTIVE — ALL LOTS LOCKED</span>
       </div>
       <div className="flex flex-col gap-0.5">
         <span className="text-red-100 text-xs font-semibold">{activatedReason}</span>
-        <span className="text-red-200 text-xs">Activated at {activatedAt}</span>
+        <span className="text-red-200 text-xs">Activated at {activatedAt} · No new entries permitted</span>
       </div>
-      <button
-        onClick={handleDeactivate}
-        data-testid="override-deactivate-btn"
-        className="w-full bg-white/20 hover:bg-white/30 border border-white/30 text-white font-bold py-2.5 rounded-xl text-sm transition-all"
-      >
-        Deactivate
+      <button onClick={handleDeactivate} data-testid="override-deactivate-btn"
+        className="w-full bg-white/20 hover:bg-white/30 border border-white/30 text-white font-bold py-2.5 rounded-xl text-sm transition-all">
+        Deactivate Override
       </button>
     </div>
   );
@@ -184,12 +162,9 @@ function AlertFeed({ alerts }) {
       <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">Live alerts</span>
       <div className="flex flex-col gap-2">
         {alerts.map((alert, i) => (
-          <div
-            key={i}
-            className={`w-full rounded-xl px-4 py-3 flex items-start gap-3 border ${
-              alert.critical ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200 shadow-sm'
-            }`}
-          >
+          <div key={i} className={`w-full rounded-xl px-4 py-3 flex items-start gap-3 border ${
+            alert.critical ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200 shadow-sm'
+          }`}>
             <div className={`shrink-0 w-2 h-2 rounded-full mt-1.5 ${alert.critical ? 'bg-red-500 animate-pulse' : 'bg-gray-400'}`} />
             <div className="flex flex-col gap-0.5 min-w-0">
               <span className={`text-xs font-semibold ${alert.critical ? 'text-red-700' : 'text-gray-700'}`}>{alert.text}</span>
@@ -202,62 +177,78 @@ function AlertFeed({ alerts }) {
   );
 }
 
-export default function OperatorDashboardScreen({ bookedSpots, spotsRemaining, fillPercent, redirectCTATaps, redirectActive }) {
-  const [mode, setMode] = useState('live');
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [lastRefreshed, setLastRefreshed] = useState('');
+export default function OperatorDashboardScreen({
+  lots = [],
+  totalSpots = 180,
+  bookedSpots = 0,
+  spotsRemaining = 180,
+  fillPercent = 0,
+  redirectCTATaps = 0,
+  redirectActive = false,
+  lotsLocked = false,
+  onEmergencyLock,
+  onEmergencyUnlock,
+}) {
+  const [lastRefreshed, setLastRefreshed] = useState(
+    () => new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+  );
   const [generating, setGenerating] = useState(false);
   const [pdfDone, setPdfDone] = useState(false);
-  const [overrideActive, setOverrideActive] = useState(false);
+  const [overrideActive, setOverrideActive] = useState(lotsLocked);
   const [alerts, setAlerts] = useState([
-    { time: '17:42', text: 'North Lot: 3 vehicles exceeded entry window', critical: false },
-    { time: '17:38', text: 'Gate 2 attendant reported paper jam on scanner', critical: false },
+    { time: '17:42', text: 'Lot A: 3 vehicles exceeded entry window', critical: false },
+    { time: '17:38', text: 'Gate 1 attendant reported paper jam on scanner', critical: false },
   ]);
-
-  const loadStats = () => {
-    fetchEventStats(EVENT_ID)
-      .then(stats => {
-        setData(stats);
-        setLastRefreshed(stats.last_updated);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  };
-
-  useEffect(() => { loadStats(); }, []);
 
   const handleRefresh = () => {
     setLastRefreshed(new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }));
-    loadStats();
   };
 
   const handleOverrideActivate = (reason) => {
     const time = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
     setOverrideActive(true);
     setAlerts(prev => [{ time, text: `EMERGENCY OVERRIDE ACTIVE — ${reason}`, critical: true }, ...prev]);
+    onEmergencyLock?.();
   };
 
-  const handleOverrideDeactivate = () => setOverrideActive(false);
+  const handleOverrideDeactivate = () => {
+    setOverrideActive(false);
+    onEmergencyUnlock?.();
+  };
 
   const handleDownloadPDF = () => {
-    if (!data) return;
     setGenerating(true);
     setTimeout(() => {
-      const diverted = Math.round(redirectCTATaps * data.compliance_rate);
+      const vehiclesDiverted = Math.round(redirectCTATaps * COMPLIANCE_RATE);
+      const lotLines = lots.map(l => {
+        const booked = l.bays.filter(b => b.status === 'taken').length;
+        const total = l.bays.length;
+        const pct = Math.round((booked / total) * 100);
+        return `  ${l.label.padEnd(20)} ${booked}/${total}  (${pct}%)`;
+      });
+
       const reportText = [
         '================================================================',
         '         PARKEASE POST-EVENT COMPLIANCE REPORT',
         '================================================================', '',
-        `Event:   ${data.event_name}`, `Venue:   ${data.venue}`, `Date:    ${data.date}`,
+        'Event:   Karan Aujla Live',
+        'Venue:   JLN Stadium, Delhi',
+        'Date:    12 Apr 2026',
         `Generated: ${new Date().toLocaleString('en-IN')}`, '',
-        '----------------------------------------------------------------', 'PARKING PERFORMANCE', '----------------------------------------------------------------',
-        `Total pre-booked spots:     ${data.total_spots}`, `Confirmed arrivals:         ${bookedSpots}`,
-        `Utilisation rate:           ${fillPercent}%`, `Spots remaining at close:   ${spotsRemaining}`, '',
+        '----------------------------------------------------------------',
+        'PARKING PERFORMANCE',
+        '----------------------------------------------------------------',
+        `Total capacity:             ${totalSpots}`,
+        `Total booked:               ${bookedSpots}`,
+        `Total available:            ${spotsRemaining}`,
+        `Fill rate:                  ${fillPercent}%`, '',
         'Per-lot breakdown:',
-        ...(data.lots || []).map(l => `  ${l.name.padEnd(20)} ${l.booked}/${l.total}  (${l.percent}%)`), '',
-        '----------------------------------------------------------------', 'DEMAND SHIFTING', '----------------------------------------------------------------',
-        `Redirect CTA taps:     ${redirectCTATaps}`, `Est. vehicles diverted: ~${diverted}`, '',
+        ...lotLines, '',
+        '----------------------------------------------------------------',
+        'DEMAND SHIFTING',
+        '----------------------------------------------------------------',
+        `Redirect CTA taps:     ${redirectCTATaps}`,
+        `Est. vehicles diverted: ~${vehiclesDiverted}`, '',
         '================================================================',
       ].join('\n');
 
@@ -265,7 +256,7 @@ export default function OperatorDashboardScreen({ bookedSpots, spotsRemaining, f
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `ParkEase_Report_${data.event_name.replace(/\s+/g, '_')}.txt`;
+      a.download = 'ParkEase_KaranAujla_Report.txt';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -276,47 +267,32 @@ export default function OperatorDashboardScreen({ bookedSpots, spotsRemaining, f
     }, 1500);
   };
 
-  if (loading || !data) {
-    return (
-      <div className="min-h-[100dvh] bg-gray-50 flex items-center justify-center">
-        <div className="animate-pulse text-gray-400">Loading dashboard...</div>
-      </div>
-    );
-  }
-
-  const vehiclesDiverted = Math.round(redirectCTATaps * data.compliance_rate);
   const isRedirectHighlighted = redirectActive || overrideActive;
+  const vehiclesDiverted = Math.round(redirectCTATaps * COMPLIANCE_RATE);
 
   return (
     <div className="min-h-[100dvh] bg-gray-50 font-sans" data-testid="operator-dashboard">
       <div className="max-w-md mx-auto min-h-[100dvh] bg-gray-50 flex flex-col px-4 py-5 gap-5 sm:shadow-2xl">
-        {/* Mode toggle */}
-        <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl p-1.5 flex gap-1">
-          {MODES.map(m => (
-            <button key={m.id} onClick={() => setMode(m.id)} data-testid={`mode-${m.id}`}
-              className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${mode === m.id ? 'bg-[#1C1D2B] text-white shadow' : 'text-gray-500 hover:text-gray-800'}`}>
-              {m.label}
-            </button>
-          ))}
-        </div>
 
-        {/* Header */}
+        {/* Header — locked to Karan Aujla */}
         <div className="w-full flex flex-col gap-1 pt-1">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-gray-900">ParkEase</span>
-              <span className="text-gray-400">-</span>
+              <span className="text-gray-400">·</span>
               <span className="text-xs text-gray-500">Operator View</span>
             </div>
-            <button onClick={handleRefresh} className="p-1.5 text-gray-400 hover:text-gray-900" data-testid="refresh-btn"><RefreshIcon /></button>
+            <button onClick={handleRefresh} className="p-1.5 text-gray-400 hover:text-gray-900" data-testid="refresh-btn">
+              <RefreshIcon />
+            </button>
           </div>
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
-              <span className="text-base font-bold text-gray-900">{data.event_name}</span>
-              <span className="text-xs text-gray-400">{data.venue} - {data.date}</span>
+              <span className="text-base font-bold text-gray-900">Karan Aujla</span>
+              <span className="text-xs text-gray-400">JLN Stadium, Delhi — 12 Apr 2026</span>
             </div>
-            <div className={`text-xs font-bold px-2.5 py-1 rounded-full ${data.event_status === 'live' ? 'bg-red-600 text-white animate-pulse' : 'bg-gray-200 text-gray-700'}`}>
-              {(data.event_status || 'LIVE').toUpperCase()}
+            <div className="text-xs font-bold px-2.5 py-1 rounded-full bg-red-600 text-white animate-pulse">
+              LIVE
             </div>
           </div>
           <span className="text-xs text-gray-400">Last updated {lastRefreshed}</span>
@@ -331,7 +307,7 @@ export default function OperatorDashboardScreen({ bookedSpots, spotsRemaining, f
                 {overrideActive ? 'All check-ins halted' : redirectActive ? 'Redirect Active' : 'Redirect Standby'}
               </span>
             </div>
-            <span className="text-xs text-gray-400 pl-6">Triggers at {data.redirect_threshold_spots} spots (90% fill)</span>
+            <span className="text-xs text-gray-400 pl-6">Triggers at {REDIRECT_THRESHOLD} spots (90% fill)</span>
           </div>
           <div className={`w-3 h-3 rounded-full ${isRedirectHighlighted ? 'bg-red-500 animate-pulse' : 'bg-gray-300'}`} />
         </div>
@@ -345,39 +321,89 @@ export default function OperatorDashboardScreen({ bookedSpots, spotsRemaining, f
         {/* Alert feed */}
         <AlertFeed alerts={alerts} />
 
-        {/* Metrics */}
+        {/* Metrics — derived from shared lots state */}
         <div className="w-full grid grid-cols-2 gap-3" data-testid="metrics-grid">
-          <MetricCard label="Fill Rate" value={`${fillPercent}%`} sub={`${bookedSpots} of ${data.total_spots}`} highlight={fillPercent >= 90} icon={CarIcon} />
-          <MetricCard label="Spots Remaining" value={spotsRemaining} sub="Live count" highlight={spotsRemaining <= 50} />
-          <MetricCard label="Redirect Taps" value={redirectCTATaps} sub="Since redirect triggered" icon={RedirectIcon} />
-          <MetricCard label="Est. Diverted" value={`~${vehiclesDiverted}`} sub={`Taps x ${Math.round(data.compliance_rate * 100)}% compliance`} />
+          <MetricCard
+            label="Fill Rate"
+            value={`${fillPercent}%`}
+            sub={`${bookedSpots} of ${totalSpots}`}
+            highlight={fillPercent >= 90}
+            icon={CarIcon}
+          />
+          <MetricCard
+            label="Spots Remaining"
+            value={spotsRemaining}
+            sub="Live count"
+            highlight={spotsRemaining <= 50}
+          />
+          <MetricCard
+            label="Redirect Taps"
+            value={redirectCTATaps}
+            sub="Since redirect triggered"
+            icon={RedirectIcon}
+          />
+          <MetricCard
+            label="Est. Diverted"
+            value={`~${vehiclesDiverted}`}
+            sub={`Taps × ${Math.round(COMPLIANCE_RATE * 100)}% compliance`}
+          />
         </div>
 
-        {/* Per-lot bars */}
+        {/* Per-lot breakdown — derived from lots prop */}
         <div className="w-full flex flex-col gap-3">
           <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">Per-lot status</span>
-          {(data.lots || []).map((lot, i) => (
-            <div key={i} className="w-full bg-white border border-gray-200 shadow-sm rounded-xl px-4 py-3 flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-gray-900">{lot.name}</span>
-                <div className="flex items-center gap-2">
-                  <span className={`text-sm font-bold ${lot.percent >= 90 ? 'text-red-600' : 'text-gray-900'}`}>{lot.percent}%</span>
-                  <span className="text-xs text-gray-400">{lot.booked}/{lot.total}</span>
+          {lots.map(lot => {
+            const booked = lot.bays.filter(b => b.status === 'taken').length;
+            const total = lot.bays.length;
+            const available = total - booked;
+            const pct = Math.round((booked / total) * 100);
+            return (
+              <div key={lot.id} className="w-full bg-white border border-gray-200 shadow-sm rounded-xl px-4 py-3 flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-sm font-semibold text-gray-900">{lot.label}</span>
+                    <span className="text-xs text-gray-400">{lot.distanceToGateMetres}m to gate · {available} available</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-bold ${pct >= 90 ? 'text-red-600' : 'text-gray-900'}`}>{pct}%</span>
+                    <span className="text-xs text-gray-400">{booked}/{total}</span>
+                  </div>
+                </div>
+                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-700 ${pct >= 90 ? 'bg-red-500' : pct > 70 ? 'bg-amber-500' : 'bg-green-500'}`}
+                    style={{ width: `${pct}%` }}
+                  />
                 </div>
               </div>
-              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div className={`h-full rounded-full transition-all duration-700 ${lot.percent >= 90 ? 'bg-red-500' : lot.percent > 70 ? 'bg-amber-500' : 'bg-green-500'}`}
-                  style={{ width: `${lot.percent}%` }} />
-              </div>
+            );
+          })}
+        </div>
+
+        {/* Capacity summary */}
+        <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-5 py-4 flex flex-col gap-3">
+          <span className="text-sm font-bold text-gray-900">Venue capacity summary</span>
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-2xl font-black text-gray-900">{totalSpots}</span>
+              <span className="text-xs text-gray-400">Total</span>
             </div>
-          ))}
+            <div className="flex flex-col gap-0.5">
+              <span className="text-2xl font-black text-gray-900">{bookedSpots}</span>
+              <span className="text-xs text-gray-400">Booked</span>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-2xl font-black text-green-600">{spotsRemaining}</span>
+              <span className="text-xs text-gray-400">Available</span>
+            </div>
+          </div>
         </div>
 
         {/* Exit clearance comparison */}
         <div className="w-full bg-white border border-gray-200 shadow-sm rounded-2xl px-5 py-4 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <span className="text-sm font-bold text-gray-900">Exit Clearance vs Industry</span>
-            <span className="text-xs text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full">65-77% faster</span>
+            <span className="text-xs text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full">65–77% faster</span>
           </div>
           <div className="flex flex-col gap-2">
             <div className="flex flex-col gap-1">
@@ -392,7 +418,7 @@ export default function OperatorDashboardScreen({ bookedSpots, spotsRemaining, f
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-gray-500">Industry baseline</span>
-                <span className="text-xs font-bold text-red-500">60-90 mins</span>
+                <span className="text-xs font-bold text-red-500">60–90 mins</span>
               </div>
               <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
                 <div className="h-full bg-red-400 rounded-full" style={{ width: '85%' }} />
@@ -414,10 +440,10 @@ export default function OperatorDashboardScreen({ bookedSpots, spotsRemaining, f
           </div>
         </div>
 
-        {/* PDF Report */}
+        {/* Compliance report download */}
         <div className="w-full flex flex-col gap-2">
           <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">Compliance report</span>
-          <div className="w-full bg-white border border-gray-200 shadow-sm rounded-xl px-4 py-3 flex flex-col gap-3">
+          <div className="w-full bg-white border border-gray-200 shadow-sm rounded-xl px-4 py-3">
             <button onClick={handleDownloadPDF} disabled={generating} data-testid="download-report-btn"
               className={`w-full flex items-center justify-center gap-2 font-semibold text-sm rounded-xl py-2.5 transition-all active:scale-95 ${
                 pdfDone ? 'bg-green-50 border border-green-200 text-green-600' : 'bg-[#1C1D2B] text-white hover:bg-gray-800 disabled:opacity-50'}`}>

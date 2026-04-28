@@ -22,7 +22,31 @@ const PATHS = {
 
 const NAVBAR_PATHS = new Set([PATHS.VENUE, PATHS.BOOKING, PATHS.CONFIRMATION, PATHS.REDIRECT, PATHS.RETENTION]);
 
-// Reads bookingId from URL param — survives page refresh.
+// 3 lots × 60 bays = 180 total capacity, 30% taken (18 per lot), spread evenly
+const LOTS_CONFIG = [
+  { id: 'lot-a', label: 'Lot A', prefix: 'A', distanceToGateMetres: 150 },
+  { id: 'lot-b', label: 'Lot B', prefix: 'B', distanceToGateMetres: 280 },
+  { id: 'lot-c', label: 'Lot C', prefix: 'C', distanceToGateMetres: 420 },
+];
+
+function buildInitialLots() {
+  return LOTS_CONFIG.map((meta, lotIndex) => {
+    // Spread 18 taken bays evenly: step ≈ 3.33, phase-shifted per lot so patterns differ
+    const takenSet = new Set();
+    const step = 60 / 18;
+    const offset = lotIndex * 11;
+    for (let i = 0; i < 18; i++) {
+      takenSet.add((Math.round(i * step) + offset) % 60);
+    }
+    const bays = Array.from({ length: 60 }, (_, i) => ({
+      pillar_code: `${meta.prefix}-${String(i + 1).padStart(2, '0')}`,
+      lot_id: meta.id,
+      status: takenSet.has(i) ? 'taken' : 'available',
+    }));
+    return { ...meta, bays };
+  });
+}
+
 const ConfirmationRoute = () => {
   const navigate = useNavigate();
   const { bookingId } = useParams();
@@ -98,16 +122,21 @@ export default function App() {
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [demoRunning, setDemoRunning] = useState(false);
 
-  const [bookingState, setBookingState] = useState({ bookedSpots: 150, totalSpots: 500, redirectCTATaps: 0 });
-  const fillPercent = Math.round((bookingState.bookedSpots / bookingState.totalSpots) * 100);
-  const spotsRemaining = bookingState.totalSpots - bookingState.bookedSpots;
+  const [lots, setLots] = useState(() => buildInitialLots());
+  const [lotsLocked, setLotsLocked] = useState(false);
+  const [redirectCTATaps, setRedirectCTATaps] = useState(0);
+
+  // All spot counts derive from the single lots state — no hardcoding
+  const totalSpots = lots.reduce((sum, l) => sum + l.bays.length, 0);
+  const bookedSpots = lots.reduce((sum, l) => sum + l.bays.filter(b => b.status === 'taken').length, 0);
+  const spotsRemaining = totalSpots - bookedSpots;
+  const fillPercent = Math.round((bookedSpots / totalSpots) * 100);
   const redirectActive = fillPercent >= 90;
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userPhone, setUserPhone] = useState('');
   const [showAuth, setShowAuth] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
-
   const [activeNav, setActiveNav] = useState('For You');
   const [selectedCity] = useState('Delhi');
 
@@ -115,13 +144,27 @@ export default function App() {
     setParkingFull(prev => {
       const next = !prev;
       navigate(next ? PATHS.REDIRECT : PATHS.VENUE);
-      if (next) setBookingState(s => ({ ...s, bookedSpots: 450 }));
+      if (next) {
+        setLots(current => current.map(l => ({ ...l, bays: l.bays.map(b => ({ ...b, status: 'taken' })) })));
+      } else {
+        setLots(buildInitialLots());
+      }
       return next;
     });
   };
 
-  const handleBookingComplete = () => setBookingState(s => ({ ...s, bookedSpots: s.bookedSpots + 1 }));
-  const handleRedirectTap = () => setBookingState(s => ({ ...s, redirectCTATaps: s.redirectCTATaps + 1 }));
+  const handleBayBooked = (lotId, pillarCode) => {
+    setLots(prev => prev.map(l =>
+      l.id !== lotId ? l : {
+        ...l,
+        bays: l.bays.map(b => b.pillar_code === pillarCode ? { ...b, status: 'taken' } : b),
+      }
+    ));
+  };
+
+  const handleRedirectTap = () => setRedirectCTATaps(s => s + 1);
+  const handleEmergencyLock = () => setLotsLocked(true);
+  const handleEmergencyUnlock = () => setLotsLocked(false);
 
   const handleLoginSuccess = (phone) => {
     setIsLoggedIn(true);
@@ -175,27 +218,38 @@ export default function App() {
               selectedVenue={selectedVenue}
               onNavigateToBooking={() => navigate(PATHS.BOOKING)}
               onNavigateToRedirect={() => navigate(PATHS.REDIRECT)}
+              totalSpots={totalSpots}
+              spotsRemaining={spotsRemaining}
             />
           } />
           <Route path={PATHS.BOOKING} element={
             <BookingFlowScreen
               onPaymentSuccess={(bookingId) => navigate(`/confirmation/${bookingId}`)}
-              onBookingComplete={handleBookingComplete}
               onNavigateBack={() => navigate(PATHS.VENUE)}
               onParkingFull={() => navigate(PATHS.REDIRECT)}
               userPhone={userPhone}
               isLoggedIn={isLoggedIn}
+              lots={lots}
+              totalSpots={totalSpots}
+              spotsRemaining={spotsRemaining}
+              lotsLocked={lotsLocked}
+              onBayBooked={handleBayBooked}
             />
           } />
           <Route path={PATHS.CONFIRMATION} element={<ConfirmationRoute />} />
           <Route path={PATHS.REDIRECT} element={<RedirectScreen onRedirectTap={handleRedirectTap} />} />
           <Route path={PATHS.DASHBOARD} element={
             <OperatorDashboardScreen
-              bookedSpots={bookingState.bookedSpots}
+              lots={lots}
+              totalSpots={totalSpots}
+              bookedSpots={bookedSpots}
               spotsRemaining={spotsRemaining}
               fillPercent={fillPercent}
-              redirectCTATaps={bookingState.redirectCTATaps}
+              redirectCTATaps={redirectCTATaps}
               redirectActive={redirectActive}
+              lotsLocked={lotsLocked}
+              onEmergencyLock={handleEmergencyLock}
+              onEmergencyUnlock={handleEmergencyUnlock}
             />
           } />
           <Route path={PATHS.RETENTION} element={<RetentionScreen />} />
@@ -203,6 +257,8 @@ export default function App() {
             <VenueLandingScreen
               onNavigateToBooking={() => navigate(PATHS.BOOKING)}
               onNavigateToRedirect={() => navigate(PATHS.REDIRECT)}
+              totalSpots={totalSpots}
+              spotsRemaining={spotsRemaining}
             />
           } />
         </Routes>
