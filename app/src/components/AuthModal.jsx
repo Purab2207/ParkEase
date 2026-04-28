@@ -35,8 +35,8 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
       setStep("otp");
       setOtp(Array(6).fill(""));
       setCountdown(30);
-    } catch (e) {
-      setError(e.message);
+    } catch {
+      setError('Something went wrong. Please try again.');
     } finally {
       setSending(false);
     }
@@ -72,8 +72,8 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
       await verifyOtp(email, code, phone);
       onLoginSuccess?.(phone, email);
       handleClose();
-    } catch (e) {
-      setError(e.message);
+    } catch {
+      setError('Something went wrong. Please try again.');
       setOtp(Array(6).fill(""));
     }
   }

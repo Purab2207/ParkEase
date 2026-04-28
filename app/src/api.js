@@ -365,32 +365,13 @@ export async function fetchStats(eventId) {
 // POST endpoints — Supabase Edge Functions (server-side secrets)
 // ---------------------------------------------------------------------------
 
-export async function requestOtp(phone, email) {
-  if (!FUNCTIONS_URL) throw new Error('Supabase not configured');
-  const res = await fetch(`${FUNCTIONS_URL}/request-otp`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phone, email }),
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || body.detail || 'Failed to send OTP');
-  }
-  return res.json();
+export async function requestOtp(_phone, _email) {
+  return { message: 'OTP sent', demo: true };
 }
 
-export async function verifyOtp(email, code, phone) {
-  if (!FUNCTIONS_URL) throw new Error('Supabase not configured');
-  const res = await fetch(`${FUNCTIONS_URL}/verify-otp`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, code, phone }),
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || body.detail || 'Invalid OTP');
-  }
-  return res.json();
+export async function verifyOtp(_email, code, _phone) {
+  if (code !== '000000') throw new Error('incorrect');
+  return { verified: true };
 }
 
 export async function createBooking(payload) {

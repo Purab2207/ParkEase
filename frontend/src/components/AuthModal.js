@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 
-const IS_TEST_MODE = process.env.REACT_APP_RESEND_TEST_MODE === 'true';
 const DEMO_OTP = '0000';
 
 export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
@@ -127,11 +126,9 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                     className="w-11 h-12 text-center text-lg font-bold border-2 rounded-xl outline-none border-gray-300 text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" />
                 ))}
               </div>
-              {IS_TEST_MODE && (
-                <p className="text-center text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg py-2 px-3 mb-3">
-                  Demo mode — use OTP: 0000
-                </p>
-              )}
+              <p className="text-center text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg py-2 px-3 mb-3">
+                Demo mode · Use OTP: 0000
+              </p>
               <button onClick={handleOtpContinue} disabled={otp.join('') !== DEMO_OTP && otp.filter(Boolean).length < 6}
                 data-testid="otp-verify-btn"
                 className="w-full bg-[#1C1D2B] text-white font-bold py-3.5 rounded-xl uppercase tracking-wide text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-800 mb-4">

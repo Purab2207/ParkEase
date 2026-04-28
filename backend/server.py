@@ -15,10 +15,8 @@ from typing import Optional
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 DASHBOARD_API_KEY = os.environ.get("DASHBOARD_API_KEY", "demo-key-change-before-prod")
 DEMO_MODE = os.environ.get("DEMO_MODE", "false").lower() == "true"
-RESEND_TEST_MODE = os.environ.get("RESEND_TEST_MODE", "false").lower() == "true"
 
 # ---------------------------------------------------------------------------
 # Thin PostgREST client — wraps Supabase REST API via httpx.
@@ -132,33 +130,6 @@ class BookingCreate(BaseModel):
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-async def _send_otp_email(email: str, code: str):
-    if not RESEND_API_KEY or RESEND_TEST_MODE:
-        print(f"[DEV] OTP for {email}: {code}")
-        return
-    async with httpx.AsyncClient() as client:
-        await client.post(
-            "https://api.resend.com/emails",
-            headers={"Authorization": f"Bearer {RESEND_API_KEY}"},
-            json={
-                "from": "ParkEase <onboarding@resend.dev>",
-                "to": [email],
-                "subject": f"Your ParkEase OTP: {code}",
-                "html": f"""
-                <div style="font-family:sans-serif;max-width:400px;margin:0 auto;padding:32px">
-                  <h2 style="color:#1C1D2B">Your ParkEase login code</h2>
-                  <p style="font-size:14px;color:#555">Enter this code to verify your account:</p>
-                  <div style="font-size:40px;font-weight:bold;letter-spacing:8px;color:#1C1D2B;margin:24px 0">{code}</div>
-                  <p style="font-size:12px;color:#888">Valid for 10 minutes. Ignore if you didn't request this.</p>
-                  <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
-                  <p style="font-size:11px;color:#aaa">ParkEase · Pre-sell named parking bays for events</p>
-                </div>
-                """,
-            },
-            timeout=10,
-        )
-
-
 # ---------------------------------------------------------------------------
 # Auth routes
 # ---------------------------------------------------------------------------
@@ -173,23 +144,7 @@ async def request_otp(data: OtpRequest):
         raise HTTPException(400, "Phone must be 10 digits")
     if "@" not in data.email or "." not in data.email.split("@")[-1]:
         raise HTTPException(400, "Invalid email")
-
-    code = f"{random.randint(0, 999999):06d}"
-    expires_at = (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()
-
-    sb_insert("otp_codes", {
-        "email": data.email,
-        "phone": data.phone,
-        "code": code,
-        "expires_at": expires_at,
-        "used": False,
-    })
-
-    await _send_otp_email(data.email, code)
-    resp = {"message": "OTP sent", "email": data.email}
-    if RESEND_TEST_MODE:
-        resp["demo_hint"] = "Demo mode — use OTP: 0000"
-    return resp
+    return {"message": "OTP sent", "email": data.email, "demo_hint": "Demo mode — use OTP: 0000"}
 
 
 @app.post("/api/auth/verify-otp")
