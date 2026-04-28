@@ -32,8 +32,8 @@ export const FALLBACK_EVENTS = {
     date: 'Sat, 12 Apr 2026',
     doors_open: '6:00 PM',
     show_time: '8:00 PM',
-    total_spots: 500,
-    spots_remaining: 47,
+    total_spots: 180,
+    spots_remaining: 126,
     consumer_price: 169,
     venue_base_rate: 120,
     park_ease_fee: 49,
@@ -43,12 +43,13 @@ export const FALLBACK_EVENTS = {
     covered_parking: true,
     entry_windows: ['5:30–7:00 PM', '7:00–8:30 PM'],
     lots: [
-      { id: 'north', name: 'North Lot', total: 300, distance_m: 180, gate_name: 'Gate 2' },
-      { id: 'south', name: 'South Lot', total: 200, distance_m: 280, gate_name: 'Gate 4' },
+      { id: 'a', name: 'Lot A', total: 60, distance_m: 150, gate_name: 'Gate 1' },
+      { id: 'b', name: 'Lot B', total: 60, distance_m: 280, gate_name: 'Gate 3' },
+      { id: 'c', name: 'Lot C', total: 60, distance_m: 420, gate_name: 'Gate 5' },
     ],
     prohibited_items: ['Professional cameras / DSLR', 'Outside food & beverages', 'Laser pointers', 'Selfie sticks / tripods', 'Power banks above 20,000 mAh'],
     amenities: ['Covered parking', 'Pillar-mapped bays', 'QR entry enforcement', 'Pre-assigned bay number'],
-    booking_count: 453,
+    booking_count: 54,
     parking_lat: 28.5673,
     parking_lng: 77.2431,
   },
@@ -370,7 +371,7 @@ export async function requestOtp(_phone, _email) {
 }
 
 export async function verifyOtp(_email, code, _phone) {
-  if (code !== '000000') throw new Error('incorrect');
+  if (code !== '000000') throw new Error('Incorrect OTP — use 000000 for this demo');
   return { verified: true };
 }
 

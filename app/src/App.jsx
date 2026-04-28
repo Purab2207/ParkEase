@@ -84,7 +84,7 @@ export default function App() {
   const [rcbBookingData, setRcbBookingData] = useState(null);
 
   // Live booking state — drives S5 metrics in real-time
-  const [bookingState, setBookingState] = useState({ bookedSpots: 150, totalSpots: 500, redirectCTATaps: 0 });
+  const [bookingState, setBookingState] = useState({ bookedSpots: 54, totalSpots: 180, redirectCTATaps: 0 });
   const liveMetrics = {
     bookedSpots:    bookingState.bookedSpots,
     totalSpots:     bookingState.totalSpots,

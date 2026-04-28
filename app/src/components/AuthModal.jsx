@@ -72,8 +72,8 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
       await verifyOtp(email, code, phone);
       onLoginSuccess?.(phone, email);
       handleClose();
-    } catch {
-      setError('Something went wrong. Please try again.');
+    } catch (e) {
+      setError(e.message || 'Something went wrong. Please try again.');
       setOtp(Array(6).fill(""));
     }
   }
@@ -152,7 +152,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value.trim())}
-                  placeholder="Email address (OTP will be sent here)"
+                  placeholder="Email address (any email works for demo)"
                   className="flex-1 px-3 py-3 outline-none text-gray-900 text-sm bg-white"
                 />
               </div>

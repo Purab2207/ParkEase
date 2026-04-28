@@ -70,64 +70,39 @@ function normaliseEvent(e) {
 
 const DEFAULT_EVENT = normaliseEvent(FALLBACK_EVENTS['karan-aujla-jln-2026']);
 
-// JLN North Lot — 20 bays, pillar-based (B-series)
-// ~35% taken to match MVP 35% fill rate target
-const NORTH_LOT_BAYS = [
-  { id: 'B-01', pillarCode: 'B-01', status: 'taken' },
-  { id: 'B-02', pillarCode: 'B-02', status: 'available' },
-  { id: 'B-03', pillarCode: 'B-03', status: 'available' },
-  { id: 'B-04', pillarCode: 'B-04', status: 'taken' },
-  { id: 'B-05', pillarCode: 'B-05', status: 'available' },
-  { id: 'B-06', pillarCode: 'B-06', status: 'available' },
-  { id: 'B-07', pillarCode: 'B-07', status: 'taken' },
-  { id: 'B-08', pillarCode: 'B-08', status: 'available' },
-  { id: 'B-09', pillarCode: 'B-09', status: 'available' },
-  { id: 'B-10', pillarCode: 'B-10', status: 'taken' },
-  { id: 'B-11', pillarCode: 'B-11', status: 'available' },
-  { id: 'B-12', pillarCode: 'B-12', status: 'available' },
-  { id: 'B-13', pillarCode: 'B-13', status: 'taken' },
-  { id: 'B-14', pillarCode: 'B-14', status: 'available' },  // Arjun's bay from PRD
-  { id: 'B-15', pillarCode: 'B-15', status: 'available' },
-  { id: 'B-16', pillarCode: 'B-16', status: 'taken' },
-  { id: 'B-17', pillarCode: 'B-17', status: 'available' },
-  { id: 'B-18', pillarCode: 'B-18', status: 'available' },  // Rahul's bay from PRD
-  { id: 'B-19', pillarCode: 'B-19', status: 'taken' },
-  { id: 'B-20', pillarCode: 'B-20', status: 'available' },
-];
-
-// JLN South Lot — C-series
-const SOUTH_LOT_BAYS = [
-  { id: 'C-01', pillarCode: 'C-01', status: 'taken' },
-  { id: 'C-02', pillarCode: 'C-02', status: 'available' },
-  { id: 'C-03', pillarCode: 'C-03', status: 'taken' },
-  { id: 'C-04', pillarCode: 'C-04', status: 'available' },
-  { id: 'C-05', pillarCode: 'C-05', status: 'available' },
-  { id: 'C-06', pillarCode: 'C-06', status: 'available' },
-  { id: 'C-07', pillarCode: 'C-07', status: 'taken' },
-  { id: 'C-08', pillarCode: 'C-08', status: 'available' },
-  { id: 'C-09', pillarCode: 'C-09', status: 'available' },
-  { id: 'C-10', pillarCode: 'C-10', status: 'taken' },
-  { id: 'C-11', pillarCode: 'C-11', status: 'available' },
-  { id: 'C-12', pillarCode: 'C-12', status: 'taken' },
-  { id: 'C-13', pillarCode: 'C-13', status: 'available' },
-  { id: 'C-14', pillarCode: 'C-14', status: 'available' },
-  { id: 'C-15', pillarCode: 'C-15', status: 'available' },
-];
+// Generate lot bays: 60 bays per lot, 18 taken (30%), phase-shifted to avoid clumping
+function makeLotBays(prefix, takenPositions) {
+  return Array.from({ length: 60 }, (_, i) => {
+    const n = i + 1;
+    const code = `${prefix}-${String(n).padStart(2, '0')}`;
+    return { id: code, pillarCode: code, status: takenPositions.includes(n) ? 'taken' : 'available' };
+  });
+}
+const LOT_A_TAKEN = [1,4,7,10,13,16,19,22,25,28,31,34,37,40,43,46,49,52];
+const LOT_B_TAKEN = [2,5,8,11,14,17,20,23,26,29,32,35,38,41,44,47,50,53];
+const LOT_C_TAKEN = [3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54];
 
 const LOTS = [
   {
-    id: 'north',
-    label: 'North Lot',
-    distanceToGateMetres: 180,
-    gateName: 'Gate 2',
-    bays: NORTH_LOT_BAYS,
+    id: 'a',
+    label: 'Lot A',
+    distanceToGateMetres: 150,
+    gateName: 'Gate 1',
+    bays: makeLotBays('A', LOT_A_TAKEN),
   },
   {
-    id: 'south',
-    label: 'South Lot',
+    id: 'b',
+    label: 'Lot B',
     distanceToGateMetres: 280,
-    gateName: 'Gate 4',
-    bays: SOUTH_LOT_BAYS,
+    gateName: 'Gate 3',
+    bays: makeLotBays('B', LOT_B_TAKEN),
+  },
+  {
+    id: 'c',
+    label: 'Lot C',
+    distanceToGateMetres: 420,
+    gateName: 'Gate 5',
+    bays: makeLotBays('C', LOT_C_TAKEN),
   },
 ];
 
@@ -239,7 +214,8 @@ const LotSectionTabs = ({ lots, selectedLotId, onSelect }) => (
 );
 
 const BayGrid = ({ bays, selectedBayId, onSelectBay }) => (
-  <div className="w-full grid grid-cols-5 gap-2">
+  <div className="w-full max-h-[280px] overflow-y-auto rounded-xl">
+  <div className="grid grid-cols-5 gap-2">
     {bays.map(bay => {
       const isSelected = bay.id === selectedBayId;
       const isTaken = bay.status === 'taken';
@@ -260,6 +236,7 @@ const BayGrid = ({ bays, selectedBayId, onSelectBay }) => (
         </button>
       );
     })}
+  </div>
   </div>
 );
 
@@ -518,8 +495,8 @@ export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn, on
 
   // Event data — fetched from API, falls back to local data
   const [event, setEvent] = useState(DEFAULT_EVENT);
-  const [spotsRemaining, setSpotsRemaining] = useState(47);
-  const [totalSpots, setTotalSpots] = useState(500);
+  const [spotsRemaining, setSpotsRemaining] = useState(126);
+  const [totalSpots, setTotalSpots] = useState(180);
 
   // Bay grid — starts with hardcoded mock, overwritten with live Supabase statuses
   const [lots, setLots] = useState(LOTS);
@@ -562,7 +539,7 @@ export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn, on
   }, [lots]);
 
   // Selections
-  const [selectedLotId, setSelectedLotId] = useState('north');
+  const [selectedLotId, setSelectedLotId] = useState('a');
   const [selectedBay, setSelectedBay] = useState(null);
   const [selectedLot, setSelectedLot] = useState(LOTS[0]);
   const [selectedWindow, setSelectedWindow] = useState(null);

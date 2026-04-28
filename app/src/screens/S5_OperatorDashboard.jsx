@@ -83,19 +83,20 @@ const MOCK_DASHBOARD = {
   lastUpdated: '21:03',
 
   // Primary metrics — Row 1 from PRD dashboard spec
-  totalSpots: 500,
-  bookedSpots: 435,              // 87% fill — PRD exact value
-  spotsRemaining: 65,            // PRD exact value
-  fillPercent: 87,               // PRD exact value
+  totalSpots: 180,
+  bookedSpots: 157,              // 87% fill
+  spotsRemaining: 23,
+  fillPercent: 87,
   redirectCTATaps: 118,          // PRD exact value
   complianceRate: 0.55,          // 55% compliance — PRD: taps × 55%
-  redirectThresholdSpots: 450,   // PRD: redirect triggers at 90% (450/500)
+  redirectThresholdSpots: 162,   // 90% of 180
   redirectActive: true,          // parking > 90% full
 
   // Lot breakdown
   lots: [
-    { name: 'North Lot', total: 300, booked: 265, percent: 88 },
-    { name: 'South Lot', total: 200, booked: 170, percent: 85 },
+    { name: 'Lot A', total: 60, booked: 52, percent: 87 },
+    { name: 'Lot B', total: 60, booked: 53, percent: 88 },
+    { name: 'Lot C', total: 60, booked: 52, percent: 87 },
   ],
 
   // Colour-coded alert feed — PRD §5.x
@@ -103,7 +104,7 @@ const MOCK_DASHBOARD = {
     { time: '21:03', type: 'critical', message: 'PARKING FULL — Redirect active for all new visitors' },
     { time: '20:47', type: 'warning',  message: 'Fill rate crossed 90% — redirect CTA now live' },
     { time: '20:31', type: 'success',  message: 'No booking conflicts reported' },
-    { time: '20:15', type: 'success',  message: 'Attendant check-ins: 435/500 confirmed arrivals' },
+    { time: '20:15', type: 'success',  message: 'Attendant check-ins: 157/180 confirmed arrivals' },
     { time: '19:58', type: 'warning',  message: 'Redirect CTA live — parking full screen active for new visitors' },
     { time: '19:30', type: 'info',     message: 'Fill rate 80% — on track for full house' },
     { time: '18:45', type: 'success',  message: 'First 100 QR scans completed — zero conflicts' },
@@ -115,18 +116,19 @@ const MOCK_PRE_EVENT = {
   ...MOCK_DASHBOARD,
   eventStatus: 'upcoming',
   lastUpdated: '10:30',
-  bookedSpots: 312,
-  spotsRemaining: 188,
+  bookedSpots: 112,
+  spotsRemaining: 68,
   fillPercent: 62,
   redirectCTATaps: 0,
   redirectActive: false,
   lots: [
-    { name: 'North Lot', total: 300, booked: 195, percent: 65 },
-    { name: 'South Lot', total: 200, booked: 117, percent: 59 },
+    { name: 'Lot A', total: 60, booked: 38, percent: 63 },
+    { name: 'Lot B', total: 60, booked: 37, percent: 62 },
+    { name: 'Lot C', total: 60, booked: 37, percent: 62 },
   ],
   alerts: [
     { time: '10:30', type: 'info',    message: 'Pre-event mode — gates open at 17:00' },
-    { time: '09:15', type: 'success', message: '312 bookings confirmed — 62% fill rate' },
+    { time: '09:15', type: 'success', message: '112 bookings confirmed — 62% fill rate' },
     { time: '08:00', type: 'info',    message: 'Attendant briefing scheduled for 16:00' },
   ],
 };
@@ -135,14 +137,15 @@ const MOCK_POST_EVENT = {
   ...MOCK_DASHBOARD,
   eventStatus: 'ended',
   lastUpdated: '23:45',
-  bookedSpots: 492,
-  spotsRemaining: 8,
+  bookedSpots: 176,
+  spotsRemaining: 4,
   fillPercent: 98,
   redirectCTATaps: 156,
   redirectActive: false,
   lots: [
-    { name: 'North Lot', total: 300, booked: 296, percent: 99 },
-    { name: 'South Lot', total: 200, booked: 196, percent: 98 },
+    { name: 'Lot A', total: 60, booked: 59, percent: 98 },
+    { name: 'Lot B', total: 60, booked: 59, percent: 98 },
+    { name: 'Lot C', total: 60, booked: 58, percent: 97 },
   ],
   alerts: [
     { time: '23:45', type: 'success', message: 'Event ended — all lots cleared' },
@@ -400,7 +403,8 @@ const PDFReportButton = ({ data }) => {
     setGenerating(true);
     setTimeout(() => {
       const diverted = Math.round(data.redirectCTATaps * data.complianceRate);
-      const tapRate  = Math.round((data.redirectCTATaps / 312) * 100);
+      const usersShownFull = Math.round(data.bookedSpots * 0.7);
+      const tapRate  = usersShownFull > 0 ? Math.round((data.redirectCTATaps / usersShownFull) * 100) : 0;
 
       const reportText = [
         '================================================================',
@@ -430,8 +434,8 @@ const PDFReportButton = ({ data }) => {
         'DEMAND SHIFTING PERFORMANCE',
         '----------------------------------------------------------------',
         `Redirect threshold:         ${data.redirectThresholdSpots} spots (90% fill)`,
-        `Users shown parking full:   312`,
-        `Tapped cab/shuttle CTA:     ${data.redirectCTATaps}  (${tapRate}% tap rate)`,
+        `Users shown parking full:   ${usersShownFull}`,
+        `Tapped cab/shuttle CTA:     ${data.redirectCTATaps}  (${tapRate}% of shown)`,
         `Est. vehicles diverted:     ~${diverted}`,
         `Compliance discount:        55% applied to CTA tap count`,
         `Avg cab booking time:       24 seconds`,
@@ -526,7 +530,7 @@ const EventConfigSummary = ({ data }) => (
       Event configuration
     </span>
     {[
-      ['Total inventory', `${data.totalSpots} spots across 2 lots`],
+      ['Total inventory', `${data.totalSpots} spots across 3 lots`],
       ['Redirect threshold', `${data.redirectThresholdSpots} spots (90% fill)`],
       ['Cab drop zone', 'Drop Zone A, near Gate 4'],
       ['Cab providers', 'Ola · Uber · Rapido'],
@@ -627,7 +631,7 @@ const EmergencyOverlay = ({ onDismiss }) => (
     <div className="w-full bg-white/20 rounded-2xl px-5 py-4 flex flex-col gap-2 text-center">
       <p className="text-base font-semibold">All gates open</p>
       <p className="text-sm text-red-100">QR enforcement suspended — proceed directly to your vehicle</p>
-      <p className="text-xs text-red-200 mt-1">Push notification sent to all 435 confirmed users</p>
+      <p className="text-xs text-red-200 mt-1">Push notification sent to all confirmed users</p>
     </div>
     <div className="w-full flex flex-col gap-2">
       <p className="text-xs text-center text-red-200">
@@ -655,7 +659,7 @@ const ManualOverridePanel = ({ data, onToast, onEmergency, onAddAlert }) => {
 
   // Lot blocked
   const [showLotBlock, setShowLotBlock] = useState(false);
-  const [selectedLot, setSelectedLot] = useState('North Lot');
+  const [selectedLot, setSelectedLot] = useState('Lot A');
   const [lotBlockSent, setLotBlockSent] = useState(false);
 
   // Emergency confirm
@@ -669,7 +673,7 @@ const ManualOverridePanel = ({ data, onToast, onEmergency, onAddAlert }) => {
   };
 
   const handleLotBlock = () => {
-    const other = selectedLot === 'North Lot' ? 'South Lot' : 'North Lot';
+    const other = data.lots.find(l => l.name !== selectedLot)?.name ?? 'another lot';
     setLotBlockSent(true);
     setShowLotBlock(false);
     onToast(`${selectedLot} temporarily closed. You've been reassigned to ${other} — new bay confirmed.`);
@@ -726,7 +730,7 @@ const ManualOverridePanel = ({ data, onToast, onEmergency, onAddAlert }) => {
               onClick={handleEndTime}
               className="w-full bg-amber-500 hover:bg-amber-400 text-white font-bold text-sm rounded-xl py-2.5 flex items-center justify-center gap-2 active:scale-95 transition-all"
             >
-              <BellIcon /> Send notification to 435 users
+              <BellIcon /> Send notification to all users
             </button>
           </div>
         )}
@@ -773,7 +777,7 @@ const ManualOverridePanel = ({ data, onToast, onEmergency, onAddAlert }) => {
               </div>
             </div>
             <p className="text-xs text-gray-400">
-              Notification preview: "{selectedLot} temporarily closed. Reassigned to {selectedLot === 'North Lot' ? 'South Lot' : 'North Lot'} — new bay confirmed."
+              Notification preview: "{selectedLot} temporarily closed. Reassigned to {data.lots.find(l => l.name !== selectedLot)?.name ?? 'another lot'} — new bay confirmed."
             </p>
             <button
               onClick={handleLotBlock}
@@ -799,7 +803,7 @@ const ManualOverridePanel = ({ data, onToast, onEmergency, onAddAlert }) => {
       ) : (
         <div className="w-full bg-red-50 border-2 border-red-400 rounded-2xl px-4 py-4 flex flex-col gap-3">
           <p className="text-sm font-bold text-red-700 text-center">
-            This will open all gates and push an emergency exit notification to all 435 users. Confirm?
+            This will open all gates and push an emergency exit notification to all confirmed users. Confirm?
           </p>
           <div className="flex gap-2">
             <button
