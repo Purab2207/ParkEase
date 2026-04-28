@@ -90,7 +90,7 @@ const EstimatedFareDisplay = ({ fareRangeLow, fareRangeHigh, isSurgeActive }) =>
   </div>
 );
 
-const CabProviderCard = ({ provider, availability, dropZoneLat, dropZoneLng, dropZoneName }) => {
+const CabProviderCard = ({ provider, availability, dropZoneLat, dropZoneLng, dropZoneName, onTap }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showWebFallback, setShowWebFallback] = useState(false);
 
@@ -160,6 +160,7 @@ const CabProviderCard = ({ provider, availability, dropZoneLat, dropZoneLng, dro
 
   const handleBooking = () => {
     if (isUnavailable) return;
+    onTap?.();
     setIsLoading(true);
     const deepLink = buildDeepLink();
     const webFallbackUrl = getWebFallbackUrl();
@@ -209,7 +210,7 @@ const CabProviderCard = ({ provider, availability, dropZoneLat, dropZoneLng, dro
   );
 };
 
-const CabOptionsGrid = ({ cabAvailability, dropZoneLat, dropZoneLng, dropZoneName }) => (
+const CabOptionsGrid = ({ cabAvailability, dropZoneLat, dropZoneLng, dropZoneName, onRedirectTap }) => (
   <div className="w-full grid grid-cols-3 gap-3">
     {['ola', 'uber', 'rapido'].map((provider) => (
       <CabProviderCard
@@ -219,6 +220,7 @@ const CabOptionsGrid = ({ cabAvailability, dropZoneLat, dropZoneLng, dropZoneNam
         dropZoneLat={dropZoneLat}
         dropZoneLng={dropZoneLng}
         dropZoneName={dropZoneName}
+        onTap={onRedirectTap}
       />
     ))}
   </div>
@@ -306,7 +308,7 @@ const getFareRange = (lat, lng, surgeMultiplier = 1) => {
   };
 };
 
-export default function RedirectScreen() {
+export default function RedirectScreen({ onRedirectTap }) {
   // Simulated initial state fetching
   const MOCK_REDIRECT_DATA = {
     venueDisplayName: "Chinnaswamy Stadium, Bangalore",
@@ -384,6 +386,7 @@ export default function RedirectScreen() {
           dropZoneLat={data.dropZoneLat}
           dropZoneLng={data.dropZoneLng}
           dropZoneName={data.dropZoneName}
+          onRedirectTap={onRedirectTap}
         />
 
         <DropZoneInfo dropZoneName={data.dropZoneName} />

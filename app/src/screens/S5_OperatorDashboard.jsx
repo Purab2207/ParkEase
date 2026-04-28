@@ -955,7 +955,7 @@ function PinGate({ onUnlock }) {
 // ----------------------------------------------------------------------------
 // MAIN SCREEN
 // ----------------------------------------------------------------------------
-export default function OperatorDashboardScreen() {
+export default function OperatorDashboardScreen({ bookedSpots, spotsRemaining, fillPercent, redirectCTATaps, redirectActive }) {
   const [unlocked, setUnlocked] = useState(false);
   const [mode, setMode] = useState('live');
   const [lastRefreshed, setLastRefreshed] = useState(MOCK_DASHBOARD.lastUpdated);
@@ -964,7 +964,12 @@ export default function OperatorDashboardScreen() {
   const [liveAlerts, setLiveAlerts] = useState(null); // null = use mode default
 
   const baseData = MODE_OPTIONS.find(m => m.id === mode)?.data ?? MOCK_DASHBOARD;
-  const data = liveAlerts ? { ...baseData, alerts: liveAlerts } : baseData;
+  const alertsData = liveAlerts ? { ...baseData, alerts: liveAlerts } : baseData;
+  // In live mode, overlay real-time counters from App state over mock data
+  const liveOverrides = mode === 'live' && bookedSpots !== undefined ? {
+    bookedSpots, spotsRemaining, fillPercent, redirectCTATaps, redirectActive,
+  } : {};
+  const data = { ...alertsData, ...liveOverrides };
 
   const handleRefresh = () => {
     setLastRefreshed(new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }));

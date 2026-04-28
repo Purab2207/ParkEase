@@ -83,6 +83,19 @@ export default function App() {
 
   const [rcbBookingData, setRcbBookingData] = useState(null);
 
+  // Live booking state — drives S5 metrics in real-time
+  const [bookingState, setBookingState] = useState({ bookedSpots: 150, totalSpots: 500, redirectCTATaps: 0 });
+  const liveMetrics = {
+    bookedSpots:    bookingState.bookedSpots,
+    totalSpots:     bookingState.totalSpots,
+    spotsRemaining: bookingState.totalSpots - bookingState.bookedSpots,
+    fillPercent:    Math.round((bookingState.bookedSpots / bookingState.totalSpots) * 100),
+    redirectCTATaps: bookingState.redirectCTATaps,
+    redirectActive: Math.round((bookingState.bookedSpots / bookingState.totalSpots) * 100) >= 90,
+  };
+  const handleBookingComplete = () => setBookingState(s => ({ ...s, bookedSpots: s.bookedSpots + 1 }));
+  const handleRedirectTap    = () => setBookingState(s => ({ ...s, redirectCTATaps: s.redirectCTATaps + 1 }));
+
   // Auth state
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userPhone, setUserPhone] = useState('');
@@ -151,6 +164,7 @@ export default function App() {
                 userEmail={userEmail}
                 isLoggedIn={isLoggedIn}
                 onAuthRequired={() => setShowAuth(true)}
+                onBookingComplete={handleBookingComplete}
               />
             }
           />
@@ -162,10 +176,10 @@ export default function App() {
           />
 
           {/* S4 — Redirect to cab */}
-          <Route path="/redirect" element={<RedirectScreen />} />
+          <Route path="/redirect" element={<RedirectScreen onRedirectTap={handleRedirectTap} />} />
 
           {/* S5 — Operator dashboard */}
-          <Route path="/dashboard" element={<OperatorDashboardScreen />} />
+          <Route path="/dashboard" element={<OperatorDashboardScreen {...liveMetrics} />} />
 
           {/* S6 — Retention */}
           <Route

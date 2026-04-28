@@ -511,7 +511,7 @@ const StepCompletedChip = ({ label, value, onClick }) => (
 // MAIN SCREEN COMPONENT
 // ----------------------------------------------------------------------------
 
-export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn, onAuthRequired }) {
+export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn, onAuthRequired, onBookingComplete }) {
   const { eventId } = useParams();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(2);
@@ -637,6 +637,7 @@ export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn, on
         group_size: groupSize,
       });
       setPaymentSuccess(true);
+      onBookingComplete?.();
       navigate(`/confirmation/${booking.booking_id}`);
     } catch (err) {
       setPaymentError(err.message || 'Booking failed. Please try again.');
