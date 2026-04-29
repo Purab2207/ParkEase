@@ -13,7 +13,7 @@ ParkEase is a software layer that pre-sells named parking bays to event attendee
 
 **The market:** India's live events market is ₹20,861 crore (2024), growing 15% YoY. ~110–130 structured-venue events/year in Tier 1 cities are addressable at MVP.
 
-**Current state:** 9-screen Vercel prototype is live and demoable. No live event secured yet. All persona motivations are hypothesis-based — Event 1 is the validation checkpoint.
+**Current state:** 11-screen Vercel prototype is live and demoable (+ persistent Navbar + Profile Modal). Full consumer flow: Events Listing (S0) → Venue Landing (S1) → Booking Flow (S2) → Payment + Confirmation (S3) → Redirect (S4). Operator, ground staff, and retention flows also live. No live event secured yet. All persona motivations are hypothesis-based — Event 1 is the validation checkpoint.
 
 **MVP targets:** 35% parking fill rate · 25–30% redirect CTA tap rate · <45% checkout drop-off
 
@@ -214,13 +214,19 @@ We do not own or operate parking infrastructure, run shuttle fleets, or compete 
 10. S9 Attendant Scanner — QR scan, plate verification, bay reassignment for blocked bays
 11. Manual inventory seeding + bay pillar mapping (ops task, not tech feature)
 12. WhatsApp forward CTA on confirmation (S3) ✅ built — pre-formatted booking summary with per-person split amount
+13. Events Listing home screen (S0) ✅ built — hero carousel + Concerts + IPL rows, scarcity chips, team gradients
+14. Distance to entry gate as headline on venue page ✅ built — Priya's primary conversion signal in S1
+15. UPI split calculator ✅ built — S2 (at pricing step) + S3 (post-confirmation UPI collect request)
+16. Vehicle number capture + autofill ✅ built — S2 step 4c, persisted to localStorage, autofills at next booking
+17. Contact number for QR delivery ✅ built — S2 step 4b, pre-filled from auth phone
+18. Prohibited items collapsible banner ✅ built — S1 + S2, venue-specific
+19. Profile modal + booking history ✅ built — vehicle number management, upcoming + past bookings, accessible from Navbar
+20. Persistent Navbar ✅ built — logo, city selector, search, profile/auth button; appears on all consumer screens
 
 **Should Have — ship if time allows before Event 1**
 
-13. Pre-event push notification with departure nudge timed to user home location
-14. UPI split calculator — per-person amount, UPI collect request to contacts
-15. Distance to entry gate as headline on venue page (Priya's primary conversion metric)
-16. Prohibited items banner — physical sign at lot entry (ops deliverable, not a tech feature)
+21. Pre-event push notification with departure nudge timed to user home location — prototype shows card in S3; actual push notification is V2
+22. Share button on event page — ✅ built in S1 (native share API, clipboard fallback)
 
 **Could Have — V2**
 
@@ -228,6 +234,8 @@ We do not own or operate parking infrastructure, run shuttle fleets, or compete 
 - Dynamic exit routing via Google Maps API
 - Operator self-service inventory input (removes manual seeding bottleneck at scale)
 - True escrow group booking (each person authorises their share independently)
+- City selector with real filtering in Navbar
+- Search with real event index
 
 *Note on RICE vs strategic sequencing:* The operator dashboard (S5) scores low on RICE Reach (serves 1 persona). Strategic reasoning overrides RICE — without Siddharth saying yes, there is no consumer product at all.
 
@@ -237,51 +245,185 @@ We do not own or operate parking infrastructure, run shuttle fleets, or compete 
 
 **Live site:** https://park-ease-rho.vercel.app
 **Stack:** React 19 · Tailwind CSS v4 · React Router v7 · Vite
-**Status:** 9 screens, data-driven, auto-deploys on push to `main`.
+**Status:** 11 screens + persistent Navbar + Profile Modal. Data-driven. Auto-deploys on push to `main`. Auth: any email + OTP `000000`.
+**Routes:** `/events` · `/events/:eventId` · `/events/:eventId/book` · `/confirmation/:bookingId` · `/redirect` · `/dashboard` · `/retain` · `/retain/book` · `/retain/confirm` · `/attendant`
+
+*[Screenshots to be added inline — placeholder for each screen below]*
+
+---
+
+### Persistent Shell (present on all consumer screens)
+
+**Navbar**
+Fixed top bar spanning all consumer-facing screens. Left: ParkEase logo. Right: search icon (opens SearchOverlay) + profile/auth button (shows user initial when logged in, person icon when logged out). City selector visible on desktop. The Navbar is the consistent identity layer — it signals "you're inside ParkEase" regardless of which screen Arjun lands on.
+
+**Profile Modal**
+Bottom sheet accessed from the Navbar profile button. Opens from any screen without losing scroll position. Contains:
+- User identity: phone number + "ParkEase member" label
+- **My Vehicle** — saved car registration number (format: DL 3C AB 1234). Edit in-place. Auto-fills at S2 checkout step 4c on next booking. Shown to gate attendant at scan.
+- **Upcoming bookings** — real bookings made in this session, pulled from localStorage
+- **Past bookings** — demo-seeded (Arijit Singh / DY Patil ₹149, Coldplay / NMS ₹199) so the account feels used for reviewers
+- Logout
+
+---
 
 ### Consumer Flow
 
+**S0 — Events Listing** · `/events`
+*Every user journey starts here — discovery, urgency, and the decision to look further*
+
+The home screen. Designed to make scarcity visible at a glance and give Rahul's group enough context to forward the link before the ticket window closes.
+
+- **Hero carousel** — all 7 events cycle automatically every 4 seconds. Swipeable with touch gestures. Shows: event name, venue, date, price, fill bar, "ALMOST FULL" badge at critical. Prev/next arrows. Dot indicators. "Book Parking" CTA on the active slide.
+- **Fill progress bar** — single horizontal bar below the carousel, changes to red when active event is critical
+- **Concerts row** — horizontal scroll, snap behaviour, 4 concert events (Karan Aujla, Arijit Singh, Coldplay, Diljit Dosanjh)
+- **IPL 2026 row** — horizontal scroll with "LIVE SOON" badge. 3 IPL events (RCB vs MI, CSK vs KKR, MI vs SRH) rendered with team-colour gradients (RCB: red/blue, CSK: gold/purple, MI: blue/orange) as hero background — no photos required
+- **Event cards** (160×200px): price badge top-left, "FULL SOON" badge top-right at critical, event name + city + date, fill bar + spots label (green / amber / red)
+- RCB card routes to `/retain` (demonstrates partner flow). All others route to `/events/:id`
+
+*Why this matters for Siddharth:* A polished events home page is the proof that ParkEase is a real consumer product, not a one-event demo. Siddharth sees that other operators are already represented — even if those events are mock data — before he agrees to a pilot.
+
+---
+
 **S1 — Venue Landing** · `/events/:eventId`
-*Attendee's first touchpoint — live scarcity + named bay selection*
-Hero image, live scarcity bar (spots remaining), lot selector, Google Maps directions to gate, OTP auth trigger.
+*Attendee's first touchpoint — the screen Priya screenshots and sends to her husband*
+
+- **Hero image** — full-width with gradient overlay, ParkEase wordmark badge, event name + subtitle + venue pill with map pin
+- **Event meta row** — date · doors open time · show time
+- **Distance-to-gate headline** — the most important single element on this screen. Shows: distance in metres to parking entry, gate name, covered/open path indicator, price from ₹X per vehicle. This is what Priya reads before deciding whether to book. Distance is the trust signal, not price.
+- **Google Maps directions button** — pre-filled to parking entry gate coordinates. One tap, zero typing.
+- **Real-time scarcity counter** — large spot count with gradient fill bar (green → amber → red). Pulsing red dot + "3 booked in last 2 mins" copy at <20 spots. Live via Supabase Realtime.
+- **Lot breakdown** — Lot A (150m), Lot B (280m), Lot C (420m) with spot counts per lot
+- **Amenities list** — "What's included" grid: named pillar bay, offline QR, WhatsApp confirmation, gate directions, 24hr refund
+- **Prohibited items banner** — collapsible, venue-specific. Addresses Priya's anxiety about being turned away at the gate.
+- **Trust footer** — "Named bay guaranteed · Full refund 24hrs before event"
+- **Sticky CTA** — "Book Parking · ₹X" (dark, full-width) + share button (native share API, clipboard fallback). Share button lets Rahul forward the page to his group before booking.
+
+When `spotsRemaining === 0`: CTA changes to "Parking Full — Book a Cab Instead" and routes to `/redirect` instead of booking flow.
+
+---
 
 **S2 — Booking Flow** · `/events/:eventId/book`
-*5-step checkout — designed to complete in under 2 minutes*
-Bay grid → arrival window → pricing breakdown → vehicle number → UPI pay.
+*7-step progressive disclosure checkout — designed to complete in under 2 minutes*
 
-**S3 — Booking Confirmation** · `/confirmation/:bookingId`
-*The screen Arjun screenshots and WhatsApps to his group*
-UPI payment QR → entry pass QR → bay details → WhatsApp forward + Google Maps to gate. Entry QR cached offline at confirmation — works with zero signal on event night.
+Each step unlocks the next only when complete. Completed steps collapse to summary chips that can be tapped to reopen. This prevents overwhelm and keeps Rahul moving forward rather than abandoning.
+
+**Step 1 — Inventory signal** (always visible throughout checkout)
+Scarcity banner shows live spots remaining with gradient fill bar. Never hidden — maintains urgency throughout the flow.
+
+**Step 2 — Bay selection**
+Lot tabs (A / B / C) with distance-to-gate label per lot. 60-bay grid per lot (5-column × 12-row, scroll-contained at max 280px height so the page doesn't scroll past it). Taken bays: white/strikethrough. Available: dark green on hover. Selected: solid green, scales up. Lot switch clears selection. Selected bay collapses to a green chip: "Bay A-14 · Lot A · 150m to Gate 1 · Reserved".
+
+**Step 3 — Arrival time window**
+Two radio options (5:30–7:00 PM / 7:00–8:30 PM). Each shows: window label + "Your spot is held within this window". Informs ops of expected arrival distribution — feeds compliance report.
+
+**Step 4 — Pricing breakdown**
+Card showing: venue base rate + ParkEase service fee (₹49) + total. Event tier label (Standard / Premium). Cancellation policy inline.
+
+**Step 4b — Contact number**
+10-digit mobile for QR delivery and departure reminder. Pre-filled from auth phone if logged in — shows "✓ Verified". Booking QR and nudge sent here.
+
+**Step 4c — Vehicle number**
+Indian plate format (DL 3C AB 1234). Auto-formatted to uppercase, non-alphanumeric stripped. Autofills from Profile localStorage if previously saved — shows "⚡ Autofilled from your profile". Saves back to localStorage on entry. Shown to gate attendant at scan — this is the chain of custody that closes the security loop Akshat described in user research ("I would have left my camera in the car — but only if I knew the car was in a safe, designated spot").
+
+**Step 4d — Group split calculator** (within pricing step)
+Stepper 1–6 people. Real-time per-person amount. "UPI collect request sent to X people after booking" copy sets expectation.
+
+**Step 5 — UPI payment**
+Sticky CTA at bottom. Label changes with state: "Select a bay to continue" → "Select arrival time to continue" → "Enter contact number to continue" → "Enter vehicle number to continue" → "Pay ₹X via UPI". Disabled until all prior steps complete. Loading spinner + "Processing…" on tap.
+
+---
+
+**S3 — Payment + Booking Confirmation** · `/confirmation/:bookingId`
+*Two-phase screen: pay first, then confirm — mirrors how Indian UPI transactions actually feel*
+
+**Phase 1 — Payment screen** (shown first on arrival at S3)
+Booking summary bar (event + bay + amount). UPI payment section:
+- Live UPI QR code (encoded: `upi://pay?pa=parksease@okaxis&pn=ParkEase&am=X&tn=Parking+ID`) — scan with any UPI app
+- 4 app buttons: GPay, PhonePe, Paytm, BHIM — each with correct deep-link scheme
+- "Simulate Payment ✓" button for demo (no real charge). 2-second processing animation ("Verifying payment… Confirming with UPI network") then transitions to Phase 2.
+
+*Why this matters:* Reviewers and operators who demo the flow experience an actual payment moment, not a skip. This makes the product feel real. The UPI QR is a functional artefact — it reinforces that ParkEase operates inside India's native payment infrastructure, not bolted on top of it.
+
+**Phase 2 — Confirmation screen**
+- **Header** — green check circle + "Booking Confirmed" + booking ID
+- **Entry QR** — deterministic mock QR generated from bookingId, cached offline from this moment. Works with zero signal on event night. "Show this to the attendant at the parking gate."
+- **Booking summary card** — event name + venue + date, bay pillar code + lot name + distance + gate name, arrival window, amount paid. Clean enough to screenshot and WhatsApp.
+- **Directions button** — pre-filled to parking entry gate
+- **Departure nudge card** — "We'll remind you to leave by 6:00 PM · Push notification sent 90 mins before event". In prototype shown as an in-screen card; real push notification is V2.
+- **WhatsApp forward** — preview of the pre-formatted message (event, date, bay, departure time, per-person split). One-tap opens WhatsApp with message pre-typed. No WhatsApp Business API required.
+- **UPI split block** — adjust group size post-confirmation, see per-person amount, send UPI collect requests. MVP = single payer collects from contacts.
+- **Exit guidance** — static: "Gate C → Section B · est. 12 mins to clear". Pre-configured for venue, not dynamic (V2).
+- **Cancellation policy** — full refund before event date.
+- **RCB cross-sell block** — gradient card (red/blue): "RCB vs MI — IPL 2026 Playoffs · M. Chinnaswamy Stadium · ₹149". "Book Parking for RCB →" routes to `/retain`. Retention trigger from within the confirmation moment.
+- Booking saved to localStorage → surfaces in Profile Modal as upcoming booking.
+
+---
 
 **S4 — Parking Full → Redirect** · `/redirect`
 *The hypothesis screen — do Indian attendees book a cab when parking is full?*
-Sold-out state, Ola/Uber/Rapido deep-links with venue drop zone pre-filled, redirect tracking label. Event 1 measures this tap rate.
+
+- **Red header bar** — "ParkEase · 🔴 PARKING FULL"
+- **Sold-out banner** — "Parking at [venue] is full · Book a cab — it's faster than finding street parking"
+- **Surge pricing warning** — amber banner: "Cab prices may be higher than usual right now (1.8x surge) — this is still faster than finding parking in the area". Honest copy — PRD Rule 5. Never hidden.
+- **Fare estimate** — ₹X–₹Y range, distance-based (Haversine calculation from user drop zone to venue). "Includes surge pricing" note if surge active. "Actual fare set by the cab app at time of booking" disclaimer.
+- **3 cab provider cards** (Ola / Uber / Rapido) in a grid:
+  - Brand colour + availability badge (Available / Few drivers / Unavailable)
+  - Deep-link with pre-filled destination (venue drop zone coordinates + name)
+  - Web fallback: if app deep-link doesn't open within 1.5 seconds, "Open Web" button appears — user never gets stuck
+  - Unavailable providers greyed out and non-interactive
+- **Drop zone info card** — "Drop Zone A, near Gate 4 · Pre-filled in all three cab apps"
+- **All-platforms-low notice** — shown if all 3 providers return low/unavailable: "Try again in 5 minutes or book from a nearby pickup point"
+- **Footer** — "Redirect tracking live from Event 1 onwards" · "How is this faster?" expandable explanation
+
+*Event 1 measures: tap rate on each provider card. This is the data point that determines whether the product's core demand-shifting mechanism works in India.*
+
+---
 
 ### Retention Flow
 
 **S6 — Retention / Re-engagement** · `/retain`
-*Converts one-time bookers into repeat users*
-Past booking recap, upcoming event recommendations, one-tap re-book CTA.
+*Converts one-time bookers into repeat users — the RCB partnership demo*
+Past booking recap (Karan Aujla confirmed badge), upcoming RCB event card with scarcity signal. One-tap "Book Parking" CTA. Demonstrates how a returning user re-enters the flow without friction.
 
 **S7 — RCB Booking** · `/retain/book`
-*Partner-branded variant — demonstrates white-label capability to B2B buyers*
-RCB dark theme booking flow: bay grid in brand colours, group size + pricing + vehicle number.
+*Partner-branded booking variant — demonstrates white-label B2B capability*
+Same 5-step checkout as S2, rendered in RCB dark theme (deep red/navy). Bay grid in brand colours. Group size + pricing breakdown + vehicle number. Used in B2B demos to show Siddharth how the product looks inside his brand.
 
 **S8 — RCB Confirmation** · `/retain/confirm`
 *Same QR mechanics as S3 — partner colour scheme applied throughout*
-Named bay entry QR, gate directions, booking ID — all in RCB dark theme.
+Named bay entry QR, gate directions, booking ID — all in RCB dark theme. Demonstrates that the confirmation artefact (the QR, the summary card) is white-label-ready.
+
+---
 
 ### Ground Staff Flow
 
 **S9 — Attendant Scanner** · `/attendant`
-*Closes the loop between "booking confirmed" and "bay actually occupied" — feeds compliance report*
-Ground-staff PWA with offline manifest caching. Shift login + OTP + zone selection, ready-to-scan state with live/offline indicator, match (green) / mismatch (red) result with plate comparison, bay reassignment flow + session audit log.
+*Closes the loop between "booking confirmed" and "bay actually occupied" — feeds the compliance report*
+
+PWA with offline manifest caching — works inside a venue with no signal.
+- **Shift login** — phone number + zone selection (Lot A / B / C)
+- **Ready-to-scan state** — full-screen camera viewfinder mock with live/offline indicator
+- **Match result (green)** — booking found, plate matches. "Bay A-14 · Arrive 5:30–7:00 PM · Plate: DL 3C AB 1234 ✓ MATCH". Mark as arrived.
+- **Mismatch result (red)** — booking found but plate doesn't match. Shows expected vs scanned plate. Attendant decides: allow or escalate.
+- **Bay reassignment flow** — if booked bay is physically blocked: attendant reassigns to nearest available bay in same lot, triggers WhatsApp notification to user
+- **Session audit log** — timestamped list of all scans in current shift. Feeds the compliance report data that Siddharth downloads from S5.
+
+---
 
 ### Operator Flow
 
 **S5 — Operator Dashboard** · `/dashboard`
 *Siddharth's entire product interaction — the B2B acquisition screen*
-Live fill rate gauge, per-lot occupancy bars, redirect CTA count, colour-coded alert feed, manual override controls (show ends early / lot blocked / emergency), PDF compliance report download.
+
+PIN: `2207` (configurable via `VITE_OPERATOR_PIN` Vercel env var).
+- **Live fill rate gauge** — large radial gauge, current bookings / total capacity
+- **Per-lot occupancy bars** — Lot A / B / C with booked / available / fill% per lot
+- **Redirect CTA count** — taps on the cab redirect screen since event start
+- **Colour-coded alert feed** — critical alerts pulse red, operational alerts amber; attendant scanner issues, entry window violations surface here
+- **Emergency override** — 3-state: IDLE → ARMED (10-second countdown, reason selector) → ACTIVATED (red, pulsing). On activation: all new bay taps in S2 are locked out, alert prepended to feed. Deactivate reverses.
+- **Mode toggle** — Pre-event (fill projection) / Live (real-time) / Post-event (final report)
+- **PDF compliance report** — download button. Auto-generated: fill rate, redirect tap count, vehicles diverted estimate (tap count × 0.55 compliance discount), industry baseline comparison (Diljit Delhi / Coldplay Mumbai), honest methodology note. This is the document Siddharth hands to the municipal authority the next morning.
 
 ---
 
@@ -291,7 +433,8 @@ Live fill rate gauge, per-lot occupancy bars, redirect CTA count, colour-coded a
 
 | Stage | Touchpoint | User Action | Emotional State | Friction | Product Response |
 |---|---|---|---|---|---|
-| Trigger | BookMyShow checkout | Taps parking add-on | Excited, cautious | Price + trust doubt | Real-time scarcity counter + price anchoring vs. informal parking |
+| Discovery | ParkEase Events Listing (S0) or BookMyShow checkout add-on (V2) | Sees event card with fill bar + "87 left" + price. Taps or forwards link to group chat. | Curious, price-checking | "Is this legit? Is the spot actually near the gate?" | Scarcity signal (fill bar + spots count) + price visible before commit. Share button lets Rahul forward before Arjun decides. |
+| Trigger | Venue Landing (S1) | Reads distance-to-gate headline (180m), sees 87 spots left, price ₹169 | Cautious, leaning in | "Is the spot actually close to the gate?" | Distance-to-gate is the headline — above price, above availability. Priya reads this first. |
 | Booking | ParkEase screen | Reviews spot details, pays | Cautiously hopeful | "Is it actually guaranteed?" | Named pillar bay + lot map + cancellation policy |
 | Day of event | Push notification | Taps for directions | Organised | Tendency to leave late | Timed departure nudge 30 mins before recommended leave time |
 | Arrival | Physical gate | Shows QR, parks | Moment of truth | Spot taken or mislabelled | Offline QR enforcement + pre-mapped pillar bay; attendant has reassignment authority |
@@ -314,13 +457,15 @@ Live fill rate gauge, per-lot occupancy bars, redirect CTA count, colour-coded a
 
 ### Booking Flow Architecture
 
-S2 implements a 5-step progressive disclosure model. Each step unlocks the next only when complete; completed steps collapse to summary chips.
+S2 implements a 7-step progressive disclosure model (5 visible steps + 2 sub-steps). Each step unlocks the next only when complete; completed steps collapse to summary chips.
 
-1. **Inventory Signal** (always visible) — real-time scarcity banner, fill progress bar, urgency copy
-2. **Bay Selection** — lot tabs + bay grid per pillar code; selection advances to Step 3 automatically
-3. **Arrival Time Window** — entry window picker (5:30–7:00 PM / 7:00–8:30 PM); informs ops of expected arrival distribution
-4. **Pricing Breakdown** — venue base rate + ParkEase service fee + group split calculator (1–6 people) with per-person amount in real time
-5. **UPI Payment** — single sticky CTA, disabled until bay and window are both selected
+1. **Inventory Signal** (always visible throughout) — real-time scarcity banner, fill progress bar, urgency copy
+2. **Bay Selection** — lot tabs (A / B / C) + 60-bay grid per lot (scroll-contained); selection auto-advances to Step 3
+3. **Arrival Time Window** — entry window picker (5:30–7:00 PM / 7:00–8:30 PM); informs ops of expected arrival distribution; feeds compliance report
+4. **Pricing Breakdown** — venue base rate + ParkEase service fee (₹49) + group split calculator (1–6 people) with per-person amount in real time
+4b. **Contact Number** — 10-digit mobile for QR delivery and departure reminder; pre-filled from auth phone
+4c. **Vehicle Number** — Indian plate format; auto-formatted; autofills from Profile if previously saved; creates gate attendant chain of custody
+5. **UPI Payment** — single sticky CTA, label reflects blocking step, disabled until all prior steps complete
 
 *Guardrail dependency: the <45% checkout drop-off guardrail depends directly on this progressive disclosure pattern. Any regression to a flat all-at-once form must be evaluated against this guardrail before shipping.*
 

@@ -125,6 +125,8 @@ NORTH STAR
 
 Each journey combines narrative storytelling (emotional states, product rationale) with a structured flow table (touchpoints, friction points, product responses). This dual format reflects strong product thinking — understanding the human experience while maintaining analytical precision.
 
+*Validation status (April 2026): Consumer-side persona journeys (Arjun, Priya, Rahul) are now corroborated by primary research — 5 direct attendee conversations across 8 cities + multi-city evidence from 12+ events. WTP range confirmed ₹200–400. Operator-side (Siddharth) remains hypothesis until Event 1. See OQ7.*
+
 ---
 
 ### 3.1 Arjun Rao — The Urban Professional
@@ -208,7 +210,22 @@ Stage 6 — Retention Loop | Re-engagement notification, 3 weeks later | Recepti
 2. Pre-event nudge = congestion management feature — as important to operations as to UX. Arjun leaving on time keeps entry load distributed and lot experience clean.
     
 3. Post-event exit notification = acquisition engine — Arjun's word-of-mouth in the group chat is how Rahul enters the product. Journeys are sequentially linked.
-    
+
+---
+
+#### User Research — Corroborating Evidence (April 2026)
+
+Five direct attendee conversations across 8 cities and 12+ events corroborated the consumer personas and surfaced findings the hypothesis did not anticipate.
+
+1. **Exit problem starts before arrival** — Sakshi (21, Ahmedabad): walked 2.5km in sunlight just to reach the venue gate. Experience degraded before the show began. Corroborates Priya persona directly — the parking-to-gate leg is where confidence collapses, not the post-event exit.
+
+2. **Named bay is a security product, not just a convenience product** — Akshat (Chandigarh): *"I would have left my camera in the car — but only if I knew the car was in a safe, designated spot."* Unmanaged parking means attendees cannot leave valuables in vehicles. Named bay + attendant check-in changes that behaviour. This is a distinct value proposition from convenience — one the hypothesis did not name.
+
+3. **Group coordination failure at scale** — Abhishek (23, Chandigarh): group of 15 at a venue with internet jammers, 1 hour to regroup, walked 1 hour to find a cab. A pre-assigned bay with a known gate location is the offline meeting point that jammers cannot disrupt. Rahul persona confirmed at larger group sizes.
+
+4. **Vehicle vandalism, not just theft** — Yuvraj (22, Mohali): IPL match, unmanaged lot, side mirrors broken, zero accountability. Named bay + QR check-in creates a chain of custody that generic directed parking cannot. Reinforces the security product framing from finding 2.
+
+**WTP finding:** ₹200–400 range (Sakshi: ₹200–300 · Akshat: ~20% of ticket price). Consistent with the ₹99–₹249 pricing hypothesis — upper bound is higher than assumed. Pricing may have room to move on premium events without losing conversion.
 
 ---
 
@@ -891,24 +908,30 @@ Section 3 — User Journeys: Complete
 
 ### 3.5 — Booking Flow Architecture (Canonical UI Spec)
 
-The S2 booking flow implements a 5-step progressive disclosure model. Each step unlocks the next only when the prior step is completed. Completed steps collapse to summary chips that can be tapped to re-open.
+The S2 booking flow implements a 7-step progressive disclosure model (5 labelled steps + 2 sub-steps). Each step unlocks the next only when the prior step is completed. Completed steps collapse to summary chips that can be tapped to re-open.
 
 **Step 1 — Inventory Signal (always visible)**
-Real-time scarcity banner showing spots remaining, fill progress bar, and urgency copy. Decays as bookings arrive. Never hidden — maintains FOMO signal throughout the booking session.
+Real-time scarcity banner showing spots remaining, fill progress bar, and urgency copy. Decays as bookings arrive. Never hidden — maintains urgency signal throughout the booking session.
 
 **Step 2 — Bay Selection**
-Lot tabs (North / South) + bay grid showing available/taken status per pillar code. User taps a bay to select. Selection advances to Step 3 automatically.
+Lot tabs (A / B / C) with distance-to-gate label per lot. 60-bay grid per lot (5-column × 12-row, scroll-contained in 280px container). Available bays dark green on hover. Taken bays white/strikethrough. Selected bay collapses to green chip: "Bay A-14 · Lot A · 150m to Gate 1 · Reserved". Lot switch clears selection.
 
 **Step 3 — Arrival Time Window**
-Entry window picker (e.g. 5:30–7:00 PM or 7:00–8:30 PM). Informs the ops team of expected arrival distribution. Selection advances to Step 4 automatically.
+Entry window picker (5:30–7:00 PM / 7:00–8:30 PM). Each option shows the hold policy: "Your spot is held within this window." Informs the ops team of expected arrival distribution — this data feeds the compliance report.
 
 **Step 4 — Pricing Breakdown**
-Transparent fee split: venue base rate + ParkEase service fee = total. Group split calculator (1–6 people) with per-person amount shown in real time. Cancellation policy displayed.
+Transparent fee split: venue base rate + ParkEase service fee (₹49) = total. Event tier label (Standard / Premium). Group split calculator (1–6 people) with per-person amount shown in real time. Cancellation policy displayed.
+
+**Step 4b — Contact Number**
+10-digit Indian mobile number for QR delivery and departure reminder. Pre-filled from auth phone if logged in (shows "✓ Verified"). Required before payment can proceed.
+
+**Step 4c — Vehicle Number**
+Indian plate format (e.g. DL 3C AB 1234). Auto-formatted to uppercase, non-alphanumeric stripped. Autofills from Profile localStorage if previously saved — shows "⚡ Autofilled from your profile". Saves back to localStorage on entry. This number is shown to the gate attendant at scan — it creates the chain of custody that closes the security loop. Minimum 6 characters required.
 
 **Step 5 — UPI Payment (sticky CTA)**
-Single "Pay ₹X via UPI" button. Disabled until bay and window selected. Loading state on tap. 1.5s mock payment timeout navigates to S3 confirmation.
+Single sticky CTA. Label reflects the current blocking step: "Select a bay to continue" → "Select arrival time to continue" → "Enter contact number to continue" → "Enter vehicle number to continue" → "Pay ₹X via UPI". Disabled until all prior steps complete. Loading spinner + "Processing…" on tap. On success: navigates to `/confirmation/:bookingId`.
 
-**Progressive disclosure rationale:** Showing all five steps simultaneously increases cognitive load and drop-off. The collapsed chip pattern (from the reference District by Zomato template) keeps users oriented without overwhelming them — at any point in the flow, the user can see what they've completed and what's next with one glance.
+**Progressive disclosure rationale:** Showing all steps simultaneously increases cognitive load and drop-off. The collapsed chip pattern keeps users oriented without overwhelming them — at any point in the flow, the user can see what they've completed and what's next with one glance.
 
 **Guardrail metric dependency:** The <45% checkout drop-off guardrail (§2.4) depends directly on this flow being frictionless. Any regression to a flat all-at-once form should be evaluated against this guardrail before shipping.
 
@@ -972,25 +995,20 @@ Departments
 - Legal (Contracts, SLA, liability)
     
 
-Prototype Screens (9 screens — demo order)
+Prototype Screens (11 screens + Navbar + Profile Modal — demo order)
 
-- S1 — Venue/Event Landing Page
-    
-- S2 — Parking Pre-Booking Flow
-    
-- S3 — Booking Confirmation
-    
-- S4 — Parking Full → Redirect Screen
-    
-- S6 — Retention / Re-engagement
-
-- S7 — RCB Booking (retention partner flow)
-
-- S8 — RCB Confirmation
-
-- S9 — Attendant Scanner (ground staff)
-
-- S5 — Operator Dashboard
+- S0 — Events Listing (home screen — hero carousel + Concerts + IPL rows) ✅ built
+- S1 — Venue/Event Landing Page ✅ built
+- S2 — Parking Pre-Booking Flow (7-step: bay → window → pricing → contact → vehicle → pay) ✅ built
+- S3 — Payment + Booking Confirmation (UPI payment screen → confirmation + QR) ✅ built
+- S4 — Parking Full → Redirect Screen ✅ built
+- S6 — Retention / Re-engagement ✅ built
+- S7 — RCB Booking (retention partner flow) ✅ built
+- S8 — RCB Confirmation ✅ built
+- S9 — Attendant Scanner (ground staff) ✅ built
+- S5 — Operator Dashboard ✅ built
+- **Navbar** — persistent shell: logo, city selector, search, profile/auth ✅ built
+- **Profile Modal** — vehicle number, booking history (upcoming + past), logout ✅ built
     
 
 ---
@@ -1000,6 +1018,13 @@ Prototype Screens (9 screens — demo order)
 |   |   |   |   |   |   |   |   |
 |---|---|---|---|---|---|---|---|
 |#|Feature|Department|RICE|Kano|Value vs Effort|Prototype Screen|Ship|
+|0a|Events Listing home screen — hero carousel + Concerts + IPL rows|Tech — FE, Product/Design|18.0|Basic|Quick Win|S0|MVP ✅|
+|0b|Persistent Navbar — logo, city, search, profile/auth|Tech — FE|12.0|Basic|Quick Win|All|MVP ✅|
+|0c|Profile Modal — vehicle number, booking history, logout|Tech — FE|9.0|Performance|Quick Win|All|MVP ✅|
+|0d|Vehicle number capture + autofill from profile (S2 step 4c)|Tech — FE|9.0|Basic|Quick Win|S2, S3|MVP ✅|
+|0e|Contact number for QR delivery (S2 step 4b)|Tech — FE|6.0|Basic|Quick Win|S2|MVP ✅|
+|0f|UPI payment screen with QR + app deep links before confirmation (S3)|Tech — FE|12.0|Basic|Quick Win|S3|MVP ✅|
+|0g|Share button on venue page — native share API + clipboard fallback|Tech — FE|6.0|Delighter|Quick Win|S1|MVP ✅|
 |1|Ola/Uber deep-link redirect with destination pre-filled|Tech — INT|36.0|Basic|Quick Win|S4|MVP|
 |2|Manual inventory seeding at MVP|Ops — Venue, Tech — BE|36.0|Basic|Quick Win|S2, S5|MVP|
 |3|Bay pillar mapping exercise|Ops — Venue|36.0|Basic|Quick Win|S2, S3|MVP|
@@ -1652,6 +1677,16 @@ OQ6 — How does ParkEase handle multi-zone events and festivals?
 Some large events span multiple stages, gates, and parking zones. Does ParkEase manage one lot per event or can a single event have multiple parking zones with separate inventory, separate QR flows, and separate redirect thresholds per zone?
 
 This is an architectural question that does not need to be answered for MVP (single venue, single lot) but must be resolved before V2 feature development begins. The data model either supports multi-zone natively or requires significant rearchitecture later. The decision made here has compounding implications for the operator dashboard design, bay mapping ops process, and compliance report structure.
+
+---
+
+OQ7 — User research gap (consumer-side partially closed — April 2026)
+
+Consumer-side: completed. 5 direct attendee conversations (Ahmedabad, Chandigarh ×2, Delhi, Mohali) + multi-city evidence across 8 cities, 12+ events, 2023–2026. Key findings inserted into Section 3 (Arjun persona). WTP range confirmed ₹200–400. Consumer persona motivations are now corroborated, not purely inferred.
+
+Still open — Operator side: Siddharth persona is entirely hypothesis. Zero real operator conversations completed. Core question: will event ops heads accept the liability boundary as written (ParkEase = software layer only; physical ops stays with organiser), and does the compliance report argument actually close the sale? 1–2 venue ops conversations needed before Event 1 pitch. This is not a blocking risk for prototype demos — it becomes blocking before any contract negotiation begins.
+
+How we answer it: Direct outreach to 1–2 ops heads at structured venues in Bangalore. College fest coordinators are the warm-intro lane — lower stakes, faster trust loop, more forgiving if the pitch needs iteration.
 
 ---
 
