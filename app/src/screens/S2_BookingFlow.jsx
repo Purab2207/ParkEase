@@ -419,15 +419,15 @@ const PricingBreakdown = ({ event, groupSize, onGroupSizeChange }) => (
 
 // Step 5 — UPI Payment
 const UPIPaymentButton = ({ consumerPrice, selectedBay, selectedWindow, contactPhoneValid, vehicleNoValid, isLoggedIn, isLoading, onPay, onOpenBaySelection }) => {
-  const isDisabled = isLoading || (selectedBay && (!selectedWindow || !contactPhoneValid || !vehicleNoValid));
+  const isDisabled = isLoading || !isLoggedIn || (selectedBay && (!selectedWindow || !contactPhoneValid || !vehicleNoValid));
 
   const getLabel = () => {
     if (isLoading) return 'Processing...';
     if (!selectedBay) return 'Select a bay to continue';
+    if (!isLoggedIn) return 'Sign in to confirm booking';
     if (!selectedWindow) return 'Select arrival time to continue';
     if (!contactPhoneValid) return 'Enter contact number to continue';
     if (!vehicleNoValid) return 'Enter vehicle number to continue';
-    if (!isLoggedIn) return 'Sign in to confirm booking';
     return `Pay ₹${consumerPrice} via UPI`;
   };
 
@@ -547,6 +547,11 @@ export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn, on
   // Group split
   const [groupSize, setGroupSize] = useState(1);
   const [contactPhone, setContactPhone] = useState(userPhone || '');
+
+  // Sync contactPhone when user logs in mid-flow (userPhone arrives after mount)
+  useEffect(() => {
+    if (userPhone && contactPhone === '') setContactPhone(userPhone);
+  }, [userPhone]);
 
   // Vehicle number — autofilled from profile if previously saved
   const [vehicleNo, setVehicleNo] = useState(() => {
