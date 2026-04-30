@@ -184,8 +184,12 @@ export default function App() {
   const fillPercent = Math.round((bookedSpots / totalSpots) * 100);
   const redirectActive = fillPercent >= 90;
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userPhone, setUserPhone] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    () => localStorage.getItem('pe_logged_in') === 'true'
+  );
+  const [userPhone, setUserPhone] = useState(
+    () => localStorage.getItem('pe_phone') || ''
+  );
   const [showAuth, setShowAuth] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [activeNav, setActiveNav] = useState('For You');
@@ -221,11 +225,15 @@ export default function App() {
     setIsLoggedIn(true);
     setUserPhone(phone);
     setShowAuth(false);
+    localStorage.setItem('pe_logged_in', 'true');
+    localStorage.setItem('pe_phone', phone);
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUserPhone('');
+    localStorage.removeItem('pe_logged_in');
+    localStorage.removeItem('pe_phone');
   };
 
   const startDemo = () => {
