@@ -10,6 +10,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
 
   useEffect(() => {
     if (step !== 'otp') return;
+    setCountdown(30);
     const interval = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) { clearInterval(interval); return 0; }
@@ -17,7 +18,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [step, countdown === 30]); // eslint-disable-line
+  }, [step]);
 
   if (!isOpen) return null;
 
@@ -68,9 +69,24 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
     setOtp(Array(6).fill(''));
   };
 
+  // Focus trap: keep Tab key inside the modal
+  const handleModalKeyDown = (e) => {
+    if (e.key !== 'Tab') return;
+    const modal = e.currentTarget;
+    const focusable = modal.querySelectorAll(
+      'button, input, a, [tabindex]:not([tabindex="-1"])'
+    );
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey ? document.activeElement === first : document.activeElement === last) {
+      e.preventDefault();
+      (e.shiftKey ? last : first).focus();
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center" onClick={handleBackdropClick} data-testid="auth-modal">
-      <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-sm overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-sm overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()} onKeyDown={handleModalKeyDown} role="dialog" aria-modal="true" aria-label="Sign in to ParkEase">
         <div className="bg-gradient-to-br from-[#7B2FBE] to-[#9B59B6] px-6 pt-8 pb-12 text-center relative">
           <button onClick={handleBackdropClick} className="absolute top-4 right-4 text-white/70 hover:text-white" aria-label="Close" data-testid="auth-close-btn">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -122,6 +138,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                   <input key={i} id={`otp-${i}`} type="tel" maxLength={1} value={otp[i] || ''}
                     onChange={e => handleOtpChange(i, e.target.value)}
                     onKeyDown={e => handleOtpKeyDown(i, e)}
+                    aria-label={`OTP digit ${i + 1} of 6`}
                     data-testid={`otp-input-${i}`}
                     className="w-11 h-12 text-center text-lg font-bold border-2 rounded-xl outline-none border-gray-300 text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" />
                 ))}

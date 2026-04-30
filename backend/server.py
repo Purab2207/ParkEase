@@ -1,4 +1,5 @@
 import os
+import re
 import uuid
 import random
 import httpx
@@ -8,10 +9,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
@@ -20,7 +24,6 @@ DEMO_MODE = os.environ.get("DEMO_MODE", "false").lower() == "true"
 
 # ---------------------------------------------------------------------------
 # Thin PostgREST client — wraps Supabase REST API via httpx.
-# Covers: select, insert, update, upsert with filters and count.
 # ---------------------------------------------------------------------------
 _REST = f"{SUPABASE_URL}/rest/v1"
 _HEADERS = {
@@ -29,11 +32,6 @@ _HEADERS = {
     "Content-Type": "application/json",
     "Prefer": "return=representation",
 }
-
-
-def _params_from_filters(filters: dict) -> dict:
-    """Convert {'id': 'eq.foo', 'status': 'eq.available'} to PostgREST query params."""
-    return filters
 
 
 def sb_select(table: str, filters: dict | None = None, columns: str = "*",
@@ -70,11 +68,58 @@ def sb_update(table: str, data: dict, filters: dict) -> list:
 
 
 def sb_upsert(table: str, data: dict, on_conflict: str) -> list:
-    headers = {**_HEADERS, "Prefer": f"resolution=merge-duplicates,return=representation"}
+    headers = {**_HEADERS, "Prefer": "resolution=merge-duplicates,return=representation"}
     r = httpx.post(f"{_REST}/{table}", headers=headers, json=data,
                    params={"on_conflict": on_conflict}, timeout=10)
     r.raise_for_status()
     return r.json()
+
+
+def sb_rpc(fn: str, params: dict) -> dict:
+    """Call a Postgres function via Supabase RPC."""
+    r = httpx.post(f"{SUPABASE_URL}/rest/v1/rpc/{fn}", headers=_HEADERS,
+                   json=params, timeout=10)
+    r.raise_for_status()
+    return r.json()
+
+
+# ---------------------------------------------------------------------------
+# Auth helpers
+# ---------------------------------------------------------------------------
+
+def require_dashboard_key(request: Request) -> None:
+    """Raise 401 if the request is missing a valid X-Dashboard-Key header."""
+    key = request.headers.get("x-dashboard-key", "")
+    if not key or key != DASHBOARD_API_KEY:
+        raise HTTPException(401, "Missing or invalid X-Dashboard-Key")
+
+
+def verify_booking_access(request: Request, booking: dict) -> None:
+    """
+    Demo-appropriate ownership check: caller must supply either:
+      - a valid X-Dashboard-Key (operator access), or
+      - an ?email= query param that matches the booking's stored email.
+    Production replacement: validate a JWT and check booking.user_id == auth.uid().
+    """
+    key = request.headers.get("x-dashboard-key", "")
+    if key and key == DASHBOARD_API_KEY:
+        return  # operator access
+
+    email_param = request.query_params.get("email", "").strip().lower()
+    booking_email = (booking.get("email") or "").strip().lower()
+    if email_param and email_param == booking_email:
+        return  # caller proved they know the owner's email
+
+    raise HTTPException(
+        401,
+        "Provide ?email=<booking-owner-email> or a valid X-Dashboard-Key header."
+    )
+
+
+# ---------------------------------------------------------------------------
+# Rate limiter
+# ---------------------------------------------------------------------------
+limiter = Limiter(key_func=get_remote_address)
 
 
 # ---------------------------------------------------------------------------
@@ -86,6 +131,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 ALLOWED_ORIGINS = [
     "https://park-ease-rho.vercel.app",
@@ -97,17 +144,34 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Dashboard-Key"],
 )
 
 
 # ---------------------------------------------------------------------------
 # Pydantic models
 # ---------------------------------------------------------------------------
+_PLATE_RE = re.compile(r"^[A-Z0-9 \-]{1,15}$", re.IGNORECASE)
+
+
 class OtpRequest(BaseModel):
     phone: str
     email: str
+
+    @field_validator("phone")
+    @classmethod
+    def phone_must_be_10_digits(cls, v: str) -> str:
+        if not v.isdigit() or len(v) != 10:
+            raise ValueError("Phone must be exactly 10 digits")
+        return v
+
+    @field_validator("email")
+    @classmethod
+    def email_basic_check(cls, v: str) -> str:
+        if "@" not in v or "." not in v.split("@")[-1]:
+            raise ValueError("Invalid email address")
+        return v.strip().lower()
 
 
 class OtpVerify(BaseModel):
@@ -118,39 +182,55 @@ class OtpVerify(BaseModel):
 
 class BookingCreate(BaseModel):
     event_id: str
-    bay_id: str          # pillar_code e.g. "B-14"
+    bay_id: str
     lot_id: str
-    phone: str
+    phone: str = Field(..., pattern=r"^\d{10}$", description="10-digit mobile number")
     email: str
     entry_window: str
-    vehicle_number: Optional[str] = None
-    group_size: int = 1
+    vehicle_number: Optional[str] = Field(
+        default=None,
+        max_length=15,
+        description="Indian vehicle registration plate (max 15 chars)",
+    )
+    group_size: int = Field(default=1, ge=1, le=6)
+
+    @field_validator("vehicle_number")
+    @classmethod
+    def validate_plate(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and not _PLATE_RE.match(v):
+            raise ValueError("vehicle_number must be alphanumeric (max 15 chars)")
+        return v
 
 
 # ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-# ---------------------------------------------------------------------------
-# Auth routes
+# Health
 # ---------------------------------------------------------------------------
 @app.get("/api/health")
 def health():
     return {"status": "ok"}
 
 
+# ---------------------------------------------------------------------------
+# Auth routes
+# ---------------------------------------------------------------------------
 @app.post("/api/auth/request-otp", status_code=200)
-async def request_otp(data: OtpRequest):
-    if len(data.phone) != 10 or not data.phone.isdigit():
-        raise HTTPException(400, "Phone must be 10 digits")
-    if "@" not in data.email or "." not in data.email.split("@")[-1]:
-        raise HTTPException(400, "Invalid email")
-    return {"message": "OTP sent", "email": data.email, "demo_hint": "Demo mode — use OTP: 0000"}
+@limiter.limit("3/minute")
+async def request_otp(request: Request, data: OtpRequest):
+    # OTP delivery is via Resend. In demo mode we skip the actual send.
+    if DEMO_MODE:
+        return {"message": "OTP sent", "email": data.email,
+                "demo_hint": "Demo mode — use OTP: 0000"}
+    # TODO: send real OTP via Resend to data.email, store hash in otp_codes
+    return {"message": "OTP sent", "email": data.email}
 
 
 @app.post("/api/auth/verify-otp")
-async def verify_otp(data: OtpVerify):
-    # Demo bypass: code "0000" (or "000000" from 6-box UI) authenticates any email unconditionally
-    if data.code in ("0000", "000000"):
+@limiter.limit("10/minute")
+async def verify_otp(request: Request, data: OtpVerify):
+    # [DEMO] Bypass: code "0000" / "000000" authenticates any email.
+    # This branch only runs when DEMO_MODE=true; safe to leave for demo.
+    # Production path: remove this block and validate against otp_codes table only.
+    if DEMO_MODE and data.code in ("0000", "000000"):
         phone = data.phone or "0000000000"
         user_rows = sb_upsert("users", {"email": data.email, "phone": phone}, on_conflict="email")
         user = user_rows[0] if user_rows else {}
@@ -226,7 +306,9 @@ def get_bays(event_id: str, lot_id: Optional[str] = None):
 
 
 @app.get("/api/events/{event_id}/stats")
-def get_event_stats(event_id: str):
+def get_event_stats(event_id: str, request: Request):
+    require_dashboard_key(request)
+
     rows = sb_select("events", filters={"id": f"eq.{event_id}"})
     if not rows:
         raise HTTPException(404, "Event not found")
@@ -241,11 +323,16 @@ def get_event_stats(event_id: str):
     redirect_cta_taps = max(0, round((fill_percent - 50) * 2.36)) if fill_percent > 50 else 0
 
     lots = e.get("lots") or []
+
+    # Fetch all bays for this event in one query, then group in Python (avoids N+1)
+    all_bays = sb_select("bays", filters={"event_id": f"eq.{event_id}"}, columns="lot_id,status")
+    bays_by_lot: dict[str, list] = {}
+    for b in all_bays:
+        bays_by_lot.setdefault(b["lot_id"], []).append(b)
+
     lot_stats = []
     for lot in lots:
-        bay_rows = sb_select("bays", filters={"event_id": f"eq.{event_id}",
-                                               "lot_id": f"eq.{lot['id']}"},
-                             columns="status")
+        bay_rows = bays_by_lot.get(lot["id"], [])
         lot_booked = sum(1 for b in bay_rows if b["status"] == "booked")
         lot_total = lot["total"]
         lot_percent = round((lot_booked / lot_total) * 100) if lot_total > 0 else 0
@@ -266,7 +353,7 @@ def get_event_stats(event_id: str):
         "spots_remaining": remaining,
         "fill_percent": fill_percent,
         "redirect_cta_taps": redirect_cta_taps,
-        "compliance_rate": 0.55,
+        "compliance_rate": 0.65,
         "redirect_threshold_spots": redirect_threshold,
         "redirect_active": redirect_active,
         "lots": lot_stats,
@@ -274,22 +361,22 @@ def get_event_stats(event_id: str):
     }
 
 
+# ---------------------------------------------------------------------------
+# Booking routes
+# ---------------------------------------------------------------------------
 @app.post("/api/bookings", status_code=201)
-def create_booking(data: BookingCreate):
+@limiter.limit("10/minute")
+def create_booking(request: Request, data: BookingCreate):
     event_rows = sb_select("events", filters={"id": f"eq.{data.event_id}"})
     if not event_rows:
         raise HTTPException(404, "Event not found")
     event = event_rows[0]
 
-    if len(data.phone) != 10:
-        raise HTTPException(400, "Phone must be 10 digits")
-
     valid_windows = event.get("entry_windows") or []
     if valid_windows and data.entry_window not in valid_windows:
         raise HTTPException(400, f"Invalid entry window. Choose one of: {valid_windows}")
 
-    # Atomically claim bay: UPDATE WHERE status='available' — only one concurrent
-    # request will get a non-empty result back; the rest get 0 rows.
+    # Atomically claim bay — only one concurrent request gets a non-empty result.
     now = datetime.now(timezone.utc).isoformat()
     claimed = sb_update(
         "bays",
@@ -327,9 +414,23 @@ def create_booking(data: BookingCreate):
         "status": "confirmed",
     })
 
-    # Decrement spots_remaining — triggers Supabase Realtime on the frontend
-    new_remaining = max(event["spots_remaining"] - 1, 0)
-    sb_update("events", {"spots_remaining": new_remaining}, {"id": f"eq.{data.event_id}"})
+    # Atomically decrement spots_remaining via Postgres RPC.
+    # SQL for the RPC (run once in Supabase SQL editor):
+    #
+    #   create or replace function decrement_spots(event_id text)
+    #   returns void language sql as $$
+    #     update events
+    #     set spots_remaining = greatest(spots_remaining - 1, 0)
+    #     where id = event_id;
+    #   $$;
+    #
+    try:
+        sb_rpc("decrement_spots", {"event_id": data.event_id})
+    except Exception:
+        # Fallback: non-atomic decrement if RPC not yet created.
+        # Replace with the RPC above to eliminate the race condition.
+        new_remaining = max(event["spots_remaining"] - 1, 0)
+        sb_update("events", {"spots_remaining": new_remaining}, {"id": f"eq.{data.event_id}"})
 
     return {
         "booking_id": booking_id,
@@ -347,11 +448,14 @@ def create_booking(data: BookingCreate):
 
 
 @app.get("/api/bookings/{booking_id}")
-def get_booking(booking_id: str):
+def get_booking(booking_id: str, request: Request):
     rows = sb_select("bookings", filters={"booking_id": f"eq.{booking_id}"})
     if not rows:
         raise HTTPException(404, "Booking not found")
     doc = rows[0]
+
+    # Ownership check — see verify_booking_access docstring for production path.
+    verify_booking_access(request, doc)
 
     event_rows = sb_select("events", filters={"id": f"eq.{doc['event_id']}"})
     event = event_rows[0] if event_rows else {}
@@ -381,12 +485,13 @@ def get_booking(booking_id: str):
 
 
 # ---------------------------------------------------------------------------
-# Demo simulation — DEMO_MODE=true only, never in production
+# Demo simulation — DEMO_MODE=true + valid X-Dashboard-Key only
 # ---------------------------------------------------------------------------
 @app.post("/api/events/{event_id}/simulate-booking")
-def simulate_booking(event_id: str):
+def simulate_booking(event_id: str, request: Request):
     if not DEMO_MODE:
         raise HTTPException(404, "Not found")
+    require_dashboard_key(request)
 
     event_rows = sb_select("events", filters={"id": f"eq.{event_id}"})
     if not event_rows:
@@ -408,11 +513,19 @@ def simulate_booking(event_id: str):
         "status": "confirmed",
     })
 
-    new_remaining = remaining - 1
-    sb_update("events", {"spots_remaining": new_remaining}, {"id": f"eq.{event_id}"})
+    try:
+        sb_rpc("decrement_spots", {"event_id": event_id})
+    except Exception:
+        new_remaining = remaining - 1
+        sb_update("events", {"spots_remaining": new_remaining}, {"id": f"eq.{event_id}"})
+        return {
+            "message": "Simulated booking created",
+            "spots_remaining": new_remaining,
+            "booked_spots": event["total_spots"] - new_remaining,
+        }
 
     return {
         "message": "Simulated booking created",
-        "spots_remaining": new_remaining,
-        "booked_spots": event["total_spots"] - new_remaining,
+        "spots_remaining": remaining - 1,
+        "booked_spots": event["total_spots"] - (remaining - 1),
     }

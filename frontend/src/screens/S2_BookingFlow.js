@@ -109,20 +109,15 @@ export default function BookingFlowScreen({
   };
 
   const handleCreateBooking = useCallback(async () => {
-    try {
-      const result = await createBooking({
-        event_id: EVENT_ID,
-        bay_id: selectedBay.pillar_code,
-        lot_id: selectedLotId,
-        phone: contactPhone,
-        entry_window: selectedWindow,
-        group_size: groupSize,
-      });
-      setPendingBookingId(result.booking_id);
-    } catch {
-      // Backend unavailable — generate a demo booking ID locally
-      setPendingBookingId(`PE-2026-DEMO${Date.now()}`);
-    }
+    const result = await createBooking({
+      event_id: EVENT_ID,
+      bay_id: selectedBay.pillar_code,
+      lot_id: selectedLotId,
+      phone: contactPhone,
+      entry_window: selectedWindow,
+      group_size: groupSize,
+    });
+    setPendingBookingId(result.booking_id);
     // Update shared lot state so S5 dashboard and scarcity banner reflect the booking
     onBayBooked?.(selectedLotId, selectedBay.pillar_code);
   }, [selectedBay, selectedLotId, contactPhone, selectedWindow, groupSize, onBayBooked]);

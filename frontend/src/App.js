@@ -20,6 +20,57 @@ const PATHS = {
   RETENTION:    '/retain',
 };
 
+// Operator dashboard gate — checks localStorage for a previously-entered key,
+// or prompts once. Key compared against REACT_APP_DASHBOARD_KEY (set in .env).
+const OPERATOR_KEY = process.env.REACT_APP_DASHBOARD_KEY || 'operator';
+const LS_KEY = 'pe_dashboard_key';
+
+function DashboardGate({ children }) {
+  const [authed, setAuthed] = React.useState(
+    () => localStorage.getItem(LS_KEY) === OPERATOR_KEY
+  );
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const val = e.target.elements.key.value.trim();
+    if (val === OPERATOR_KEY) {
+      localStorage.setItem(LS_KEY, val);
+      setAuthed(true);
+    } else {
+      e.target.elements.key.value = '';
+      e.target.elements.key.placeholder = 'Wrong key — try again';
+    }
+  };
+
+  if (authed) return children;
+
+  return (
+    <div className="min-h-[100dvh] bg-gray-950 flex items-center justify-center px-6">
+      <form onSubmit={handleSubmit} className="bg-gray-900 border border-gray-700 rounded-2xl px-8 py-8 flex flex-col gap-4 w-full max-w-xs">
+        <div className="flex flex-col gap-1">
+          <span className="text-white font-bold text-base">Operator Access</span>
+          <span className="text-gray-400 text-xs">Enter the dashboard key to continue</span>
+        </div>
+        <input
+          name="key"
+          type="password"
+          placeholder="Dashboard key"
+          autoFocus
+          className="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-gray-400"
+        />
+        <button type="submit"
+          className="w-full bg-white text-gray-900 font-bold py-3 rounded-xl text-sm hover:bg-gray-100 active:scale-95 transition-all">
+          Enter
+        </button>
+        <button type="button" onClick={() => localStorage.removeItem(LS_KEY)}
+          className="text-xs text-gray-600 hover:text-gray-400 text-center">
+          Clear saved session
+        </button>
+      </form>
+    </div>
+  );
+}
+
 const NAVBAR_PATHS = new Set([PATHS.VENUE, PATHS.BOOKING, PATHS.CONFIRMATION, PATHS.REDIRECT, PATHS.RETENTION]);
 
 // 3 lots × 60 bays = 180 total capacity, 30% taken (18 per lot), spread evenly
@@ -239,6 +290,7 @@ export default function App() {
           <Route path={PATHS.CONFIRMATION} element={<ConfirmationRoute />} />
           <Route path={PATHS.REDIRECT} element={<RedirectScreen onRedirectTap={handleRedirectTap} />} />
           <Route path={PATHS.DASHBOARD} element={
+            <DashboardGate>
             <OperatorDashboardScreen
               lots={lots}
               totalSpots={totalSpots}
@@ -251,6 +303,7 @@ export default function App() {
               onEmergencyLock={handleEmergencyLock}
               onEmergencyUnlock={handleEmergencyUnlock}
             />
+            </DashboardGate>
           } />
           <Route path={PATHS.RETENTION} element={<RetentionScreen />} />
           <Route path="*" element={
