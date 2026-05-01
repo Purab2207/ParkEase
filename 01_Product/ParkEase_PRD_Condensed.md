@@ -1,6 +1,6 @@
 # ParkEase — Condensed PRD
-**Version:** 2.1 · **Date:** April 2026 · **Author:** Purab
-**Status:** Solution Review — Prototype live (9 screens, Vercel). First live event not yet secured.
+**Version:** 2.2 · **Date:** May 2026 · **Author:** Purab
+**Status:** Solution Review — 10-screen prototype live on Vercel + FastAPI backend on Railway. First live event not yet secured.
 **Resources:** [Prototype](../app/) · [Financials](../02_Financials/) · [Handover](../04_Handover/ParkEase_Handover_2026-03-31.md)
 
 ---
@@ -13,7 +13,7 @@ ParkEase is a software layer that pre-sells named parking bays to event attendee
 
 **The market:** India's live events market is ₹20,861 crore (2024), growing 15% YoY. ~110–130 structured-venue events/year in Tier 1 cities are addressable at MVP.
 
-**Current state:** 11-screen Vercel prototype is live and demoable (+ persistent Navbar + Profile Modal). Full consumer flow: Events Listing (S0) → Venue Landing (S1) → Booking Flow (S2) → Payment + Confirmation (S3) → Redirect (S4). Operator, ground staff, and retention flows also live. No live event secured yet. All persona motivations are hypothesis-based — Event 1 is the validation checkpoint.
+**Current state:** 10-screen prototype live on Vercel (S0–S9) + FastAPI backend deployed on Railway + Supabase (PostgreSQL). Full consumer flow: Events Listing (S0) → Venue Landing (S1) → Booking Flow (S2) → Payment + Confirmation (S3) → Redirect (S4). Operator (S5), retention (S6–S8), and ground staff (S9) flows live. DemoChip (floating role switcher, bottom-right) enables reviewer navigation across all roles. No live event secured yet. All persona motivations are hypothesis-based — Event 1 is the validation checkpoint.
 
 **MVP targets:** 35% parking fill rate · 25–30% redirect CTA tap rate · <45% checkout drop-off
 
@@ -245,10 +245,39 @@ We do not own or operate parking infrastructure, run shuttle fleets, or compete 
 
 **Live site:** https://park-ease-rho.vercel.app
 **Frontend stack:** Create React App (React 18) · Tailwind CSS v3 · React Router v6 · Vercel (auto-deploys on push to `main`)
-**Backend stack:** FastAPI (Python) · Railway · Supabase (PostgreSQL via REST) · Resend (email) · slowapi (rate limiting)
-**Status:** 6 screens (S1–S6) + Role Switcher bottom nav. Data-driven. Auth: any email + OTP `0000` (demo bypass, gated behind `DEMO_MODE=true` env var on backend).
-**Routes:** `/` (S1 Venue Landing) · `/booking` (S2 Booking Flow) · `/confirmation/:bookingId` (S3) · `/redirect` (S4) · `/dashboard` (S5 Operator, key-gated) · `/retain` (S6 Retention)
-**Security controls:** slowapi rate limiting (3/min OTP request, 10/min verify + bookings) · CORS explicit allowlist · `X-Dashboard-Key` header required on operator API endpoints · booking lookup requires matching `?email=` or operator key (IDOR mitigation) · `REACT_APP_DASHBOARD_KEY` frontend gate on `/dashboard` · security headers via `vercel.json` (CSP, X-Frame-Options, nosniff, Referrer-Policy)
+**Backend stack:** FastAPI (Python) · Railway · Supabase (PostgreSQL via REST) · slowapi (rate limiting)
+**Status:** 10 screens (S0–S9) + Navbar + Profile Modal + DemoChip (floating role switcher, bottom-right). Auth: any email + OTP `0000` or `000000` (demo bypass, gated behind `DEMO_MODE=true` on backend).
+
+**Routes:**
+- `/events` — S0 Events Listing
+- `/events/:eventId` — S1 Venue Landing
+- `/events/:eventId/book` — S2 Booking Flow
+- `/confirmation/:bookingId` — S3 Payment + Confirmation
+- `/redirect` — S4 Parking Full → Redirect
+- `/dashboard` — S5 Operator Dashboard (key-gated)
+- `/retain` — S6 Retention
+- `/retain/book` — S7 RCB Booking
+- `/retain/confirm` — S8 RCB Confirmation
+- `/attendant` — S9 Attendant Scanner
+
+**Backend API endpoints:**
+
+| Endpoint | Auth | Rate limit | Notes |
+|---|---|---|---|
+| `GET /api/health` | none | — | uptime check |
+| `POST /api/auth/request-otp` | none | 3/min | demo: skips Resend send, returns hint |
+| `POST /api/auth/verify-otp` | none | 10/min | demo bypass: code `0000` or `000000` |
+| `GET /api/events` | none | — | list all events |
+| `GET /api/events/:id` | none | — | event + fill metrics |
+| `GET /api/events/:id/bays` | none | — | bay grid, filterable by lot |
+| `GET /api/events/:id/stats` | X-Dashboard-Key | — | operator live metrics |
+| `POST /api/bookings` | none | 10/min | atomic bay claim + decrement_spots RPC |
+| `GET /api/bookings/:id` | email param or X-Dashboard-Key | — | IDOR-mitigated |
+| `POST /api/events/:id/simulate-booking` | X-Dashboard-Key + DEMO_MODE | — | demo fill simulation |
+
+**Supabase requirement:** `decrement_spots(event_id text)` Postgres function must exist — atomically decrements `events.spots_remaining`. Falls back to non-atomic update if RPC not yet created.
+
+**Security controls:** slowapi rate limiting · CORS explicit allowlist (Vercel + localhost:5173 + localhost:3000) · `X-Dashboard-Key` header on operator endpoints · booking lookup requires `?email=` match or operator key (IDOR mitigation) · `REACT_APP_DASHBOARD_KEY` frontend gate on `/dashboard` · security headers via `vercel.json` (CSP, X-Frame-Options, nosniff, Referrer-Policy)
 
 *[Screenshots to be added inline — placeholder for each screen below]*
 
@@ -593,7 +622,8 @@ Consumer-side research completed: 5 direct attendee conversations (Ahmedabad, Ch
 |---|---|---|
 | Mar 2026 | Financial model corrected v1 → v2 | v1 collected full consumer price and remitted 30% to venue — wrong. v2 models ParkEase fee on top of venue base rate (₹49 on ₹100–₹300 base). Net per spot corrected: ₹104 → ₹47. MVP new-venue contribution margin flipped from +₹9,085 to −₹275. B2B platform fee share corrected from ~35% to 60% of per-event economics. Annual contracts required for break-even revised from 10 to 15. |
 | Apr 2026 | North Star confirmed: Fill Rate | Fill rate is the gate condition for all downstream metrics. Contribution-negative at MVP economics on a new venue (waived B2B fee) — that is a pricing decision, not a North Star argument. Redirect CTA tap rate is the closest alternative but cannot be measured without fill rate being high first. Decision: fill rate stays. |
-| Apr 2026 | Security hardening + backend deployment | FastAPI backend deployed on Railway. Security controls added: slowapi rate limiting, explicit CORS allowlist, `X-Dashboard-Key` auth on operator endpoints, IDOR mitigation on booking lookup, `DashboardGate` frontend route guard, Pydantic input validation (vehicle_number max 15 chars, phone 10-digit, group_size 1–6), UPI ID regex validation, vercel.json security headers (CSP, X-Frame-Options, nosniff). OTP `0000` bypass and UPI payment simulation retained as intentional demo affordances, gated behind `DEMO_MODE=true`. Stack corrected from Vite+React 19 to CRA+React 18 (actual build tooling). `VITE_OPERATOR_PIN` corrected to `REACT_APP_DASHBOARD_KEY`. `SECURITY.md` added at repo root. |
+| Apr 2026 | Security hardening + backend deployment | FastAPI backend deployed on Railway. Security controls added: slowapi rate limiting, explicit CORS allowlist, `X-Dashboard-Key` auth on operator endpoints, IDOR mitigation on booking lookup, `DashboardGate` frontend route guard, Pydantic input validation (vehicle_number max 15 chars, phone 10-digit, group_size 1–6), UPI ID regex validation, vercel.json security headers (CSP, X-Frame-Options, nosniff). OTP `0000` bypass and UPI payment simulation retained as intentional demo affordances, gated behind `DEMO_MODE=true`. Stack corrected from Vite+React 19 to CRA+React 18 (actual build tooling). `VITE_OPERATOR_PIN` corrected to `REACT_APP_DASHBOARD_KEY`. |
+| May 2026 | PRD v2.2 — routes, screen count, API docs corrected | Routes corrected (were `/booking`, now `/events/:eventId/book`). Screen count corrected to 10 screens S0–S9. Full backend API endpoint table added. DemoChip correctly described as floating role switcher (not bottom nav). `decrement_spots` RPC dependency documented. OTP accepts both `0000` and `000000`. |
 
 ---
 
