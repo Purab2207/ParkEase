@@ -1,13 +1,13 @@
 // ParkEase API layer — app/ (Vite)
 // GET endpoints: direct Supabase client calls (anon key, RLS-protected).
-// POST endpoints: Supabase Edge Functions (service-role key, server-side only).
+// POST endpoints: Railway FastAPI backend via VITE_BACKEND_URL.
 // Falls back to FALLBACK_EVENTS when Supabase isn't configured.
 
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-const FUNCTIONS_URL = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1` : '';
+const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '');
 
 let _supabase = null;
 function getSupabase() {
@@ -368,28 +368,29 @@ export async function fetchStats(eventId) {
 }
 
 // ---------------------------------------------------------------------------
-// POST endpoints — Supabase Edge Functions (server-side secrets)
+// POST endpoints — Railway FastAPI backend
 // ---------------------------------------------------------------------------
 
-export async function requestOtp(_phone, _email) {
-  return { message: 'OTP sent', demo: true };
+async function backendPost(path, body) {
+  if (!BACKEND_URL) throw new Error('Backend not configured — set VITE_BACKEND_URL');
+  const res = await fetch(`${BACKEND_URL}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.detail || json.error || `HTTP ${res.status}`);
+  return json;
 }
 
-export async function verifyOtp(_email, code, _phone) {
-  if (code !== '000000') throw new Error('Incorrect OTP — use 000000 for this demo');
-  return { verified: true };
+export async function requestOtp(phone, email) {
+  return backendPost('/api/auth/request-otp', { phone, email });
+}
+
+export async function verifyOtp(email, code, phone) {
+  return backendPost('/api/auth/verify-otp', { email, otp: code, phone });
 }
 
 export async function createBooking(payload) {
-  if (!FUNCTIONS_URL) throw new Error('Supabase not configured');
-  const res = await fetch(`${FUNCTIONS_URL}/create-booking`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || body.error || `HTTP ${res.status}`);
-  }
-  return res.json();
+  return backendPost('/api/bookings', payload);
 }
