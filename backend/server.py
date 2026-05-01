@@ -19,7 +19,9 @@ from slowapi.errors import RateLimitExceeded
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
-DASHBOARD_API_KEY = os.environ.get("DASHBOARD_API_KEY", "demo-key-change-before-prod")
+DASHBOARD_API_KEY = os.environ.get("DASHBOARD_API_KEY", "")
+if not DASHBOARD_API_KEY:
+    raise RuntimeError("DASHBOARD_API_KEY env var is not set. Add it to Railway variables.")
 DEMO_MODE = os.environ.get("DEMO_MODE", "false").lower() == "true"
 
 # ---------------------------------------------------------------------------
@@ -185,7 +187,7 @@ class BookingCreate(BaseModel):
     bay_id: str
     lot_id: str
     phone: str = Field(..., pattern=r"^\d{10}$", description="10-digit mobile number")
-    email: str
+    email: Optional[str] = None
     entry_window: str
     vehicle_number: Optional[str] = Field(
         default=None,

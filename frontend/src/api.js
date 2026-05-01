@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
-const DASHBOARD_KEY = process.env.REACT_APP_DASHBOARD_KEY || 'operator';
+const DASHBOARD_KEY = process.env.REACT_APP_DASHBOARD_KEY || '';
 
 const api = axios.create({
   baseURL: API_URL,

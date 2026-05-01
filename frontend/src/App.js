@@ -22,7 +22,7 @@ const PATHS = {
 
 // Operator dashboard gate — checks localStorage for a previously-entered key,
 // or prompts once. Key compared against REACT_APP_DASHBOARD_KEY (set in .env).
-const OPERATOR_KEY = process.env.REACT_APP_DASHBOARD_KEY || 'operator';
+const OPERATOR_KEY = process.env.REACT_APP_DASHBOARD_KEY || '';
 const LS_KEY = 'pe_dashboard_key';
 
 function DashboardGate({ children }) {
@@ -43,6 +43,15 @@ function DashboardGate({ children }) {
   };
 
   if (authed) return children;
+
+  if (!OPERATOR_KEY) return (
+    <div className="min-h-[100dvh] bg-gray-950 flex items-center justify-center px-6">
+      <div className="bg-red-950 border border-red-700 rounded-2xl px-8 py-8 text-center max-w-xs">
+        <p className="text-red-400 font-bold text-sm">REACT_APP_DASHBOARD_KEY is not set.</p>
+        <p className="text-red-500 text-xs mt-2">Add it to Vercel environment variables and redeploy.</p>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-[100dvh] bg-gray-950 flex items-center justify-center px-6">
@@ -109,7 +118,7 @@ const ConfirmationRoute = () => {
   );
 };
 
-const DemoNav = ({ parkingFull, onToggleParkingFull, onStartDemo, demoRunning }) => {
+const RoleSwitcher = ({ parkingFull, onToggleParkingFull, onStartDemo, demoRunning }) => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -121,7 +130,7 @@ const DemoNav = ({ parkingFull, onToggleParkingFull, onStartDemo, demoRunning })
           { path: PATHS.BOOKING,      label: 'S2 Booking', id: 'booking' },
           { path: '/confirmation/PE-2026-DEMO1234', label: 'S3 Confirm', id: 'confirmation' },
           { path: PATHS.REDIRECT,     label: 'S4 Redirect', id: 'redirect' },
-          { path: PATHS.DASHBOARD,    label: 'S5 Ops',     id: 'dashboard' },
+          { path: PATHS.DASHBOARD,    label: 'S5 Operator', id: 'dashboard' },
           { path: PATHS.RETENTION,    label: 'S6 Retain',  id: 'retention' },
         ].map(({ path, label, id }) => (
           <button
@@ -158,9 +167,9 @@ const DemoNav = ({ parkingFull, onToggleParkingFull, onStartDemo, demoRunning })
             : 'bg-[#1C1D2B] text-white active:scale-95'
         }`}
       >
-        {demoRunning ? 'Demo running...' : 'Start Demo'}
+        {demoRunning ? 'Running walkthrough...' : 'Run Full Walkthrough'}
       </button>
-      <span className="text-[10px] text-gray-600 mt-1 pointer-events-none">Demo mode - ParkEase v0.5</span>
+      <span className="text-[10px] text-gray-600 mt-1 pointer-events-none">ParkEase — Role Switcher</span>
     </div>
   );
 };
@@ -325,7 +334,7 @@ export default function App() {
         </Routes>
       </div>
 
-      <DemoNav
+      <RoleSwitcher
         parkingFull={parkingFull}
         onToggleParkingFull={handleToggleParkingFull}
         onStartDemo={startDemo}
