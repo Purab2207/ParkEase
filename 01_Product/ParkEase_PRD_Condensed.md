@@ -1,5 +1,5 @@
 # ParkEase — Condensed PRD
-**Version:** 2.0 · **Date:** April 2026 · **Author:** Purab
+**Version:** 2.1 · **Date:** April 2026 · **Author:** Purab
 **Status:** Solution Review — Prototype live (9 screens, Vercel). First live event not yet secured.
 **Resources:** [Prototype](../app/) · [Financials](../02_Financials/) · [Handover](../04_Handover/ParkEase_Handover_2026-03-31.md)
 
@@ -244,9 +244,11 @@ We do not own or operate parking infrastructure, run shuttle fleets, or compete 
 ## 9. Prototype — Live Screens
 
 **Live site:** https://park-ease-rho.vercel.app
-**Stack:** React 19 · Tailwind CSS v4 · React Router v7 · Vite
-**Status:** 11 screens + persistent Navbar + Profile Modal. Data-driven. Auto-deploys on push to `main`. Auth: any email + OTP `000000`.
-**Routes:** `/events` · `/events/:eventId` · `/events/:eventId/book` · `/confirmation/:bookingId` · `/redirect` · `/dashboard` · `/retain` · `/retain/book` · `/retain/confirm` · `/attendant`
+**Frontend stack:** Create React App (React 18) · Tailwind CSS v3 · React Router v6 · Vercel (auto-deploys on push to `main`)
+**Backend stack:** FastAPI (Python) · Railway · Supabase (PostgreSQL via REST) · Resend (email) · slowapi (rate limiting)
+**Status:** 6 screens (S1–S6) + Role Switcher bottom nav. Data-driven. Auth: any email + OTP `0000` (demo bypass, gated behind `DEMO_MODE=true` env var on backend).
+**Routes:** `/` (S1 Venue Landing) · `/booking` (S2 Booking Flow) · `/confirmation/:bookingId` (S3) · `/redirect` (S4) · `/dashboard` (S5 Operator, key-gated) · `/retain` (S6 Retention)
+**Security controls:** slowapi rate limiting (3/min OTP request, 10/min verify + bookings) · CORS explicit allowlist · `X-Dashboard-Key` header required on operator API endpoints · booking lookup requires matching `?email=` or operator key (IDOR mitigation) · `REACT_APP_DASHBOARD_KEY` frontend gate on `/dashboard` · security headers via `vercel.json` (CSP, X-Frame-Options, nosniff, Referrer-Policy)
 
 *[Screenshots to be added inline — placeholder for each screen below]*
 
@@ -416,7 +418,7 @@ PWA with offline manifest caching — works inside a venue with no signal.
 **S5 — Operator Dashboard** · `/dashboard`
 *Siddharth's entire product interaction — the B2B acquisition screen*
 
-PIN: `2207` (configurable via `VITE_OPERATOR_PIN` Vercel env var).
+PIN: `2207` (configurable via `REACT_APP_DASHBOARD_KEY` Vercel env var; same value must be set as `DASHBOARD_API_KEY` on Railway backend).
 - **Live fill rate gauge** — large radial gauge, current bookings / total capacity
 - **Per-lot occupancy bars** — Lot A / B / C with booked / available / fill% per lot
 - **Redirect CTA count** — taps on the cab redirect screen since event start
@@ -591,6 +593,7 @@ Consumer-side research completed: 5 direct attendee conversations (Ahmedabad, Ch
 |---|---|---|
 | Mar 2026 | Financial model corrected v1 → v2 | v1 collected full consumer price and remitted 30% to venue — wrong. v2 models ParkEase fee on top of venue base rate (₹49 on ₹100–₹300 base). Net per spot corrected: ₹104 → ₹47. MVP new-venue contribution margin flipped from +₹9,085 to −₹275. B2B platform fee share corrected from ~35% to 60% of per-event economics. Annual contracts required for break-even revised from 10 to 15. |
 | Apr 2026 | North Star confirmed: Fill Rate | Fill rate is the gate condition for all downstream metrics. Contribution-negative at MVP economics on a new venue (waived B2B fee) — that is a pricing decision, not a North Star argument. Redirect CTA tap rate is the closest alternative but cannot be measured without fill rate being high first. Decision: fill rate stays. |
+| Apr 2026 | Security hardening + backend deployment | FastAPI backend deployed on Railway. Security controls added: slowapi rate limiting, explicit CORS allowlist, `X-Dashboard-Key` auth on operator endpoints, IDOR mitigation on booking lookup, `DashboardGate` frontend route guard, Pydantic input validation (vehicle_number max 15 chars, phone 10-digit, group_size 1–6), UPI ID regex validation, vercel.json security headers (CSP, X-Frame-Options, nosniff). OTP `0000` bypass and UPI payment simulation retained as intentional demo affordances, gated behind `DEMO_MODE=true`. Stack corrected from Vite+React 19 to CRA+React 18 (actual build tooling). `VITE_OPERATOR_PIN` corrected to `REACT_APP_DASHBOARD_KEY`. `SECURITY.md` added at repo root. |
 
 ---
 

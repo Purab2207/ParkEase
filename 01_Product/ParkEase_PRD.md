@@ -1,7 +1,7 @@
 
 
 
-Status: In Progress | Last Updated: March 2026 | Author: Purab
+Status: In Progress | Last Updated: April 2026 | Author: Purab
 
 ---
 
@@ -1802,5 +1802,15 @@ What determines the pace between stages:
 
 Not a calendar. The B2B sales relationship. Each stage unlocks when Siddharth says yes — not when a sprint ends.
 
-  
+---
+
+## Appendix — Changelog
+
+| Date | Change | Detail |
+|---|---|---|
+| Mar 2026 | Financial model v1→v2 | v1 collected full consumer price and remitted 30% — wrong. v2 models ParkEase fee on top of venue base rate. Net per-spot corrected: ₹104 → ₹47. |
+| Apr 2026 | User research inserted (§4 / OQ7) | 5 direct attendee conversations + multi-city evidence (8 cities, 12+ events). Consumer persona motivations corroborated. WTP range confirmed ₹200–400. |
+| Apr 2026 | North Star confirmed: Fill Rate | Fill rate is the gate condition for all downstream metrics. Redirect CTA tap rate is a V2 metric once Ola/Uber API callback confirms hard conversion. |
+| Apr 2026 | Security hardening + backend deployment | FastAPI backend deployed on Railway. Controls added: slowapi rate limiting (3/min OTP, 10/min bookings), explicit CORS allowlist (GET/POST/OPTIONS), `X-Dashboard-Key` operator endpoint auth, IDOR mitigation on booking lookup, `DashboardGate` frontend route guard, Pydantic input validation, UPI ID regex validation, vercel.json security headers (CSP, X-Frame-Options, nosniff). OTP `0000` bypass and UPI payment simulation retained as intentional demo affordances gated behind `DEMO_MODE=true`. `SECURITY.md` added at repo root. |
+
 **
