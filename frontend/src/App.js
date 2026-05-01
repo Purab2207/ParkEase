@@ -169,7 +169,7 @@ const RoleSwitcher = ({ parkingFull, onToggleParkingFull, onStartDemo, demoRunni
       >
         {demoRunning ? 'Running walkthrough...' : 'Run Full Walkthrough'}
       </button>
-      <span className="text-[10px] text-gray-600 mt-1 pointer-events-none">ParkEase — Role Switcher</span>
+      <span className="text-[10px] text-gray-600 mt-1 pointer-events-none">Roles</span>
     </div>
   );
 };
