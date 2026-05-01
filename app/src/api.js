@@ -388,7 +388,7 @@ export async function requestOtp(phone, email) {
 }
 
 export async function verifyOtp(email, code, phone) {
-  return backendPost('/api/auth/verify-otp', { email, otp: code, phone });
+  return backendPost('/api/auth/verify-otp', { email, code, phone });
 }
 
 export async function createBooking(payload) {
