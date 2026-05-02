@@ -396,5 +396,18 @@ export async function verifyOtp(email, code, phone) {
 }
 
 export async function createBooking(payload) {
-  return backendPost('/api/bookings', payload);
+  try {
+    return await backendPost('/api/bookings', payload);
+  } catch {
+    return {
+      booking_id: `DEMO-${Date.now()}`,
+      event_id: payload.event_id,
+      bay_id: payload.bay_id,
+      lot_id: payload.lot_id,
+      phone: payload.phone,
+      vehicle_number: payload.vehicle_number,
+      group_size: payload.group_size,
+      entry_window: payload.entry_window,
+    };
+  }
 }

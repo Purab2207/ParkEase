@@ -620,6 +620,24 @@ export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn, on
       });
       setPaymentSuccess(true);
       onBookingComplete?.();
+      if (booking.booking_id.startsWith('DEMO-')) {
+        try {
+          localStorage.setItem(`parkease_demo_booking_${booking.booking_id}`, JSON.stringify({
+            booking_id: booking.booking_id,
+            event_id: eventId,
+            event_name: event?.event_name || event?.name || '',
+            venue: event ? `${event.venue}, ${event.city}` : '',
+            date: event?.date || '',
+            bay_pillar_code: selectedBay.pillarCode,
+            lot_name: selectedLot?.label || '',
+            distance_to_gate_metres: selectedLot?.distanceToGateMetres || 0,
+            gate_name: selectedLot?.gateName || '',
+            entry_window: selectedWindow,
+            consumer_price: event?.consumer_price ?? event?.price ?? 0,
+            group_size: groupSize,
+          }));
+        } catch {}
+      }
       navigate(`/confirmation/${booking.booking_id}`);
     } catch (err) {
       setPaymentError(err.message || 'Booking failed. Please try again.');

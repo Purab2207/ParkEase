@@ -501,6 +501,20 @@ export default function BookingConfirmationScreen() {
   // ALL hooks must be declared before any conditional returns
   useEffect(() => {
     if (!routeBookingId) { setLoadingBooking(false); return; }
+
+    if (routeBookingId.startsWith('DEMO-')) {
+      try {
+        const raw = JSON.parse(localStorage.getItem(`parkease_demo_booking_${routeBookingId}`) || 'null');
+        if (raw) {
+          const b = normaliseBooking(raw);
+          setBooking(b);
+          setGroupSize(raw.group_size || 1);
+        }
+      } catch {}
+      setLoadingBooking(false);
+      return;
+    }
+
     fetchBooking(routeBookingId).then(raw => {
       if (!raw) { setLoadingBooking(false); return; }
       const b = normaliseBooking(raw);
