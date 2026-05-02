@@ -35,8 +35,8 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
       setStep("otp");
       setOtp(Array(6).fill(""));
       setCountdown(30);
-    } catch {
-      setError('Something went wrong. Please try again.');
+    } catch (e) {
+      setError(e.message || 'Something went wrong. Please try again.');
     } finally {
       setSending(false);
     }
