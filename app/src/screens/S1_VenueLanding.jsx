@@ -385,7 +385,13 @@ export default function VenueLandingScreen({ isLoggedIn, userPhone }) {
     );
   }
 
-  if (!venue) return null;
+  if (!venue) {
+    return (
+      <div className="min-h-[100dvh] bg-gray-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#1C1D2B] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   const spotsRemaining = live.spotsRemaining ?? venue.spotsRemaining;
   const bookingCount = live.bookedSpots ?? venue.bookingCount;
