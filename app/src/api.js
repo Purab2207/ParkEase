@@ -3,6 +3,10 @@
 // POST endpoints: Railway FastAPI backend via VITE_BACKEND_URL.
 // Falls back to FALLBACK_EVENTS when Supabase isn't configured.
 
+// When true, AuthModal skips all backend auth calls and accepts 000000 client-side.
+// Flip to false and wire real OTP delivery when moving beyond demo.
+export const DEMO_AUTH = true;
+
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
