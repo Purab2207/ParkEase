@@ -1,7 +1,10 @@
 
 
 
-Status: In Progress | Last Updated: April 2026 | Author: Purab
+# ParkEase — Full PRD
+
+**Version:** 2.2 · **Status:** Complete · **Last Updated:** May 2026 · **Author:** Purab
+**Condensed version (12 pages):** [ParkEase_PRD_Condensed.md](ParkEase_PRD_Condensed.md) · **User Research:** [ParkEase_UserResearch.md](ParkEase_UserResearch.md)
 
 ---
 
@@ -406,7 +409,7 @@ Rahul and five college friends book tickets for the Karan Aujla P-POP Culture To
 
 Rahul screenshots it and drops it in the group WhatsApp: "Bhai parking bhi book karein? 200 hi spots hain." The group reacts immediately. Three people say yes. The plan starts to feel real — and Rahul is the one who made it happen.
 
-Product decision — B2B as B2C acquisition: Rahul does not find ParkSmart through an ad or Google search. He finds it through the ticket confirmation that Siddharth's team embedded via the operator dashboard. This is the B2B product directly creating B2C demand — zero paid marketing required. The scarcity signal (200 spots, 40,000 attendees) is the conversion trigger. It must be real-time and accurate — a manufactured scarcity number breaks trust permanently with this age group.
+Product decision — B2B as B2C acquisition: Rahul does not find ParkEase through an ad or Google search. He finds it through the ticket confirmation that Siddharth's team embedded via the operator dashboard. This is the B2B product directly creating B2C demand — zero paid marketing required. The scarcity signal (200 spots, 40,000 attendees) is the conversion trigger. It must be real-time and accurate — a manufactured scarcity number breaks trust permanently with this age group.
 
 ---
 
@@ -484,7 +487,7 @@ Two hours before the show:
 
 Rahul taps the forward button. WhatsApp opens with the departure reminder pre-typed. He selects the group and sends. One tap eliminates the back-and-forth of "kal kitne baje nikalna hai" entirely.
 
-Product decision: For Arjun the notification is personal. For Rahul it is a coordination tool. Same notification architecture, fundamentally different use case. The forward CTA is the feature that makes ParkSmart feel built for groups, not just individuals.
+Product decision: For Arjun the notification is personal. For Rahul it is a coordination tool. Same notification architecture, fundamentally different use case. The forward CTA is the feature that makes ParkEase feel built for groups, not just individuals.
 
 ---
 
@@ -492,7 +495,7 @@ Product decision: For Arjun the notification is personal. For Rahul it is a coor
 
 Touchpoint: In-app alert to a non-booker friend · Emotional state: Watching it play out
 
-By 5 PM on event day, ParkSmart parking at JLN is 100% sold. Rahul's spot is confirmed — he is fine. But his friend Varun, who was planning to drive separately and "figure out parking on the way", now sees:
+By 5 PM on event day, ParkEase parking at JLN is 100% sold. Rahul's spot is confirmed — he is fine. But his friend Varun, who was planning to drive separately and "figure out parking on the way", now sees:
 
 "Parking near JLN Stadium is sold out. Book a cab to the venue drop zone instead — arrives faster than driving right now. Tap to book via Ola."
 
@@ -528,7 +531,7 @@ Rahul books the next event without hesitation — he is a repeat user before the
 
 Varun tells his own separate friend group the following week: "yaar ye ParkEase app hai, parking full tha toh cab redirect kiya, reached before the parking guys did." A second acquisition chain begins through a completely different group.
 
-Strategic note — the group multiplier is ParkSmart's organic growth engine for this segment: One Rahul booking touches 5 people directly. Varun's redirect experience touches another 5–6 independently. Every product decision in Rahul's journey should be evaluated against one question: "does this make the experience easy to spread to the next group?"
+Strategic note — the group multiplier is ParkEase's organic growth engine for this segment: One Rahul booking touches 5 people directly. Varun's redirect experience touches another 5–6 independently. Every product decision in Rahul's journey should be evaluated against one question: "does this make the experience easy to spread to the next group?"
 
 ---
 
@@ -550,7 +553,7 @@ Strategic note — the group multiplier is ParkSmart's organic growth engine for
 
 #### Key Product Insights — Rahul
 
-The B2B channel is Rahul's only reliable discovery channel. He does not find ParkSmart on his own. Siddharth's operator dashboard embedding the parking link in the ticket confirmation is the only scalable way to reach him at the right moment — when the event is booked and the group energy is live in the chat.
+The B2B channel is Rahul's only reliable discovery channel. He does not find ParkEase on his own. Siddharth's operator dashboard embedding the parking link in the ticket confirmation is the only scalable way to reach him at the right moment — when the event is booked and the group energy is live in the chat.
 
 Scarcity converts, price does not. ₹75 split is invisible. 47 spots against 40,000 attendees is the trigger. The real-time inventory counter is as important as the booking flow itself.
 
@@ -929,7 +932,7 @@ Transparent fee split: venue base rate + ParkEase service fee (₹49) = total. E
 Indian plate format (e.g. DL 3C AB 1234). Auto-formatted to uppercase, non-alphanumeric stripped. Autofills from Profile localStorage if previously saved — shows "⚡ Autofilled from your profile". Saves back to localStorage on entry. This number is shown to the gate attendant at scan — it creates the chain of custody that closes the security loop. Minimum 6 characters required.
 
 **Step 5 — UPI Payment (sticky CTA)**
-Single sticky CTA. Label reflects the current blocking step: "Select a bay to continue" → "Select arrival time to continue" → "Enter contact number to continue" → "Enter vehicle number to continue" → "Pay ₹X via UPI". Disabled until all prior steps complete. Loading spinner + "Processing…" on tap. On success: navigates to `/confirmation/:bookingId`.
+Single sticky CTA. Label reflects the current blocking step: "Select a bay to continue" → **"Sign in to confirm booking"** (tappable — opens auth modal inline; after sign-in button updates to the next step automatically) → "Select arrival time to continue" → "Enter contact number to continue" → "Enter vehicle number to continue" → "Pay ₹X via UPI". Loading spinner + "Processing…" on tap. On success: navigates to `/confirmation/:bookingId`.
 
 **Progressive disclosure rationale:** Showing all steps simultaneously increases cognitive load and drop-off. The collapsed chip pattern keeps users oriented without overwhelming them — at any point in the flow, the user can see what they've completed and what's next with one glance.
 
@@ -995,7 +998,7 @@ Departments
 - Legal (Contracts, SLA, liability)
     
 
-Prototype Screens (11 screens + Navbar + Profile Modal — demo order)
+Prototype Screens (10 screens + Navbar + Profile Modal — demo order)
 
 - S0 — Events Listing (home screen — hero carousel + Concerts + IPL rows) ✅ built
 - S1 — Venue/Event Landing Page ✅ built
@@ -1702,9 +1705,7 @@ How we answer it: Direct outreach to 1–2 ops heads at structured venues in Ban
 |Section 5 — Edge Cases & Constraints|✅ Complete|
 |Section 6 — Risks & Open Questions|✅ Complete|
 
-Phase 2 — PRD: Complete
-
-Next phase: Phase 3 — Business Model (unit economics, revenue model, go-to-market strategy, break-even analysis)
+**Phase 2 — PRD: Complete** · Phase 3 (Business Model) documented in `02_Financials/Business Valuation.md`
 
 ---
 
@@ -1750,18 +1751,44 @@ This is not a corporate milestone table. It is the honest sequence of how ParkEa
 
 ---
 
-Stage 1 — Prototype Validation (Phase 4 of this project)
+Stage 1 — Prototype Validation ✅ Complete (May 2026)
 
-Build the five core prototype screens. Demo to 3–5 potential event organiser contacts to validate the product concept before committing to a live event.
+10-screen prototype live at https://park-ease-rho.vercel.app — Vite + React 19 frontend on Vercel, FastAPI backend on Railway, Supabase (PostgreSQL). Full consumer flow (S0→S4), operator dashboard (S5), retention (S6–S8), and ground staff (S9) flows live. DemoChip (bottom-right, 5 roles) enables reviewer navigation across all flows without a live event.
 
-- What we build: S1 (Venue page), S2 (Booking flow), S3 (Confirmation), S4 (Redirect screen), S5 (Operator dashboard)
-    
-- What we test: Does the product story land? Does the operator dashboard convince Siddharth-type buyers?
-    
-- Exit criteria: At least one event organiser expresses genuine intent to pilot
-    
+- What was built: S0–S9 + Navbar + Profile Modal + DemoChip. Full booking flow with UPI payment simulation, offline QR caching, demo auth (phone + OTP `0000`), DEMO- fallback booking ID, security hardening.
+- What was tested: Internal review. Product story lands in under 60 seconds via DemoChip. Operator dashboard tells the Siddharth story independently.
+- Exit criteria: ✅ Prototype ready for PM/operator review outreach.
 
 ---
+
+Stage 2 — First Operator Conversation (next step)
+
+Demo to 3–5 event organiser contacts in Bangalore. College fest coordinators are the warm-intro lane — lower stakes, faster trust loop, more forgiving if the pitch needs iteration.
+
+- What we demo: Consumer flow (S0→S3) + Operator dashboard (S5) — demoable in 60 seconds via DemoChip
+- What we test: Does the compliance report argument close the conversation? Will operators accept the liability boundary as written?
+- Exit criteria: At least one organiser expresses genuine pilot intent and names a real upcoming event
+
+---
+
+Stage 3 — Event 1: First Live Pilot
+
+Single venue, Bangalore (Chinnaswamy or similar), 15,000–25,000 attendees, structured parking. Conservative inventory: 50–60% of lot capacity pre-sold. Manual ops throughout. B2B platform fee waived for pilot.
+
+- What we measure: Redirect CTA tap rate (core hypothesis). Checkout drop-off rate. Spot utilisation rate.
+- Exit criteria: Redirect CTA rate measured. First compliance report generated. Zero catastrophic failures (app down, lot oversold, QR enforcement collapse).
+
+---
+
+Stage 4 — Annual Contract + Second City
+
+Apply Event 1 learnings. B2B platform fee introduced from Event 2 (₹15,000–₹25,000/event). Organiser signs annual contract covering 8 events. Second city (Mumbai or Delhi) entered based on where B2B relationship is strongest.
+
+- Exit criteria: Annual contract signed. Two Tier 1 cities operational.
+
+---
+
+*What determines pace: not a calendar — the B2B sales relationship. Each stage unlocks when Siddharth says yes, not when a sprint ends.*
 
 Stage 2 — First Live Pilot Event
 

@@ -31,6 +31,7 @@ function DemoChip({ pathname }) {
 
   const roles = [
     { label: 'Consumer', icon: '🎪', path: '/events' },
+    { label: 'Redirect', icon: '🚕', path: '/redirect' },
     { label: 'Operator', icon: '📊', path: '/dashboard' },
     { label: 'Staff',    icon: '🔍', path: '/attendant' },
     { label: 'Sports',   icon: '🏏', path: '/retain' },

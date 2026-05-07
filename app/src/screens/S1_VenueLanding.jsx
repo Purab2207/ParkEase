@@ -311,10 +311,9 @@ const BookCTA = ({ spotsRemaining, consumerPrice, onBook }) => {
       <div className="w-full flex items-center gap-3">
         <button
           onClick={onBook}
-          disabled={isFull}
           className={`flex-1 font-bold text-base rounded-2xl py-4 transition-all shadow-lg shadow-black/50 active:scale-95
             ${isFull
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              ? 'bg-orange-500 text-white hover:bg-orange-600 tracking-wide uppercase'
               : 'bg-[#1C1D2B] text-white hover:bg-gray-800 tracking-wide uppercase'
             }`}
         >

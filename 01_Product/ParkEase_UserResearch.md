@@ -1,6 +1,21 @@
 # ParkEase — User Research
 
-**Research scope:** 8 cities · 12+ events · 2023–2026 · Platforms: Reddit (r/mumbai, r/delhi, r/bangalore, r/ConcertsIndia_, r/ipl, r/ahmedabad, r/coldplayindia, r/pune, r/Chennai), Medium, Twitter/X, journalism. Events covered: Coldplay, Diljit Dosanjh, Linkin Park, Karan Aujla, Playboi Carti, Ed Sheeran, Kanye West, IPL, Echoes EDM.
+**Version:** April 2026 · **Author:** Purab
+**Research scope:** 8 cities · 12+ events · 2023–2026
+
+---
+
+## Summary
+
+Post-event parking and transport failure at India's large-scale live events is not an outlier — it is the default. This research combines five direct attendee conversations with multi-city evidence drawn from Reddit, journalism, and documented event incidents across Coldplay, Diljit Dosanjh, Linkin Park, Karan Aujla, IPL, and others.
+
+Three findings were expected and confirmed: exit congestion is severe (45–90 min documented), willingness to pay for pre-booked parking is ₹200–400, and informal workarounds already exist (park remotely, auto for last mile). Two findings were not anticipated: a named parking bay functions as a **security product** (attendees change behaviour — leave valuables in the car — only when they trust the bay is monitored), and **internet jammers at venues collapse group coordination entirely**, making a pre-assigned meeting point a connectivity-independent safety feature.
+
+Consumer-side is validated. Operator-side (Siddharth) remains unvalidated — next step is 1–2 direct conversations with venue ops heads before Event 1.
+
+---
+
+**Research sources:** Reddit (r/mumbai, r/delhi, r/bangalore, r/ConcertsIndia\_, r/ipl, r/ahmedabad, r/coldplayindia, r/pune, r/Chennai), Medium, Twitter/X, journalism. Events covered: Coldplay, Diljit Dosanjh, Linkin Park, Karan Aujla, Playboi Carti, Ed Sheeran, Kanye West, IPL, Echoes EDM.
 
 ---
 
@@ -244,12 +259,16 @@ When parking is unorganised, people improvise dangerously. Flyover parking, peri
 
 ---
 
-## What We Didn't Find
+## Research Boundaries
 
-- **No operator-side data** — venue and organiser pain points are inferred, not directly validated. Next step: conversations with event organisers.
-- **No clean price confirmation** — WTP is inferred from spend patterns and implicit acceptance, not a direct "yes I'll pay ₹X." Next step: direct price testing.
-- **Mega-event skew** — evidence strongest for 50,000+ capacity events. College fests and smaller venues are unvalidated.
+This research is deliberately scoped. Three gaps are acknowledged:
+
+**Operator-side is unvalidated.** Siddharth's pain points (compliance risk, liability exposure, data absence) are inferred from documented event incidents and journalism — not from direct conversations with venue ops heads. Operator-side motivations remain hypothesis until Event 1 or a direct discovery call.
+
+**WTP is inferential, not tested.** ₹200–400 is drawn from spending behaviour (₹20k–27k total Coldplay spend, ₹4k surge cabs, ₹48k black-market tickets) and two direct statements (Sakshi: ₹200–300, Akshat: ~20% of ticket price). No structured pricing test has been run. Demand price-elasticity is unknown until Event 1.
+
+**Evidence skews large.** All documented failures are from 40,000–80,000 capacity events. College fests and mid-tier venue behaviour (10,000–20,000 attendees) are extrapolated, not directly observed.
 
 ---
 
-*ParkEase User Research · April 2026*
+*ParkEase User Research · April 2026 · [Condensed PRD](ParkEase_PRD_Condensed.md)*

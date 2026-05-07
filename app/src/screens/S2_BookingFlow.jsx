@@ -419,7 +419,7 @@ const PricingBreakdown = ({ event, groupSize, onGroupSizeChange }) => (
 
 // Step 5 — UPI Payment
 const UPIPaymentButton = ({ consumerPrice, selectedBay, selectedWindow, contactPhoneValid, vehicleNoValid, isLoggedIn, isLoading, onPay, onOpenBaySelection }) => {
-  const isDisabled = isLoading || !isLoggedIn || (selectedBay && (!selectedWindow || !contactPhoneValid || !vehicleNoValid));
+  const isDisabled = isLoading || (isLoggedIn && selectedBay && (!selectedWindow || !contactPhoneValid || !vehicleNoValid));
 
   const getLabel = () => {
     if (isLoading) return 'Processing...';
@@ -603,8 +603,8 @@ export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn, on
   };
 
   const handlePay = async () => {
-    if (!selectedBay || !selectedWindow) return;
     if (!isLoggedIn) { onAuthRequired?.(); return; }
+    if (!selectedBay || !selectedWindow) return;
     setPaymentLoading(true);
     setPaymentError('');
     try {

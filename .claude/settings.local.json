@@ -21,7 +21,43 @@
       "Bash(find /c/Users/91982 -name oauth2* -o -name credentials* -o -name gcloud*)",
       "Bash(curl -s http://localhost:8080/metrics)",
       "Bash(jobs -l)",
-      "Bash(pkill -f \"vite\")"
+      "Bash(pkill -f \"vite\")",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git add:*)",
+      "mcp__claude_ai_Notion__notion-search",
+      "mcp__claude_ai_Notion__notion-fetch",
+      "Bash(python3:*)",
+      "mcp__claude_ai_Notion__notion-update-page",
+      "Bash(wc:*)",
+      "WebFetch(domain:park-ease-rho.vercel.app)",
+      "Bash(git fetch:*)",
+      "Bash(vercel:*)",
+      "Bash(rm:*)",
+      "Bash(npx plugins:*)",
+      "Bash(curl -s \"https://api.vercel.com/v9/projects/park-ease?teamId=team_tWulqzJt3TJAQKZfE5ayGad2\" -H \"Authorization: Bearer $\\(vercel whoami --token || echo ''\\)\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} %{redirect_url}\" https://park-ease-rho.vercel.app/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://park-ease-rho.vercel.app/events/karan-aujla-jln-2026)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://park-ease-rho.vercel.app/events/arijit-singh-dy-patil-2026)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://park-ease-rho.vercel.app/confirmation/PE-2026-DEMO1234)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://park-ease-rho.vercel.app/retain)",
+      "Bash(curl -s \"https://park-ease-rho.vercel.app/assets/index-BVTmH-T4.js\")",
+      "Bash(npm run:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://park-ease-rho.vercel.app)",
+      "Bash(curl -s \"https://park-ease-rho.vercel.app\")",
+      "Bash(curl -v --max-time 15 https://park-ease-rho.vercel.app)",
+      "Bash(gh run:*)",
+      "mcp__claude_ai_Notion__notion-create-pages",
+      "Bash(npx vercel:*)",
+      "Bash(python -c ':*)",
+      "mcp__claude_ai_Supabase__execute_sql",
+      "Bash(curl *)",
+      "mcp__plugin_vercel_vercel__list_teams",
+      "mcp__supabase__execute_sql"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
 }
