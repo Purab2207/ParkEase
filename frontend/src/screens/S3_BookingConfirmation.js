@@ -185,7 +185,8 @@ const FALLBACK_BOOKING = {
 };
 
 export default function BookingConfirmationScreen({ bookingId, onNavigateToRetention }) {
-  const [booking, setBooking] = useState(FALLBACK_BOOKING);
+  const storedAmount = Number(localStorage.getItem('pe_last_amount')) || FALLBACK_BOOKING.consumer_price;
+  const [booking, setBooking] = useState({ ...FALLBACK_BOOKING, consumer_price: storedAmount });
   const [groupSize, setGroupSize] = useState(5);
   const [showToast, setShowToast] = useState(false);
 
@@ -231,7 +232,7 @@ export default function BookingConfirmationScreen({ bookingId, onNavigateToReten
           <p className="text-xs text-gray-400 font-mono">Booking ID - #{(booking.booking_id || bookingId || '').slice(-8).toUpperCase()}</p>
         </div>
 
-        <UPIAppsBlock amount={booking.consumer_price || 169} bookingId={booking.booking_id || bookingId} />
+        <UPIAppsBlock amount={booking.consumer_price || booking.amount_paid || storedAmount} bookingId={booking.booking_id || bookingId} />
 
         {/* Entry pass */}
         <div className="w-full flex flex-col gap-3">
@@ -263,7 +264,7 @@ export default function BookingConfirmationScreen({ bookingId, onNavigateToReten
           </div>
           <div className="flex items-center justify-between pt-2 border-t border-gray-200">
             <span className="text-xs text-gray-400">Amount paid</span>
-            <span className="text-sm font-bold text-gray-900">{'\u20B9'}{booking.consumer_price || booking.amount_paid} via UPI</span>
+            <span className="text-sm font-bold text-gray-900">{'\u20B9'}{booking.consumer_price || booking.amount_paid || storedAmount} via UPI</span>
           </div>
         </div>
 

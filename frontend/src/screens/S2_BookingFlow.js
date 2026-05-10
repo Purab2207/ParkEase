@@ -124,8 +124,9 @@ export default function BookingFlowScreen({
 
   const handlePaymentSuccess = useCallback(() => {
     setShowPaymentModal(false);
+    localStorage.setItem('pe_last_amount', String(consumerPrice));
     onPaymentSuccess?.(pendingBookingId);
-  }, [pendingBookingId, onPaymentSuccess]);
+  }, [pendingBookingId, consumerPrice, onPaymentSuccess]);
 
   if (loading) {
     return (

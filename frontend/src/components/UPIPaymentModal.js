@@ -56,7 +56,10 @@ export default function UPIPaymentModal({ isOpen, onClose, onSuccess, amount, ba
     const upiUrl = `upi://pay?pa=parksease@okaxis&pn=ParkEase&am=${amount}&cu=INR&tn=ParkEase+Parking`;
     QRCode.toDataURL(upiUrl, { width: 160, margin: 1 })
       .then(url => setPaymentQrUrl(url))
-      .catch(() => {});
+      .catch(err => {
+        console.error('[UPIPaymentModal] QR generation failed:', err);
+        setPaymentQrUrl('');
+      });
   }, [amount]);
 
   // Reset on open
@@ -149,10 +152,15 @@ export default function UPIPaymentModal({ isOpen, onClose, onSuccess, amount, ba
                 <div className="bg-white border border-gray-100 rounded-2xl p-3 shadow-sm">
                   {paymentQrUrl
                     ? <img src={paymentQrUrl} alt="UPI payment QR" width={140} height={140} />
-                    : <div className="w-[140px] h-[140px] bg-gray-100 rounded-xl animate-pulse" />
+                    : <div className="w-[140px] h-[140px] bg-gray-100 rounded-xl animate-pulse flex items-center justify-center">
+                        <span className="text-[10px] text-gray-400 text-center px-2">Generating QR...</span>
+                      </div>
                   }
                 </div>
                 <p className="text-xs text-gray-400 text-center">Scan with any UPI app to pay ₹{amount}</p>
+                {!paymentQrUrl && (
+                  <p className="text-[11px] text-gray-500 font-mono text-center select-all">parksease@okaxis</p>
+                )}
               </div>
 
               <div className="flex items-center gap-3 mb-4">

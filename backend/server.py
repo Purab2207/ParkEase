@@ -481,7 +481,7 @@ def get_booking(booking_id: str, request: Request):
         "event_name": event.get("name", ""),
         "venue": f"{event.get('venue', '')}, {event.get('city', '')}",
         "date": event.get("date", ""),
-        "consumer_price": event.get("price", 0),
+        "consumer_price": event.get("price") or doc.get("amount_paid", 0),
         **bay_lot,
     }
 
