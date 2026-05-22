@@ -638,6 +638,7 @@ export default function BookingFlowScreen({ userPhone, userEmail, isLoggedIn, on
           }));
         } catch {}
       }
+      localStorage.setItem('pe_last_amount', String(event?.consumer_price ?? event?.price ?? 0));
       navigate(`/confirmation/${booking.booking_id}`);
     } catch (err) {
       setPaymentError(err.message || 'Booking failed. Please try again.');

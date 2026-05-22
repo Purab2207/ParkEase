@@ -15,7 +15,7 @@ function normaliseBooking(raw) {
     gateName: raw.gate_name || '',
     entryWindow: raw.entry_window || '',
     departureNudgeTime: '6:00 PM',
-    consumerPrice: raw.consumer_price || 0,
+    consumerPrice: raw.consumer_price || raw.amount_paid || Number(localStorage.getItem('pe_last_amount')) || 0,
     exitGate: 'Gate C',
     exitSection: 'Section B',
     exitEstimatedMins: 12,
