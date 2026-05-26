@@ -96,9 +96,9 @@ const CabProviderCard = ({ provider, availability, dropZoneLat, dropZoneLng, dro
 
   const getProviderBrandInfo = () => {
     switch(provider) {
-      case 'ola': return { name: 'Ola', color: 'bg-lime-500' };
-      case 'uber': return { name: 'Uber', color: 'bg-black text-white border-gray-600' };
-      case 'rapido': return { name: 'Rapido', color: 'bg-yellow-400 text-black' };
+      case 'ola': return { name: 'Ola', color: 'text-white', bg: '#3CB815' };
+      case 'uber': return { name: 'Uber', color: 'text-white', bg: '#000000' };
+      case 'rapido': return { name: 'rapido', color: 'text-white', bg: '#F5A623' };
       default: return { name: provider, color: 'bg-white' };
     }
   };
@@ -183,8 +183,8 @@ const CabProviderCard = ({ provider, availability, dropZoneLat, dropZoneLng, dro
   return (
     <div className={`flex flex-col items-center justify-between bg-white hover:bg-gray-50 active:scale-95 rounded-2xl p-4 gap-4 transition-all border border-gray-200 shadow-sm ${isUnavailable ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}`} onClick={!showWebFallback ? handleBooking : undefined}>
       <div className="flex flex-col items-center gap-2">
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shadow-sm border ${brandInfo.color}`}>
-          {brandInfo.name.charAt(0)}
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm ${brandInfo.color}`} style={{ backgroundColor: brandInfo.bg }}>
+          <span className="font-black text-xs tracking-tight leading-none">{brandInfo.name}</span>
         </div>
         <div className={getBadgeStyle()}>
           {getBadgeText()}

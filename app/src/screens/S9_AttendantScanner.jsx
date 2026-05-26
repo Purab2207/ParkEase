@@ -667,7 +667,7 @@ export default function AttendantScannerScreen() {
         {/* Header */}
         <div className="flex items-center justify-between px-4 pt-5 pb-3 border-b border-gray-800">
           <div className="flex flex-col gap-0.5">
-            <p className="text-white font-bold text-base">Attendant Scanner</p>
+            <p className="text-white font-bold text-base">Attendant Scan</p>
             <p className="text-gray-500 text-xs truncate max-w-[200px]">{attendant.zone}</p>
           </div>
           <div className="flex flex-col items-end gap-0.5">
