@@ -26,6 +26,12 @@ __pycache__/
 .claude/worktrees/
 .mcp.json
 
+# Obsidian local config
+.obsidian/
+
+# Local tooling artifacts
+skills-lock.json
+
 # Temp batch/output files
 *.out.txt
 b*_out.txt
