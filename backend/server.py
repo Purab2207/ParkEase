@@ -21,7 +21,7 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
 DASHBOARD_API_KEY = os.environ.get("DASHBOARD_API_KEY", "")
 if not DASHBOARD_API_KEY:
-    raise RuntimeError("DASHBOARD_API_KEY env var is not set. Add it to Railway variables.")
+    raise RuntimeError("DASHBOARD_API_KEY env var is not set.")
 DEMO_MODE = os.environ.get("DEMO_MODE", "false").lower() == "true"
 
 # ---------------------------------------------------------------------------
