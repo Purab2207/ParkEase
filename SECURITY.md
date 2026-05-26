@@ -9,7 +9,7 @@ ParkEase is a **portfolio demo**. It is not deployed to real users and does not 
 | Feature | Behaviour | Why it stays |
 |---|---|---|
 | OTP `0000` bypass | Any email authenticates with code `0000` | Lets reviewers explore the flow without a phone. Gated behind `DEMO_MODE=true`; setting `DEMO_MODE=false` disables it and falls through to real OTP validation. |
-| UPI payment simulation | 5-second countdown auto-succeeds, no real funds move | Razorpay/Cashfree integration requires a merchant account. Not scoped for the demo. Console warns `[DEMO] UPI payment is simulated` on every modal open. |
+| UPI payment simulation | Generates a real UPI deep link to demo VPA `parksease@okaxis`. The VPA is not a registered merchant account — any attempted transaction will be rejected at the UPI network level. No Razorpay/Cashfree SDK integrated. | Razorpay/Cashfree integration requires a merchant account. Not scoped for the demo. |
 | Client-side bay state | Bay availability tracked in React state, not live DB | Supabase Realtime sync is functional but the bay grid uses in-memory state to keep the demo self-contained without live traffic. |
 
 ---
@@ -54,8 +54,8 @@ All booking fields validated server-side via Pydantic:
 ### UPI ID input
 The manual UPI ID field in the payment modal validates format (`name@provider`) before enabling the Pay button. Empty or malformed IDs are rejected client-side.
 
-### Silent booking failure removed
-If the backend returns an error during booking creation, the user sees the error message. The previous silent fallback to a fake local booking ID has been removed.
+### Silent booking failure (demo fallback)
+If the backend is unreachable, `createBooking` in `api.js` returns a `DEMO-{timestamp}` booking ID rather than throwing. This keeps the demo flow intact when Railway is cold or offline. The confirmation screen detects the `DEMO-` prefix and reads booking context from `localStorage` instead of Supabase. Production path: remove the catch block and surface the error to the user.
 
 ### Accessibility
 - OTP inputs carry `aria-label="OTP digit N of 6"`.
