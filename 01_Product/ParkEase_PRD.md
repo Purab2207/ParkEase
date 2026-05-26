@@ -1008,7 +1008,7 @@ Prototype Screens (10 screens + Navbar + Profile Modal — demo order)
 - S6 — Retention / Re-engagement ✅ built
 - S7 — RCB Booking (retention partner flow) ✅ built
 - S8 — RCB Confirmation ✅ built
-- S9 — Attendant Scanner (ground staff) ✅ built
+- S9 — Attendant Scan (ground staff) ✅ built
 - S5 — Operator Dashboard ✅ built
 - **Navbar** — persistent shell: logo, city selector, search, profile/auth ✅ built
 - **Profile Modal** — vehicle number, booking history (upcoming + past), logout ✅ built

@@ -211,7 +211,7 @@ We do not own or operate parking infrastructure, run shuttle fleets, or compete 
 7. Manual fallback printed booking list — physical ops, gate attendants
 8. SLA and liability contract template — ParkEase is the booking software agent only; physical ops liability stays with organiser; ParkEase liability capped at refund value of bookings processed that night
 9. Emergency override in dashboard (S5 operator controls)
-10. S9 Attendant Scanner — QR scan, plate verification, bay reassignment for blocked bays
+10. S9 Attendant Scan — QR scan, plate verification, bay reassignment for blocked bays
 11. Manual inventory seeding + bay pillar mapping (ops task, not tech feature)
 12. WhatsApp forward CTA on confirmation (S3) ✅ built — pre-formatted booking summary with per-person split amount
 13. Events Listing home screen (S0) ✅ built — hero carousel + Concerts + IPL rows, scarcity chips, team gradients
@@ -258,7 +258,7 @@ We do not own or operate parking infrastructure, run shuttle fleets, or compete 
 - `/retain` — S6 Retention
 - `/retain/book` — S7 RCB Booking
 - `/retain/confirm` — S8 RCB Confirmation
-- `/attendant` — S9 Attendant Scanner
+- `/attendant` — S9 Attendant Scan
 
 **Backend API endpoints:**
 
@@ -277,7 +277,7 @@ We do not own or operate parking infrastructure, run shuttle fleets, or compete 
 
 **Supabase requirement:** `decrement_spots(event_id text)` Postgres function must exist — atomically decrements `events.spots_remaining`. Falls back to non-atomic update if RPC not yet created.
 
-**Security controls:** slowapi rate limiting · CORS explicit allowlist (Vercel + localhost:5173 + localhost:3000) · `X-Dashboard-Key` header on operator endpoints · booking lookup requires `?email=` match or operator key (IDOR mitigation) · `VITE_OPERATOR_PIN` frontend PIN gate on `/dashboard` (default `2207`) · security headers via `vercel.json` (CSP, X-Frame-Options, nosniff, Referrer-Policy)
+**Security controls:** slowapi rate limiting · CORS explicit allowlist (Vercel + localhost:5173 + localhost:3000) · `X-Dashboard-Key` header on operator endpoints · booking lookup requires `?email=` match or operator key (IDOR mitigation) · `VITE_OPERATOR_PIN` frontend PIN gate on `/dashboard` (default `1234`) · security headers via `vercel.json` (CSP, X-Frame-Options, nosniff, Referrer-Policy)
 
 *[Live site: https://park-ease-rho.vercel.app — use DemoChip (bottom-right) to navigate across all roles]*
 
@@ -429,7 +429,7 @@ Named bay entry QR, gate directions, booking ID — all in RCB dark theme. Demon
 
 ### Ground Staff Flow
 
-**S9 — Attendant Scanner** · `/attendant`
+**S9 — Attendant Scan** · `/attendant`
 *Closes the loop between "booking confirmed" and "bay actually occupied" — feeds the compliance report*
 
 PWA with offline manifest caching — works inside a venue with no signal.
@@ -447,7 +447,7 @@ PWA with offline manifest caching — works inside a venue with no signal.
 **S5 — Operator Dashboard** · `/dashboard`
 *Siddharth's entire product interaction — the B2B acquisition screen*
 
-PIN: `2207` (configurable via `VITE_OPERATOR_PIN` Vercel env var; backend enforces the same value as `DASHBOARD_API_KEY` on Railway via `X-Dashboard-Key` header).
+PIN: `1234` (configurable via `VITE_OPERATOR_PIN` Vercel env var; backend enforces the same value as `DASHBOARD_API_KEY` on Railway via `X-Dashboard-Key` header).
 - **Live fill rate gauge** — large radial gauge, current bookings / total capacity
 - **Per-lot occupancy bars** — Lot A / B / C with booked / available / fill% per lot
 - **Redirect CTA count** — taps on the cab redirect screen since event start
