@@ -264,7 +264,7 @@ const WhatsAppShareBlock = ({ booking, groupSize, splitAmount }) => {
     `• Departure: Leave by ${booking.departureNudgeTime}`,
     groupSize > 1 ? `• Split: ₹${splitAmount} per person (${groupSize} people)` : null,
     ``,
-    `Book your spot: https://parksease.in/book/${booking.eventId}`,
+    `Book your spot: https://park-ease-rho.vercel.app/events/${booking.eventId}`,
   ]
     .filter(line => line !== null)
     .join('\n');
