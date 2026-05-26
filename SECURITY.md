@@ -32,7 +32,7 @@ Explicit allowlist: origins `[park-ease-rho.vercel.app, localhost:3000, localhos
 ### Operator dashboard access control
 - `GET /api/events/{id}/stats` requires `X-Dashboard-Key` header matching `DASHBOARD_API_KEY`.
 - `POST /api/events/{id}/simulate-booking` requires both `DEMO_MODE=true` AND `X-Dashboard-Key`.
-- The `/dashboard` React route prompts for a key (stored in `localStorage`); compared to `REACT_APP_DASHBOARD_KEY`.
+- The `/dashboard` React route prompts for a PIN compared to `VITE_OPERATOR_PIN` (default: `1234` for demo).
 
 ### Booking lookup (IDOR mitigation)
 `GET /api/bookings/{id}` requires one of:

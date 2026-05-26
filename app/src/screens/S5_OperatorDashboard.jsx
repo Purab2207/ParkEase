@@ -902,7 +902,7 @@ const PreEventChecklist = () => {
 // ----------------------------------------------------------------------------
 // OPERATOR PIN GATE
 // ----------------------------------------------------------------------------
-const OPERATOR_PIN = import.meta.env.VITE_OPERATOR_PIN || '2207';
+const OPERATOR_PIN = import.meta.env.VITE_OPERATOR_PIN || '1234';
 
 function PinGate({ onUnlock }) {
   const [pin, setPin] = useState('');
@@ -951,7 +951,10 @@ function PinGate({ onUnlock }) {
           Unlock Dashboard
         </button>
       </div>
-      <p className="text-xs text-gray-400 text-center">ParkEase · Operator access only</p>
+      <div className="flex flex-col items-center gap-1">
+        <p className="text-xs text-gray-400 text-center">ParkEase · Operator access only</p>
+        <p className="text-xs text-indigo-400 font-medium">Demo PIN: 1234</p>
+      </div>
     </div>
   );
 }
