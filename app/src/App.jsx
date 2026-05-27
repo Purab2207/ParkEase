@@ -110,7 +110,7 @@ export default function App() {
   const [showProfile, setShowProfile] = useState(false);
 
   // Navbar
-  const [activeNav, setActiveNav] = useState('For You');
+  const [activeNav, setActiveNav] = useState('Events');
   const [selectedCity] = useState('Delhi');
 
   const showNavbar = pathname.startsWith('/events') || NAVBAR_PATHS.includes(pathname) ||
