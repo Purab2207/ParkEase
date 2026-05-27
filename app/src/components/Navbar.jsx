@@ -1,9 +1,9 @@
 import { useState } from "react";
 
-const navPills = ["For You", "Parking", "Monthly", "Events", "EV Charging"];
+const navPills = ["Events", "Parking"];
 
 export default function Navbar({
-  activeNav = "For You",
+  activeNav = "Events",
   onNavChange,
   onSearchOpen,
   onAuthOpen,
@@ -25,32 +25,16 @@ export default function Navbar({
           </span>
         </a>
 
-        {/* City selector (desktop only) */}
-        <button
-          onClick={onCityChange}
-          className="hidden sm:inline-flex items-center gap-1 border border-gray-300 rounded-full px-3 py-1 text-sm text-gray-700 hover:bg-gray-50 transition-colors shrink-0"
-        >
+        {/* City label (desktop only) — static, no dropdown */}
+        <span className="hidden sm:inline-flex items-center border border-gray-200 rounded-full px-3 py-1 text-sm text-gray-500 shrink-0">
           {selectedCity}
-          <svg
-            className="w-3.5 h-3.5 text-gray-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </button>
+        </span>
 
         {/* Spacer */}
         <div className="flex-1" />
 
         {/* Nav pills (hidden on mobile, shown md+) */}
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden md:flex items-center gap-1 overflow-x-auto scrollbar-none">
           {navPills.map((pill) => (
             <button
               key={pill}
