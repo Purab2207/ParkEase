@@ -81,23 +81,19 @@ export default function Navbar({
           }
           aria-label={isLoggedIn ? "Profile" : "Log in"}
         >
-          {isLoggedIn ? (
-            <span>{(userPhone || "U")[0].toUpperCase()}</span>
-          ) : (
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0"
-              />
-            </svg>
-          )}
+          <svg
+            className="w-5 h-5"
+            fill={isLoggedIn ? "currentColor" : "none"}
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0"
+            />
+          </svg>
         </button>
       </div>
     </nav>

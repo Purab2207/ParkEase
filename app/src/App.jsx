@@ -97,10 +97,10 @@ export default function App() {
   const handleBookingComplete = () => setBookingState(s => ({ ...s, bookedSpots: s.bookedSpots + 1 }));
   const handleRedirectTap    = () => setBookingState(s => ({ ...s, redirectCTATaps: s.redirectCTATaps + 1 }));
 
-  // Auth state
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userPhone, setUserPhone] = useState('');
-  const [userEmail, setUserEmail] = useState('');
+  // Auth state — persisted in localStorage so refresh doesn't log the user out
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('pe_phone'));
+  const [userPhone, setUserPhone] = useState(() => localStorage.getItem('pe_phone') || '');
+  const [userEmail, setUserEmail] = useState(() => localStorage.getItem('pe_email') || '');
   const [showAuth, setShowAuth] = useState(false);
 
   // Search
@@ -120,6 +120,8 @@ export default function App() {
     setIsLoggedIn(true);
     setUserPhone(phone);
     setUserEmail(email);
+    localStorage.setItem('pe_phone', phone);
+    if (email) localStorage.setItem('pe_email', email);
     setShowAuth(false);
   };
 
@@ -232,7 +234,13 @@ export default function App() {
         <ProfileModal
           userPhone={userPhone}
           onClose={() => setShowProfile(false)}
-          onLogout={() => { setIsLoggedIn(false); setUserPhone(''); setUserEmail(''); }}
+          onLogout={() => {
+            setIsLoggedIn(false);
+            setUserPhone('');
+            setUserEmail('');
+            localStorage.removeItem('pe_phone');
+            localStorage.removeItem('pe_email');
+          }}
         />
       )}
     </div>
