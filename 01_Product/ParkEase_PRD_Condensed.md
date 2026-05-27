@@ -11,7 +11,7 @@ ParkEase is a software layer that pre-sells named parking bays to event attendee
 
 **The problem:** Post-event exit surge at India's large-scale live events is a predictable, recurring coordination failure — not a parking shortage — and no product exists to shape attendee demand before it collapses the infrastructure.
 
-**The market:** India's live events market is ₹20,861 crore (2024), growing 15% YoY. ~110–130 structured-venue events/year in Tier 1 cities are addressable at MVP.
+**The market:** India's live events market is ₹10,100 crore (FICCI-EY, 2024) (2024), growing 15% YoY. ~110–130 structured-venue events/year in Tier 1 cities are addressable at MVP.
 
 **Current state:** 10-screen prototype live on Vercel (S0–S9) + FastAPI backend deployed on Railway + Supabase (PostgreSQL). Full consumer flow: Events Listing (S0) → Venue Landing (S1) → Booking Flow (S2) → Payment + Confirmation (S3) → Redirect (S4). Operator (S5), retention (S6–S8), and ground staff (S9) flows live. DemoChip (floating role switcher, bottom-right) enables reviewer navigation across all roles. No live event secured yet. All persona motivations are hypothesis-based — Event 1 is the validation checkpoint.
 
@@ -37,7 +37,7 @@ ParkEase is a software layer that pre-sells named parking bays to event attendee
 
 ## 3. Market Context
 
-India's live events market: ₹20,861 crore (2024), growing 15% YoY. Live music specifically: ~₹11,600 crore (2025), CAGR 17.5% through 2034.
+India's live events market: ₹10,100 crore (FICCI-EY, 2024) (2024), growing 15% YoY. Live music specifically: ~₹11,600 crore (2025), CAGR 17.5% through 2034.
 
 **ParkEase's addressable slice — bottom-up:**
 
@@ -47,9 +47,10 @@ India's live events market: ₹20,861 crore (2024), growing 15% YoY. Live music 
 | Major international concerts (Coldplay, Travis Scott scale) | ~15–20 | ~50% — stadium/mall venues only |
 | Domestic tours (Arijit, Diljit, Karan Aujla scale) | ~30–40 | ~50% |
 | Large comedy, festivals, other | ~20–30 | ~40% |
-| **Total addressable (structured venues, Tier 1)** | **~110–130/year** | |
+| **Total addressable (structured venues, Tier 1 — pre-filter)** | **~110–130/year** | |
+| **Post-filter (parking-critical, ≥ 10k attendees, structured lot)** | **~71–82/year** | |
 
-**Revenue per event (avg):** 600 bays × ₹175 avg price × 75% fill + ₹20,000 B2B platform fee = **~₹1 lakh/event**
+**Revenue per event (avg):** 600 bays × ₹175 avg price × 75% fill + ₹20,000 B2B platform fee = **~₹1 lakh/event gross transaction value** (ParkEase net = ₹45/spot + B2B fee; venue base rate is a pass-through)
 **Year 1 realistic target** (20–25 events): **₹20–25 lakh** · **Full Tier 1 penetration**: **~₹1.2 crore/year**
 
 **Competitive positioning:**
@@ -62,7 +63,7 @@ India's live events market: ₹20,861 crore (2024), growing 15% YoY. Live music 
 | Google Maps | Navigation | Post-arrival only, no pre-booking |
 
 **Consumer fee defensibility — ₹49 vs BookMyShow:**
-BookMyShow's 18–20% convenience fee (~₹270 on a ₹1,500 ticket) is a toll on a product someone else built — the user gets nothing additional. ParkEase's ₹49 *is* the product: a pillar-mapped bay, QR enforcement, scarcity visibility, and a redirect fallback if the lot fills. The real comparison shoppers make is not BMS vs ParkEase — it is informal parking (₹50–200 cash, no guarantee, no security) vs a named guaranteed bay. On that comparison, ₹49 wins on trust, not just price. Full economic argument: `02_Financials/Business Valuation.md` §7.
+BookMyShow's convenience fee (₹100–300 on a concert ticket) is a toll on a product someone else built — the user gets nothing additional. ParkEase's ₹49 *is* the product: a pillar-mapped bay, QR enforcement, scarcity visibility, and a redirect fallback if the lot fills. The real comparison shoppers make is not BMS vs ParkEase — it is informal parking (₹50–200 cash, no guarantee, no security) vs a named guaranteed bay. On that comparison, ₹49 wins on trust, not just price. Full economic argument: `02_Financials/Business Valuation.md` §7.
 
 ParkEase's differentiator is what happens *after the lot fills*. No competitor addresses this.
 
@@ -94,7 +95,7 @@ Five direct attendee conversations + multi-city evidence across 8 cities and 12+
 3. **Group coordination failure at scale.** Abhishek (23, Chandigarh) — group of 15, internet jammers at venue, 1 hour to regroup, walked 1 hour to find a cab. A pre-assigned bay with a known gate location is the offline meeting point that jammers cannot disrupt.
 4. **Vehicle vandalism, not just theft.** Yuvraj (22, Mohali) — IPL match, parked in unmanaged lot, side mirrors broken, zero accountability. Named bay + QR check-in creates a chain of custody that generic directed parking cannot.
 
-**WTP confirmed:** ₹200–400 range (Sakshi: ₹200–300 · Akshat: ~20% of ticket price). Consistent with the ₹99–₹249 pricing hypothesis.
+**WTP confirmed:** ₹200–400 range (Sakshi: ₹200–300 · Akshat: ~20% of ticket price). Consistent with the ₹149–₹450 pricing range.
 
 ---
 
@@ -597,7 +598,7 @@ ParkEase's SLA covers the booking software layer only — bay assignment accurac
 *How we answer it:* Legal review of liability cap structures used by comparable Indian event-tech vendors. Frame as "software warranty" not "operations guarantee" in all sales conversations from day one.
 
 **OQ2 — What is the right consumer pricing?**
-₹99–₹249 proposed based on event scale. Is demand price-elastic (lower price = higher attach rate) or price-inelastic (certainty value is the driver)?
+₹149–₹450 range (v2) based on event scale. Is demand price-elastic (lower price = higher attach rate) or price-inelastic (certainty value is the driver)?
 *How we answer it:* Event 1 establishes attach rate at one price point. A/B pricing test at V2 if attach rate data is inconclusive.
 
 **OQ5 — Manual to automated inventory: build, buy, or partner?**
@@ -620,7 +621,7 @@ Consumer-side research completed: 5 direct attendee conversations (Ahmedabad, Ch
 
 | Date | Decision | Detail |
 |---|---|---|
-| Mar 2026 | Financial model corrected v1 → v2 | v1 collected full consumer price and remitted 30% to venue — wrong. v2 models ParkEase fee on top of venue base rate (₹49 on ₹100–₹300 base). Net per spot corrected: ₹104 → ₹47. MVP new-venue contribution margin flipped from +₹9,085 to −₹275. B2B platform fee share corrected from ~35% to 60% of per-event economics. Annual contracts required for break-even revised from 10 to 15. |
+| Mar 2026 | Financial model corrected v1 → v2 | v1 collected full consumer price and remitted 30% to venue — wrong. v2 models ParkEase fee on top of venue base rate (₹49 on ₹100–₹300 base). Net per spot corrected: ₹104 → ₹45 (Razorpay 2.36% absorbed on full ₹169 transaction). MVP new-venue contribution margin flipped from +₹9,085 to −₹625. B2B platform fee share corrected from ~35% to 62% of per-event economics. Annual contracts required for break-even revised from 10 to 15. |
 | Apr 2026 | North Star confirmed: Fill Rate | Fill rate is the gate condition for all downstream metrics. Contribution-negative at MVP economics on a new venue (waived B2B fee) — that is a pricing decision, not a North Star argument. Redirect CTA tap rate is the closest alternative but cannot be measured without fill rate being high first. Decision: fill rate stays. |
 | Apr 2026 | Security hardening + backend deployment | FastAPI backend deployed on Railway. Security controls added: slowapi rate limiting, explicit CORS allowlist, `X-Dashboard-Key` auth on operator endpoints, IDOR mitigation on booking lookup, Pydantic input validation (vehicle_number max 15 chars, phone 10-digit, group_size 1–6), UPI ID regex validation, vercel.json security headers (CSP, X-Frame-Options, nosniff). OTP `0000` bypass and UPI payment simulation retained as intentional demo affordances, gated behind `DEMO_MODE=true`. |
 | May 2026 | PRD v2.2 — stack, auth, routes, screens, env vars corrected | Stack confirmed as Vite + React 19 (live `app/` folder). Auth moved fully client-side: phone + OTP `0000` via `DEMO_AUTH=true` in api.js — no backend call. Routes corrected to `/events/:eventId/book` etc. Screen count corrected to 10 (S0–S9). Dashboard env var corrected to `VITE_OPERATOR_PIN`. DemoChip updated to 5 roles (Consumer / Redirect / Operator / Staff / Sports). `decrement_spots` RPC dependency documented. `createBooking` DEMO- fallback: S2 writes context to localStorage, S3 renders from it — no broken confirmation screen. S4 "Parking Full" CTA made tappable (orange, routes to `/redirect`). S2 "Sign in to confirm booking" button made interactive — opens AuthModal inline. |

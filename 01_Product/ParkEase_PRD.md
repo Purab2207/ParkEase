@@ -228,7 +228,7 @@ Five direct attendee conversations across 8 cities and 12+ events corroborated t
 
 4. **Vehicle vandalism, not just theft** — Yuvraj (22, Mohali): IPL match, unmanaged lot, side mirrors broken, zero accountability. Named bay + QR check-in creates a chain of custody that generic directed parking cannot. Reinforces the security product framing from finding 2.
 
-**WTP finding:** ₹200–400 range (Sakshi: ₹200–300 · Akshat: ~20% of ticket price). Consistent with the ₹99–₹249 pricing hypothesis — upper bound is higher than assumed. Pricing may have room to move on premium events without losing conversion.
+**WTP finding:** ₹200–400 range (Sakshi: ₹200–300 · Akshat: ~20% of ticket price). Consistent with the ₹149–₹450 pricing range — upper bound is higher than assumed. Pricing may have room to move on premium events without losing conversion.
 
 ---
 
@@ -274,7 +274,7 @@ Priya lands on the ParkEase page for MMRDA Grounds and sees:
     
 - Prohibited items banner: "Venue does not permit powerbanks inside — leave in your car at the lot before heading to the gate"
     
-- Availability: 34 spots remaining · Price: ₹249
+- Availability: 34 spots remaining · Price: ₹199
     
 
 The prohibited items note is the detail that earns her trust. Finding out at the security gate with two children in tow that she must walk back to the car is exactly the kind of moment that ruins an evening. Knowing this before she arrives removes it entirely.
@@ -419,7 +419,7 @@ Touchpoint: ParkEase availability page · Emotional state: FOMO activated, urgen
 
 Rahul taps the link:
 
-"Karan Aujla — JLN Stadium, Delhi · 47 spots remaining · ₹299"
+"Karan Aujla — JLN Stadium, Delhi · 47 spots remaining · ₹199"
 
 The number 47 does the work. Not the price. Not the features. The scarcity. India's concert economy is explicitly FOMO-driven — limited availability and rarity of international and domestic artists touring India are the primary purchase triggers for this age group, with people willing to pay premium prices fearing they won't get another chance. His group has 5 people. He needs to act now before the option disappears.
 
@@ -431,7 +431,7 @@ Product decision — real-time inventory counter: The scarcity display must be l
 
 Touchpoint: ParkEase booking flow · Emotional state: Ready to book, one friction point
 
-Rahul goes to book. ₹299 for one spot. He pauses — not because ₹299 is expensive. Split four ways it is ₹75. Nobody thinks twice about ₹75. He pauses because he has been here before: he pays alone, then spends three days sending GPay reminders to friends who forget, delay, or suddenly claim they might not come. That social friction has killed group plans before.
+Rahul goes to book. ₹199 for one spot. He pauses — not because ₹199 is expensive. Split four ways it is ₹75. Nobody thinks twice about ₹75. He pauses because he has been here before: he pays alone, then spends three days sending GPay reminders to friends who forget, delay, or suddenly claim they might not come. That social friction has killed group plans before.
 
 Product decision — post-booking UPI split request (MVP): Rahul pays the full ₹299 upfront. Immediately after booking confirmation the app shows: "Split this with your group — ₹60 per person for 5 people." One tap generates individual UPI collect requests to contacts he selects from his phonebook. Each person receives a GPay or PhonePe request for ₹60. For Gen Z in India, UPI is the default — a 20-year-old college student described carrying cash as archaic, using UPI for everything from splitting bills to daily purchases. The collect request is a familiar action in an unfamiliar context. No new behaviour required.
 
@@ -753,7 +753,7 @@ Estimated vehicles diverted tonight: ~86
 
   
 
-Product decision — vehicles diverted methodology: The vehicles diverted figure uses redirect CTA tap count × 55% compliance discount. Raw tap count overstates diversion because some users tap out of curiosity but drive anyway. The 55% rate is based on validated Waze/Google Maps behavioural redirection benchmarks. This is displayed transparently on the dashboard with a methodology note — it is an honest estimate, not a hard count. Direct measurement requires V2 sensor integration.
+Product decision — vehicles diverted methodology: The vehicles diverted figure uses redirect CTA tap count × 55% compliance discount. Raw tap count overstates diversion because some users tap out of curiosity but drive anyway. The 55% rate is a pre-pilot Western market estimate (Waze/Google Maps behavioural redirection data) — replaced with India baseline after Event 1. This is displayed transparently on the dashboard with a methodology note — it is an honest estimate, not a hard count. Direct measurement requires V2 sensor integration.
 
 Product decision — exit clearance baseline (Option B — industry baseline): At MVP, ParkEase cannot independently measure unmanaged street parking clearance time at the same venue. Instead the compliance report references the documented industry baseline from verified journalism: Coldplay Mumbai concert gridlock persisted for 30+ minutes on major highways, and Diljit Dosanjh Delhi concert post-event chaos lasted over an hour per Business Standard reporting. ParkEase-managed lot clearance is compared against this documented industry baseline — not a same-night estimate. This is labelled clearly as an industry comparison, not event-specific measurement. V2 introduces a structured ops input field for baseline logging.
 
@@ -794,7 +794,7 @@ Demand Shifting Performance
     
 - Average cab booking time via redirect: 24 seconds
     
-- Note: Diversion estimate uses a 55% compliance discount on CTA taps based on validated behavioural redirection benchmarks. Direct measurement requires sensor integration (planned V2).
+- Note: Diversion estimate uses a 55% compliance discount on CTA taps (pre-pilot Western market benchmark, replaced after Event 1). Direct measurement requires sensor integration (planned V2).
     
 
 Exit Clearance Performance
@@ -1622,17 +1622,17 @@ OQ2 — What is the right consumer pricing for ParkEase?
 
 Informal unmanaged parking at Indian events costs ₹50–100 at the gate. ParkEase must price at a premium that reflects the certainty and proximity value while remaining affordable for price-sensitive segments like Rahul's group.
 
-Proposed pricing range: ₹99–249 based on event scale:
+Proposed pricing range: ₹149–₹450 (v2) based on event scale:
 
 |   |   |   |
 |---|---|---|
 |Event Scale|Attendees|Recommended Price|
-|Small/mid concerts|10,000–20,000|₹99|
-|Standard IPL matches|25,000–35,000|₹149|
+|Small/mid concerts|10,000–20,000|₹149|
+|Standard IPL matches|25,000–35,000|₹169|
 |Large concerts (Diljit/Karan Aujla scale)|40,000+|₹199|
-|Marquee events (Coldplay/Travis Scott scale)|60,000+|₹249|
+|Marquee events (Coldplay/Travis Scott scale — exclusivity required)|60,000+|₹450|
 
-Group split framing: ₹149 split 4 ways = ₹37 per person — less than informal parking per person in a group. This copy converts Rahul.
+Group split framing: ₹169 split 4 ways = ₹42 per person — less than informal parking per person in a group. This copy converts Rahul.
 
 What we need to validate: Does attach rate at checkout respond meaningfully to price (price-elastic demand) or is the primary driver certainty value (price-inelastic)? Requires A/B testing at V2 stage.
 
@@ -1835,7 +1835,7 @@ Not a calendar. The B2B sales relationship. Each stage unlocks when Siddharth sa
 
 | Date | Change | Detail |
 |---|---|---|
-| Mar 2026 | Financial model v1→v2 | v1 collected full consumer price and remitted 30% — wrong. v2 models ParkEase fee on top of venue base rate. Net per-spot corrected: ₹104 → ₹47. |
+| Mar 2026 | Financial model v1→v2 | v1 collected full consumer price and remitted 30% — wrong. v2 models ParkEase fee on top of venue base rate. Net per-spot corrected: ₹104 → ₹45 (Razorpay 2.36% absorbed on full transaction). MVP new-venue CM: +₹9,085 → −₹625. |
 | Apr 2026 | User research inserted (§4 / OQ7) | 5 direct attendee conversations + multi-city evidence (8 cities, 12+ events). Consumer persona motivations corroborated. WTP range confirmed ₹200–400. |
 | Apr 2026 | North Star confirmed: Fill Rate | Fill rate is the gate condition for all downstream metrics. Redirect CTA tap rate is a V2 metric once Ola/Uber API callback confirms hard conversion. |
 | Apr 2026 | Security hardening + backend deployment | FastAPI backend deployed on Railway. Controls added: slowapi rate limiting (3/min OTP, 10/min bookings), explicit CORS allowlist (GET/POST/OPTIONS), `X-Dashboard-Key` operator endpoint auth, IDOR mitigation on booking lookup, `DashboardGate` frontend route guard, Pydantic input validation, UPI ID regex validation, vercel.json security headers (CSP, X-Frame-Options, nosniff). OTP `0000` bypass and UPI payment simulation retained as intentional demo affordances gated behind `DEMO_MODE=true`. `SECURITY.md` added at repo root. |

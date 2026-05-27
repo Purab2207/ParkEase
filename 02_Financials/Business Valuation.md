@@ -9,12 +9,12 @@
 
 ## Correction 1 — Revenue structure
 
-v1 modelled ParkEase as collecting the full consumer price and remitting 30% to the venue. Real comparable platforms — ShowMyParking at Coldplay Ahmedabad (₹500 for four-wheelers), SpotHero (10–30% commission), Indian stadium base rates (₹100–200) — all show a **platform fee on top of the venue's base rate**. ParkEase does not own the base rate. It adds a fee on top.
+v1 modelled ParkEase as collecting the full consumer price and remitting 30% to the venue. Real comparable platforms — ShowMyParking at Coldplay Ahmedabad (₹500 for four-wheelers), SpotHero (~35% commission), Indian stadium base rates (₹100–200) — all show a **platform fee on top of the venue's base rate**. ParkEase does not own the base rate. It adds a fee on top.
 
 ||Structure|ParkEase net (₹149 tier)|
 |---|---|---|
 |**v1 — wrong**|Collect ₹149 → remit ₹45 to venue|₹104/spot|
-|**v2 — correct**|₹100 venue base + ₹49 ParkEase fee|~₹47/spot (post gateway)|
+|**v2 — correct**|₹100 venue base + ₹49 ParkEase fee|~₹45/spot (post gateway)|
 
 ## Correction 2 — Ops cost methodology
 
@@ -39,14 +39,16 @@ ParkEase earns a **platform fee on top of the venue's own base parking rate**. T
 
 |Event scale|Attendees|Venue base|ParkEase fee|Consumer pays|PE net (post gateway)|
 |---|---|---|---|---|---|
-|Small/mid concert|10k–20k|₹100|₹49 (33%)|₹149|**₹48**|
-|Standard IPL|25k–35k|₹120|₹49 (29%)|₹169|**₹48**|
-|Large concert|40k+|₹150|₹49 (25%)|₹199|**₹48**|
-|Marquee event|60k+|₹300|₹150 (33%)|₹450|**₹146**|
+|Small/mid concert|10k–20k|₹100|₹49 (33%)|₹149|**₹45**|
+|Standard IPL|25k–35k|₹120|₹49 (29%)|₹169|**₹45**|
+|Large concert|40k+|₹150|₹49 (25%)|₹199|**₹44**|
+|Marquee event|60k+|₹300|₹150 (33%)|₹450|**₹139**|
 
 > **Key insight**
 
-> ParkEase's fee as a % of total consumer price ranges from 25–33%. This is within the 10–30% commission range observed for SpotHero and is defensible given ParkEase adds pre-booking, QR enforcement, and the compliance report — none of which ShowMyParking provides at equivalent depth.
+> ParkEase's fee as a % of total consumer price ranges from 25–33%. This sits **below SpotHero's ~35% seller commission** and is defensible given ParkEase adds pre-booking, QR enforcement, and the compliance report — none of which ShowMyParking provides at equivalent depth.
+
+> **Gateway note (v3):** Razorpay charges 2% + 18% GST = 2.36% on the **full consumer transaction** (₹169, not just the ₹49 PE fee). Gateway cost per standard booking = ₹3.99. ParkEase absorbs this cost entirely — no visible processing fee added to consumer price. "₹49 and nothing else" is the pricing promise. At MVP scale (~2,600 bookings/year) this costs ₹10,400/year — rounding error against ₹25.2L fixed costs. Revisit at 50,000+ bookings/year or negotiate Razorpay volume pricing (available at higher transaction volumes).
 
 ## Stream B — B2B platform fee
 
@@ -68,10 +70,11 @@ ParkEase earns a **platform fee on top of the venue's own base parking rate**. T
 
 |Line|Amount|
 |---|---|
-|ParkEase platform fee collected (175 × ₹49)|₹8,575|
-|Gateway fee (~2.36% on ₹49 × 175)|−₹353|
-|**Net platform fee revenue**|**₹8,222**|
-|Venue base flow-through (175 × ₹120) — passthrough, not ParkEase revenue|₹21,000 passthrough|
+|Consumer payments collected (175 × ₹169)|₹29,575|
+|Gateway fee (2.36% × ₹29,575 — absorbed, not passed to consumer)|−₹698|
+|ParkEase receives from Razorpay|₹28,877|
+|Venue base flow-through (175 × ₹120) — passthrough, not ParkEase revenue|−₹21,000 passthrough|
+|**Net platform fee revenue (175 × ₹45)**|**₹7,875**|
 
 ## Per-event fixed ops cost — corrected methodology
 
@@ -88,40 +91,40 @@ ParkEase earns a **platform fee on top of the venue's own base parking rate**. T
 
 ## Contribution margin — fill rate sensitivity
 
-|Fill rate|Spots sold|Fee revenue|New venue CM|Repeat venue CM|
+|Fill rate|Spots sold|Fee revenue (×₹45)|New venue CM|Repeat venue CM|
 |---|---|---|---|---|
-|25%|125|₹5,875|−₹2,625|₹1,375|
-|**35% (MVP target)**|**175**|**₹8,225**|**−₹275**|**₹3,725**|
-|45%|225|₹10,575|₹2,075|₹6,075|
-|55%|275|₹12,925|₹4,425|₹8,425|
-|65% (Year 1)|325|₹15,275|₹6,775|₹10,775|
-|75%|375|₹17,625|₹9,125|₹13,125|
+|25%|125|₹5,625|−₹2,875|₹1,125|
+|**35% (MVP target)**|**175**|**₹7,875**|**−₹625**|**₹3,375**|
+|45%|225|₹10,125|₹1,625|₹5,625|
+|55%|275|₹12,375|₹3,875|₹7,875|
+|65% (Year 1)|325|₹14,625|₹6,125|₹10,125|
+|75%|375|₹16,875|₹8,375|₹12,375|
 
 > **Critical finding v1 missed**
 
-> At 35% fill on a **new venue**, ParkEase is contribution-negative by ₹275. The ₹8,500 ops cost exceeds the ₹8,222 platform fee revenue. The first event at any new venue is a **trust investment, not a profit event**. Break-even on variable ops requires ~45% fill at a new venue, or any positive fill at a repeat venue. v1 obscured this by conflating venue remittance with ParkEase revenue.
+> At 35% fill on a **new venue**, ParkEase is contribution-negative by ₹625. The ₹8,500 ops cost exceeds the ₹7,875 net platform fee revenue. The first event at any new venue is a **trust investment, not a profit event**. Break-even on variable ops requires ~38% fill at a new venue (not ~45% as v2 previously stated — corrected for Flow A gateway), or any fill above 22% at a repeat venue. v1 obscured this by conflating venue remittance with ParkEase revenue.
 
 ## Summary metric cards
 
 |Metric|MVP (new venue)|MVP (repeat venue)|Year 1 (repeat venue)|
 |---|---|---|---|
-|Contribution margin|**−₹275**|**₹3,725**|**₹10,775**|
-|Net per spot (post gateway)|₹47|₹47|₹47|
+|Contribution margin|**−₹625**|**₹3,375**|**₹10,125**|
+|Net per spot (post gateway, Flow A)|₹45|₹45|₹45|
 |Ops cost per event|₹8,500|₹4,500|₹4,500|
 
 ---
 
 # 3 · LTV analysis — corrected inputs
 
-Same contribution-based LTV methodology (correct), recalculated with ₹47 net fee per spot instead of v1's inflated ₹104.
+Same contribution-based LTV methodology (correct), recalculated with ₹45 net fee per spot instead of v1's inflated ₹104.
 
 ||Arjun (repeat solo booker)|Rahul (group organiser)|
 |---|---|---|
 |Bookings/year (PE events)|3|2–3|
-|Contribution/booking (Y1, repeat venue)|₹33|₹33|
-|Direct Year 1 LTV|**₹99**|**₹66**|
+|Contribution/booking (Y1, repeat venue)|₹31|₹31|
+|Direct Year 1 LTV|**₹93**|**₹62**|
 |Network referrals generated|1–2|4–6 secondary users|
-|Network-adjusted Year 1 LTV|**~₹350**|**~₹250+**|
+|Network-adjusted Year 1 LTV|**~₹330**|**~₹230+**|
 |v1 stated LTV (overstated)|~~₹252~~|~~₹168~~|
 
 > **Implication for product strategy**
@@ -136,11 +139,11 @@ Same contribution-based LTV methodology (correct), recalculated with ₹47 net f
 
 |Line|Amount|
 |---|---|
-|Events 1–2: new venues, 65% fill (325 × ₹47 − ₹8,500) × 2|₹13,550|
-|Events 3–8: repeat venues, 65% fill (325 × ₹47 − ₹4,500) × 6|₹64,650|
+|Events 1–2: new venues, 65% fill (325 × ₹45 − ₹8,500) × 2|₹12,250|
+|Events 3–8: repeat venues, 65% fill (325 × ₹45 − ₹4,500) × 6|₹60,750|
 |B2B platform fees (₹15k × 8 events)|₹1,20,000|
-|**Total annual contribution — 1 Siddharth**|**₹1,98,200**|
-|B2B fee as % of total contribution|**60.5%**|
+|**Total annual contribution — 1 Siddharth**|**₹1,93,000**|
+|B2B fee as % of total contribution|**62.2%**|
 
 > **The B2B fee now carries 60% of the economic weight.**
 
@@ -150,15 +153,15 @@ Same contribution-based LTV methodology (correct), recalculated with ₹47 net f
 
 |Event|Consumer fee revenue|B2B platform fee|Ops cost|Net contribution|
 |---|---|---|---|---|
-|Ev 1 (new venue)|₹15,275|₹0|−₹8,500|₹6,775|
-|Ev 2 (new venue)|₹15,275|₹0|−₹8,500|₹6,775|
-|Ev 3 (repeat)|₹15,275|₹15,000|−₹4,500|₹25,775|
-|Ev 4 (repeat)|₹15,275|₹15,000|−₹4,500|₹25,775|
-|Ev 5 (repeat)|₹15,275|₹15,000|−₹4,500|₹25,775|
-|Ev 6 (repeat)|₹15,275|₹15,000|−₹4,500|₹25,775|
-|Ev 7 (repeat)|₹15,275|₹15,000|−₹4,500|₹25,775|
-|Ev 8 (repeat)|₹15,275|₹15,000|−₹4,500|₹25,775|
-|**Total**|**₹1,22,200**|**₹1,20,000**|**−₹44,000**|**₹1,98,200**|
+|Ev 1 (new venue)|₹14,625|₹0|−₹8,500|₹6,125|
+|Ev 2 (new venue)|₹14,625|₹0|−₹8,500|₹6,125|
+|Ev 3 (repeat)|₹14,625|₹15,000|−₹4,500|₹25,125|
+|Ev 4 (repeat)|₹14,625|₹15,000|−₹4,500|₹25,125|
+|Ev 5 (repeat)|₹14,625|₹15,000|−₹4,500|₹25,125|
+|Ev 6 (repeat)|₹14,625|₹15,000|−₹4,500|₹25,125|
+|Ev 7 (repeat)|₹14,625|₹15,000|−₹4,500|₹25,125|
+|Ev 8 (repeat)|₹14,625|₹15,000|−₹4,500|₹25,125|
+|**Total**|**₹1,17,000**|**₹1,20,000**|**−₹44,000**|**₹1,93,000**|
 
 > **Vehicles diverted — methodology note**
 > Pre-pilot benchmark: 55% (Western market). Post-Event-1: replace with India baseline. Sensitivity: at 30% compliance ~35 vehicles diverted, at 20% ~24. Compliance report always shows raw tap count + discounted estimate with rate labelled. Lead with exit clearance time as primary metric — treat vehicles diverted as supporting evidence.
@@ -184,8 +187,8 @@ Same contribution-based LTV methodology (correct), recalculated with ₹47 net f
 |Scenario|Annual contribution|vs Fixed costs|Verdict|
 |---|---|---|---|
 |Consumer-only, no B2B fee|~₹1,08,000 (20 events, Y1)|−₹24,12,000|Not viable|
-|10 annual contracts, Y1|₹19,82,000|−₹5,38,000|Near break-even|
-|**15 annual contracts, Y1**|**₹29,73,000**|**+₹4,53,000**|**Break-even**|
+|10 annual contracts, Y1|₹19,30,000|−₹5,90,000|Near break-even|
+|**15 annual contracts, Y1**|**₹28,95,000**|**+₹3,75,000**|**Break-even**|
 
 > **Scenario 1 — Consumer only**
 
@@ -193,7 +196,7 @@ Same contribution-based LTV methodology (correct), recalculated with ₹47 net f
 
 > **Scenario 2 — 10 annual contracts (harder than v1 suggested)**
 
-> Gap is ₹5.38L — larger than v1's ₹3.2L. Requires seed funding or deferred founder comp to bridge. Still achievable within 12–18 months if Bangalore pilot closes by month 3.
+> Gap is ₹5.90L — larger than v1's ₹3.2L. Requires seed funding or deferred founder comp to bridge. Still achievable within 12–18 months if Bangalore pilot closes by month 3.
 
 > **Scenario 3 — 15 annual contracts (break-even)**
 
@@ -204,18 +207,18 @@ Same contribution-based LTV methodology (correct), recalculated with ₹47 net f
 |Month|New contracts|Monthly contribution|Cumulative contribution|
 |---|---|---|---|
 |M1–M2|0 (pilot in progress)|₹0|₹0|
-|M3|1 pilot event fires|₹6,775|₹6,775|
-|M4|Annual contract signed|₹6,775|₹13,550|
-|M5|Events 3–4 + B2B fee active|₹17,550|₹31,100|
-|M6|2nd organiser added|₹28,325|₹59,425|
-|M7|Scaling to 3 organisers|₹39,100|₹98,525|
-|M8|Mumbai expansion begins|₹57,650|₹1,56,175|
-|M9||₹76,200|₹2,32,375|
-|M10||₹94,750|₹3,27,125|
-|M11||₹1,22,300|₹4,49,425|
-|M12|10 contracts active|₹1,49,850|₹5,99,275|
+|M3|1 pilot event fires|₹6,125|₹6,125|
+|M4|Annual contract signed|₹6,125|₹12,250|
+|M5|Events 3–4 + B2B fee active|₹17,100|₹29,350|
+|M6|2nd organiser added|₹27,600|₹56,950|
+|M7|Scaling to 3 organisers|₹38,100|₹95,050|
+|M8|Mumbai expansion begins|₹56,150|₹1,51,200|
+|M9||₹74,200|₹2,25,400|
+|M10||₹92,300|₹3,17,700|
+|M11||₹1,19,100|₹4,36,800|
+|M12|10 contracts active|₹1,45,900|₹5,82,700|
 
-> Monthly fixed cost burns ₹2,10,000/month throughout. Cumulative fixed cost by M12 = ₹25,20,000. Cumulative contribution by M12 = ₹5,99,275. **Funding gap = ~₹19,20,725** — the seed requirement before the model reaches contribution break-even at 15 contracts in Year 1.
+> Monthly fixed cost burns ₹2,10,000/month throughout. Cumulative fixed cost by M12 = ₹25,20,000. Cumulative contribution by M12 = ₹5,82,700. **Funding gap = ~₹19,37,300** — the seed requirement before the model reaches contribution break-even at 15 contracts in Year 1.
 
 ---
 
@@ -248,7 +251,7 @@ Founder-curated target list (30–40 venues/operators)
 
 > **Revised pilot structure based on corrected economics**
 
-> Event 1 — waive B2B platform fee (trust-building). Events 2–8 — full ₹15k–25k/event. This concession costs less than it appears. The first-event margin is already thin at new-venue ops cost (−₹275 CM). Giving away the B2B fee on event 1 costs ₹15k in foregone revenue. Giving it away on events 2–8 would cost ₹1,05,000 — 60% of total annual economics.
+> Event 1 — waive B2B platform fee (trust-building). Events 2–8 — full ₹15k–25k/event. This concession costs less than it appears. The first-event margin is already thin at new-venue ops cost (−₹625 CM). Giving away the B2B fee on event 1 costs ₹15k in foregone revenue. Giving it away on events 2–8 would cost ₹1,05,000 — 60% of total annual economics.
 
 ---
 
@@ -262,7 +265,7 @@ Founder-curated target list (30–40 venues/operators)
 
 > **First event at every new venue is contribution-negative**
 
-> At 35% MVP fill, new-venue ops cost (₹8,500) exceeds platform fee revenue (₹8,222). Every new venue is a −₹275 loss before fixed costs. The B2B annual contract must be signed before bay mapping begins — not after.
+> At 35% MVP fill, new-venue ops cost (₹8,500) exceeds platform fee revenue (₹7,875). Every new venue is a −₹625 loss before fixed costs. The B2B annual contract must be signed before bay mapping begins — not after.
 
 > **Compliance rate risk**
 > Below 25% materially weakens the compliance report. Mitigation: make raw CTA tap count the headline metric. Municipal authorities respond to exit clearance time, not diversion estimates.
@@ -275,7 +278,7 @@ Founder-curated target list (30–40 venues/operators)
 
 > **Consumer fee as % of total price is visible and contestable**
 
-> **BMS baseline:** BookMyShow charges 18–20% convenience fee on ticket face value — roughly ₹270 on a ₹1,500 concert ticket — for a product someone else built. The user gets nothing additional; it is a pure friction tax.
+> **BMS baseline:** BookMyShow charges a convenience fee — roughly ₹100–300 on a concert ticket depending on face value — for a product someone else built. The user gets nothing additional; it is a pure friction tax.
 >
 > **ParkEase comparison:** ₹49 on a ₹149 parking transaction is 33% by ratio but buys a named product: pillar-mapped bay, QR enforcement, scarcity visibility, redirect fallback, and a compliance-backed SLA. It is the price of the product itself, not a toll on someone else's product.
 >
@@ -297,12 +300,12 @@ Founder-curated target list (30–40 venues/operators)
 
 |Metric|v1 (wrong)|v2 (corrected)|Change|
 |---|---|---|---|
-|ParkEase net per spot (₹149 tier)|₹104|₹47|−55%|
-|MVP new venue contribution margin|₹9,085|−₹275|Flipped negative|
-|B2B fee share of event economics|~35%|60%|B2B is primary|
+|ParkEase net per spot (₹149 tier)|₹104|₹45|−57%|
+|MVP new venue contribution margin|₹9,085|−₹625|Flipped negative|
+|B2B fee share of event economics|~35%|62%|B2B is primary|
 |Annual contracts for break-even|10|15|Harder target|
-|Arjun Year 1 LTV|₹252|₹99|Corrected|
-|Rahul Year 1 LTV|₹168|₹66|Corrected|
+|Arjun Year 1 LTV|₹252|₹93|Corrected|
+|Rahul Year 1 LTV|₹168|₹62|Corrected|
 |Seed funding requirement|~₹40–60L|~₹50–70L|Gap is wider|
 
 > **The business is still viable — the model is now honest.**
@@ -311,4 +314,4 @@ Founder-curated target list (30–40 venues/operators)
 
 ---
 
-_Last updated: March 2026 · Phase 3 v2 · Sanity-checked against ShowMyParking Coldplay Ahmedabad data, SpotHero commission benchmarks, Indian stadium base rate data (₹100–200/vehicle), and Razorpay gateway fee structure (2% + 18% GST on platform fee)._
+_Last updated: May 2026 · Phase 3 v2 · Sanity-checked against ShowMyParking Coldplay Ahmedabad data, SpotHero commission benchmarks, Indian stadium base rate data (₹100–200/vehicle), and Razorpay gateway fee structure (2% + 18% GST on full ₹169 transaction — absorbed into margin)._
