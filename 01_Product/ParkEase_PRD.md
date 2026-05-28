@@ -33,22 +33,33 @@ ParkEase operates as a two-sided platform serving end consumers (attendees) and 
 |   |   |   |   |
 |---|---|---|---|
 |Metric|Definition|MVP Target|Year 1 Target|
-|Parking fill rate per event|% of pre-booked parking inventory sold before event day|35%|65%|
+|Parking attach rate at checkout|% of ticket buyers who add parking at the organiser checkout step|8%|14%|
 
-Rationale: This is the single number that determines whether everything else works. If parking fills, the demand-shifting redirect triggers. If the redirect triggers, behaviour change is tested. If behaviour change works, organizers see measurable gridlock reduction. Every downstream metric depends on this number being high.
+Rationale: Attach rate is the input metric the product team directly controls — through funnel optimisation, scarcity signals, and friction reduction in the checkout flow. It is the lever. Fill rate is what the operator sees and is a downstream outcome of attach rate. Every product decision that improves attach rate flows through to fill rate, redirect trigger, and ultimately the compliance report. Measuring the North Star as a business outcome rather than a product lever misaligns the team's work with the metric they are accountable for.
 
-A 35% MVP target reflects India's trust-building curve — slower than Western markets due to first-time UPI friction and add-on skepticism on new platforms. 65% by Year 1 is achievable once BookMyShow integration establishes trust by association.
+An 8% MVP target reflects India's trust-building curve — lower than the 8–18% global benchmark due to first-time UPI friction and add-on scepticism on unfamiliar platforms. 14% by Year 1 is achievable once BookMyShow brand association reduces the "is this legitimate?" doubt at checkout.
 
 ---
 
-### 2.2 Leading Indicators
+### 2.2 Business Outcome Metric
 
-These metrics signal whether the product is heading in the right direction before the North Star fully activates.
+|   |   |   |   |
+|---|---|---|---|
+|Metric|Definition|MVP Target|Year 1 Target|
+|Parking fill rate per event|% of pre-booked parking inventory sold before event day|35%|65%|
+
+Note: Fill rate is the business outcome the operator (Siddharth) sees on his dashboard — it determines whether the redirect screen activates and whether the compliance report has its strongest data point. It is not the North Star because it is downstream of attach rate and partially outside the product team's direct control (operator sets inventory, venue constrains lot size). A 35% MVP target reflects the India first-mover trust curve; 65% by Year 1 is achievable once the BookMyShow checkout integration removes the discovery barrier.
+
+---
+
+### 2.3 Leading Indicators
+
+These metrics signal whether the product is heading in the right direction before the business outcome fully activates.
 
 |   |   |   |   |   |
 |---|---|---|---|---|
 |Metric|Definition|MVP Target|Year 1 Target|India Adjustment|
-|Parking attach rate at checkout|% of ticket buyers who add parking at the organizer checkout step|8%|14%|Lower floor vs. global benchmark (8–18%) due to Indian add-on skepticism and UPI first-authorization friction on unfamiliar apps|
+|Redirect CTA tap rate when parking full|% of users who tap the cab/shuttle CTA when shown the parking sold-out screen|25–30%|38–42%|Adjusted down from Waze's 32–45% global compliance benchmark — Indian users exhibit higher distrust of redirects from unfamiliar apps at first exposure|
 |Redirect CTA tap rate when parking full|% of users who tap the cab/shuttle CTA when shown the parking sold-out screen|25–30%|38–42%|Adjusted down from Waze's 32–45% global compliance benchmark — Indian users exhibit higher distrust of redirects from unfamiliar apps at first exposure|
 
 Note on redirect tracking: At MVP stage, redirect CTA tap rate serves as a proxy for behaviour change — it measures intent, not confirmed cab booking completion. This is a known architectural constraint of the Ola/Uber deep-link redirect and will be addressed in V2 via API callback integration for hard conversion confirmation.
@@ -57,7 +68,7 @@ Compliance methodology note: The 55% compliance discount is a Western market ben
 
 ---
 
-### 2.3 B2B Proof Point
+### 2.4 B2B Proof Point
 
 The metric that closes the next organizer deal.
 
@@ -68,7 +79,7 @@ The metric that closes the next organizer deal.
 
 ---
 
-### 2.4 Guardrail Metrics
+### 2.5 Guardrail Metrics
 
 These are the floors we must never breach. Crossing these breaks operator trust or user trust — either kills the product.
 
@@ -80,7 +91,7 @@ These are the floors we must never breach. Crossing these breaks operator trust 
 
 ---
 
-### 2.5 Retention Signal
+### 2.6 Retention Signal
 
 |   |   |   |   |
 |---|---|---|---|
@@ -100,23 +111,23 @@ A 25% repeat booking rate within the relevant event-type window signals that tru
 
 ---
 
-### 2.6 Metrics Hierarchy Summary
+### 2.7 Metrics Hierarchy Summary
 
 NORTH STAR
 
-└── Parking Fill Rate per Event
+└── Attach Rate at Checkout                         →  8% MVP   →  14% Y1
 
-        ├── LEADING:     Attach Rate at Checkout         →  8% MVP   →  14% Y1
+        ├── BUSINESS OUTCOME:  Fill Rate per Event      →  35% MVP  →  65% Y1
 
-        ├── LEADING:     Redirect CTA Tap Rate           →  25–30% MVP   →  38–42% Y1
+        ├── LEADING:           Redirect CTA Tap Rate    →  25–30% MVP   →  38–42% Y1
 
-        ├── B2B:         Lot Exit Clearance Reduction    →  35% MVP   →  50% Y1
+        ├── B2B:               Lot Exit Clearance       →  35% MVP   →  50% Y1
 
-        ├── GUARDRAIL:   Spot Utilisation Rate           →  >70% MVP  →  >80% Y1
+        ├── GUARDRAIL:         Spot Utilisation Rate    →  >70% MVP  →  >80% Y1
 
-        ├── GUARDRAIL:   Checkout Drop-off Rate          →  <45% MVP  →  <28% Y1
+        ├── GUARDRAIL:         Checkout Drop-off Rate   →  <45% MVP  →  <28% Y1
 
-        └── RETENTION:   Repeat Booking Rate             →  25% (event-type window)
+        └── RETENTION:         Repeat Booking Rate      →  25% (event-type window)
 
   
 
@@ -1606,6 +1617,22 @@ Mitigation: The first MVP event must be deliberately under-promised and over-del
 
 ---
 
+R7 — Venue authority overrides inventory on event night
+
+Police, municipal officials, and VIP security routinely commandeer 10–20% of bays with zero notice at Indian stadium events. A confirmed booking for Bay B-14 becomes unenforceable if an authority vehicle is parked there before the gate opens. This is not an edge case — it is standard practice at any government-adjacent event.
+
+Mitigation: The 80% pre-sell cap (§5 product rules) absorbs the typical commandeering range without leaving confirmed users without a bay. The SLA force majeure clause requires the organiser to provide ≥30-minute notice of any bay loss. The attendant scanner triggers reassignment to the nearest available bay or an instant refund — no user is ever turned away empty-handed.
+
+---
+
+R8 — Regulatory compliance: DPDP Act + payment float
+
+ParkEase collects name, phone, vehicle number, and email — all personal data under India's Digital Personal Data Protection Act 2023. Payment float (UPI collected days or weeks before event day) creates a holding obligation whose treatment under RBI guidelines and GST on the service fee are currently unresolved. Non-compliance before Event 1 creates legal exposure.
+
+Mitigation: DPDP consent flows and data minimisation must be implemented before any live transaction (not before the prototype demo, but before any real payment is collected). Payment structure — whether ParkEase holds float or settles immediately to the venue — requires legal review before the first commercial contract is signed.
+
+---
+
 ### Part B — Open Questions
 
 ---
@@ -1755,7 +1782,7 @@ Stage 1 — Prototype Validation ✅ Complete (May 2026)
 
 10-screen prototype live at https://park-ease-rho.vercel.app — Vite + React 19 frontend on Vercel, FastAPI backend on Railway, Supabase (PostgreSQL). Full consumer flow (S0→S4), operator dashboard (S5), retention (S6–S8), and ground staff (S9) flows live. DemoChip (bottom-right, 5 roles) enables reviewer navigation across all flows without a live event.
 
-- What was built: S0–S9 + Navbar + Profile Modal + DemoChip. Full booking flow with UPI payment simulation, offline QR caching, demo auth (phone + OTP `0000`), DEMO- fallback booking ID, security hardening.
+- What was built: S0–S9 + Navbar + Profile Modal + DemoChip. Full booking flow with UPI payment simulation, offline QR caching, demo auth (phone + OTP `000000`), DEMO- fallback booking ID, security hardening.
 - What was tested: Internal review. Product story lands in under 60 seconds via DemoChip. Operator dashboard tells the Siddharth story independently.
 - Exit criteria: ✅ Prototype ready for PM/operator review outreach.
 
